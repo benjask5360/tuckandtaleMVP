@@ -43,17 +43,19 @@ export async function POST(request: Request) {
       .select(`
         subscription_tier_id,
         subscription_tiers (
-          features
+          max_child_profiles,
+          max_other_characters
         )
       `)
       .eq('user_id', user.id)
       .single()
 
-    const features = (userProfile?.subscription_tiers as any)?.features || {}
+    const tier = userProfile?.subscription_tiers as any
 
     // Check character limit based on type
-    const limitKey = character_type === 'child' ? 'max_child_profiles' : 'max_other_characters'
-    const maxAllowed = features[limitKey] ?? (character_type === 'child' ? 1 : 0)
+    const maxAllowed = character_type === 'child'
+      ? (tier?.max_child_profiles ?? 1)
+      : (tier?.max_other_characters ?? 0)
 
     if (maxAllowed !== null) {
       // Count existing characters of this type

@@ -1,5 +1,6 @@
 'use client'
 
+// Signup page component
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'

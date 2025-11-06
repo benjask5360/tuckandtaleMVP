@@ -65,7 +65,7 @@ export default function OtherCharactersPage() {
           subscription_tiers (
             tier_name,
             display_name,
-            features
+            max_other_characters
           )
         `)
         .eq('user_id', user.id)
@@ -110,7 +110,7 @@ export default function OtherCharactersPage() {
     return config?.displayName || type
   }
 
-  const maxCharacters = userTier?.features?.max_other_characters || 0
+  const maxCharacters = userTier?.max_other_characters ?? 0
   const canAddMore = maxCharacters === null || characters.length < maxCharacters
 
   if (loading) {

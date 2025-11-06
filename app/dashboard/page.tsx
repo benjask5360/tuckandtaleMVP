@@ -23,13 +23,19 @@ export default async function DashboardPage() {
       subscription_tiers (
         tier_name,
         display_name,
-        features
+        max_child_profiles,
+        max_other_characters
       )
     `)
     .eq('user_id', user.id)
     .single()
 
-  const userTier = (userProfile?.subscription_tiers as any) || { tier_name: 'free', display_name: 'Free', features: {} }
+  const userTier = (userProfile?.subscription_tiers as any) || {
+    tier_name: 'free',
+    display_name: 'Free',
+    max_child_profiles: 1,
+    max_other_characters: 0
+  }
 
   // Fetch all characters
   const { data: allCharacters } = await supabase
@@ -46,8 +52,8 @@ export default async function DashboardPage() {
   const primaryCharacter = children.find((c) => c.is_primary) || children[0]
 
   // Calculate limits
-  const maxChildren = userTier?.features?.max_child_profiles ?? 1
-  const maxOtherCharacters = userTier?.features?.max_other_characters ?? 0
+  const maxChildren = userTier?.max_child_profiles ?? 1
+  const maxOtherCharacters = userTier?.max_other_characters ?? 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">

@@ -64,7 +64,7 @@ export default function MyChildrenPage() {
           subscription_tiers (
             tier_name,
             display_name,
-            features
+            max_child_profiles
           )
         `)
         .eq('user_id', user.id)
@@ -104,8 +104,8 @@ export default function MyChildrenPage() {
     return age
   }
 
-  const maxChildren = userTier?.features?.max_child_profiles || 1
-  const canAddMore = children.length < maxChildren
+  const maxChildren = userTier?.max_child_profiles ?? 1
+  const canAddMore = maxChildren === null || children.length < maxChildren
 
   if (loading) {
     return (
