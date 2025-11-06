@@ -11,9 +11,28 @@ export default function HomePage() {
         <div className="container-narrow section-padding relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-slide-up">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 text-neutral-900 leading-tight">
+              <h1
+                className="text-4xl md:text-5xl lg:text-[56px] mb-4 sm:mb-6 leading-[1.1]"
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontWeight: 500,
+                  letterSpacing: '-0.02em',
+                  color: '#1A1A1A'
+                }}
+              >
                 Bedtime Stories Where<br />
-                <span className="gradient-text">YOUR Child</span> is the Hero
+                <span
+                  style={{
+                    background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontWeight: 700
+                  }}
+                >
+                  YOUR Child
+                </span>{' '}
+                is the Hero
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-neutral-500 mb-6 sm:mb-8 max-w-lg">
