@@ -55,8 +55,8 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-blue-50 flex">
       {/* Left Side - Marketing Content */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center py-12">
-        <div className="max-w-xl w-full px-8">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-end py-12 pr-8">
+        <div className="max-w-lg w-full -mt-8" style={{ transform: 'scale(0.9)', transformOrigin: 'right center' }}>
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 mb-8">
             <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
               <Image
@@ -91,7 +91,7 @@ export default function SignupPage() {
 
           <div className="space-y-6">
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)' }}>
                 <Star className="w-6 h-6 text-white fill-white" />
               </div>
               <div>
@@ -101,7 +101,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)' }}>
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -111,7 +111,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)' }}>
                 <ImageIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -121,7 +121,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex gap-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)' }}>
                 <Check className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right Side - Signup Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 py-12">
+      <div className="w-full lg:w-1/2 flex items-center justify-start px-4 py-12 lg:pl-8">
         <div className="w-full max-w-lg">
           {/* Logo for mobile */}
           <Link href="/" className="flex lg:hidden items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity mb-8">
