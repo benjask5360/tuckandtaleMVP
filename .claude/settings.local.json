@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(nul)",
+      "Bash(find:*)",
+      "Bash(powershell:*)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --src-dir --import-alias \"@/*\" --no-eslint)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias \"@/*\" --eslint)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init -p)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(npx supabase init)",
+      "Bash(npx supabase:*)",
+      "Bash(if exist .env.local del .env.local)",
+      "Bash(vercel --version:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel:*)",
+      "Bash(del vercel.json)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(dir:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
