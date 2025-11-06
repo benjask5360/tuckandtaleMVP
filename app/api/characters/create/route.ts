@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       .eq('user_id', user.id)
       .single()
 
-    const features = userProfile?.subscription_tiers?.features || {}
+    const features = (userProfile?.subscription_tiers as any)?.features || {}
 
     // Check character limit based on type
     const limitKey = character_type === 'child' ? 'max_child_profiles' : 'max_other_characters'
