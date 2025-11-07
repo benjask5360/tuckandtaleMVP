@@ -42,7 +42,7 @@ export default function MyChildrenPage() {
         .from('character_profiles')
         .select(`
           *,
-          avatar_cache:avatar_cache_id (
+          avatar_cache!avatar_cache_id (
             image_url
           )
         `)
