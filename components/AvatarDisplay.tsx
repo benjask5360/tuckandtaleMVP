@@ -252,11 +252,7 @@ export function AvatarDisplay({
         <div className="w-full space-y-2">
           <button
             onClick={generateAvatar}
-            disabled={
-              state === 'generating' ||
-              state === 'polling' ||
-              !!(regenerationStatus && regenerationStatus.remaining === 0)
-            }
+            disabled={!!(regenerationStatus && regenerationStatus.remaining === 0)}
             className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {avatarUrl ? (
