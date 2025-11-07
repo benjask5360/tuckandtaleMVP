@@ -114,25 +114,40 @@ export class AIConfigService {
 
   /**
    * Build Leonardo API configuration from our config
+   * Only includes parameters that are explicitly set to avoid API compatibility issues
    */
   static buildLeonardoConfig(
     aiConfig: AIConfig,
     prompt: string
   ) {
-    return {
+    const config: any = {
       prompt,
       modelId: aiConfig.model_id,
       width: aiConfig.settings.width || 512,
       height: aiConfig.settings.height || 768,
       numImages: aiConfig.settings.num_images || 1,
-      guidanceScale: aiConfig.settings.guidance_scale || 7,
-      numInferenceSteps: aiConfig.settings.num_inference_steps || 30,
-      scheduler: aiConfig.settings.scheduler || 'LEONARDO',
-      negativePrompt: aiConfig.settings.negative_prompt || 'bad anatomy, blurry, low quality',
-      sdVersion: aiConfig.settings.sd_version || 'SDXL_LIGHTNING',
       public: aiConfig.settings.public || false,
-      tiling: aiConfig.settings.tiling || false,
     };
+
+    // Only include optional parameters if explicitly set in config
+    // This avoids sending parameters that might be incompatible with specific models
+    if (aiConfig.settings.guidance_scale !== undefined) {
+      config.guidanceScale = aiConfig.settings.guidance_scale;
+    }
+    if (aiConfig.settings.num_inference_steps !== undefined) {
+      config.numInferenceSteps = aiConfig.settings.num_inference_steps;
+    }
+    if (aiConfig.settings.scheduler) {
+      config.scheduler = aiConfig.settings.scheduler;
+    }
+    if (aiConfig.settings.negative_prompt) {
+      config.negativePrompt = aiConfig.settings.negative_prompt;
+    }
+    if (aiConfig.settings.tiling !== undefined) {
+      config.tiling = aiConfig.settings.tiling;
+    }
+
+    return config;
   }
 
   /**
