@@ -261,8 +261,18 @@ export async function getDescriptorBySimpleTerm(
   let query = supabase
     .from(tableName)
     .select('*')
-    .eq('simple_term', simpleTerm)
     .eq('is_active', true);
+
+  // Handle descriptors_age specially - it uses age_value instead of simple_term
+  if (tableName === 'descriptors_age') {
+    const ageValue = parseInt(simpleTerm, 10);
+    if (!isNaN(ageValue)) {
+      query = query.eq('age_value', ageValue);
+    }
+  } else {
+    // For all other descriptor tables, use simple_term
+    query = query.eq('simple_term', simpleTerm);
+  }
 
   // Handle special _age_lookup filter for age-aware gender descriptors
   if (additionalFilters?._age_lookup !== undefined) {
