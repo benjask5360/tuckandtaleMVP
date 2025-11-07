@@ -121,7 +121,8 @@ export async function POST(
     const { generationId } = await leonardo.generateImage(leonardoConfig);
 
     // Create avatar cache entry
-    const fileName = `${characterId}/${generationId}.png`;
+    // Storage path follows RLS policy: {userId}/{characterId}/{generationId}.png
+    const fileName = `${user.id}/${characterId}/${generationId}.png`;
     const { data: avatarCache, error: cacheError } = await supabase
       .from('avatar_cache')
       .insert({
@@ -256,7 +257,8 @@ export async function GET(
       const buffer = Buffer.from(arrayBuffer);
 
       // Upload to Supabase Storage
-      const fileName = `${characterId}/${generationId}.png`;
+      // Use the storage_path from avatar_cache which follows RLS policy
+      const fileName = avatarCache.storage_path;
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, buffer, {
