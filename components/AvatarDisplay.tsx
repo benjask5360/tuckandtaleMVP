@@ -19,7 +19,7 @@ interface RegenerationStatus {
 
 interface AvatarDisplayProps {
   characterId: string;
-  currentAvatarUrl?: string;
+  currentAvatarUrl?: string | null;
   profileType: 'child' | 'storybook_character' | 'pet' | 'magical_creature';
   onAvatarGenerated?: (avatarUrl: string) => void;
   isNew?: boolean; // Is this a new character being created?
