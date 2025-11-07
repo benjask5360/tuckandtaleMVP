@@ -47,7 +47,7 @@ export async function POST(request: Request) {
           max_other_characters
         )
       `)
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
 
     const tier = userProfile?.subscription_tiers as any
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
       const { count } = await supabase
         .from('character_profiles')
         .select('id', { count: 'exact' })
-        .eq('user_id', user.id)
+        .eq('user_profile_id', user.id)
         .eq('character_type', character_type === 'child' ? 'child' : character_type)
         .is('deleted_at', null)
 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     const { data: character, error: createError } = await supabase
       .from('character_profiles')
       .insert({
-        user_id: user.id,
+        user_profile_id: user.id,
         character_type,
         name,
         attributes,

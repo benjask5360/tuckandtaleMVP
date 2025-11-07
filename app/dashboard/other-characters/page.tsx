@@ -39,7 +39,7 @@ export default function OtherCharactersPage() {
       const { data, error } = await supabase
         .from('character_profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_profile_id', user.id)
         .neq('character_type', 'child')
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
@@ -68,7 +68,7 @@ export default function OtherCharactersPage() {
             max_other_characters
           )
         `)
-        .eq('user_id', user.id)
+        .eq('id', user.id)
         .single()
 
       setUserTier(data?.subscription_tiers)
