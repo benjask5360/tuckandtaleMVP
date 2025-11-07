@@ -38,7 +38,7 @@ export default function MyChildrenPage() {
       const { data, error } = await supabase
         .from('character_profiles')
         .select('*')
-        .eq('user_profile_id', user.id)
+        .eq('user_id', user.id)
         .eq('character_type', 'child')
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
