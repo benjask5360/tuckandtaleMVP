@@ -55,26 +55,30 @@ export class LeonardoClient {
    * Initiate image generation
    */
   async generateImage(config: LeonardoGenerationConfig): Promise<{ generationId: string }> {
+    const requestBody: any = {
+      prompt: config.prompt,
+      modelId: config.modelId,
+      width: config.width || 512,
+      height: config.height || 768,
+      num_images: config.numImages || 1,
+      public: config.public || false,
+    };
+
+    // Only include optional parameters if they're provided
+    if (config.guidanceScale !== undefined) requestBody.guidance_scale = config.guidanceScale;
+    if (config.numInferenceSteps !== undefined) requestBody.num_inference_steps = config.numInferenceSteps;
+    if (config.scheduler) requestBody.scheduler = config.scheduler;
+    if (config.negativePrompt) requestBody.negative_prompt = config.negativePrompt;
+    if (config.sdVersion) requestBody.sd_version = config.sdVersion;
+    if (config.tiling !== undefined) requestBody.tiling = config.tiling;
+
     const response = await fetch(`${this.baseUrl}/generations`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        prompt: config.prompt,
-        modelId: config.modelId,
-        width: config.width || 512,
-        height: config.height || 768,
-        num_images: config.numImages || 1,
-        guidance_scale: config.guidanceScale || 7,
-        num_inference_steps: config.numInferenceSteps || 30,
-        scheduler: config.scheduler || 'LEONARDO',
-        negative_prompt: config.negativePrompt || 'bad anatomy, blurry, low quality',
-        sd_version: config.sdVersion || 'SDXL_LIGHTNING',
-        public: config.public || false,
-        tiling: config.tiling || false,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
