@@ -82,24 +82,44 @@ You can:
 
 ## Database Management
 
-### Push Future Migrations
+### First-Time Setup
 ```bash
-# Create new migration
+# 1. Login to Supabase CLI (get access token from https://app.supabase.com/account/tokens)
+npx supabase login --token YOUR_ACCESS_TOKEN
+
+# 2. Link to your production project
+npx supabase link --project-ref iolimejvugpcpnmruqww
+
+# You'll be prompted for your database password
+# Database password: adsdf7897JKH
+```
+
+### Push Migrations to Production
+```bash
+# IMPORTANT: Always use the --linked flag and provide the password
+
+# Push all pending migrations
+npx supabase db push --linked --password adsdf7897JKH
+
+# The command will show you which migrations will be applied
+# Confirm with 'Y' to proceed
+```
+
+### Create New Migrations
+```bash
+# Create new migration file
 npx supabase migration new my_new_feature
 
 # Edit the migration file in supabase/migrations/
 
 # Push to production
-npx supabase db push
+npx supabase db push --linked --password adsdf7897JKH
 ```
 
-### Rollback Migration (if needed)
+### View Migration Status
 ```bash
-# View migration history
+# See which migrations are applied locally vs production
 npx supabase migration list
-
-# Rollback specific migration
-npx supabase db reset --version <timestamp>
 ```
 
 ### Generate TypeScript Types
@@ -167,17 +187,46 @@ npx supabase start
 # Stop local Supabase
 npx supabase stop
 
-# View local database
+# View local database in browser
 # Open: http://127.0.0.1:54323
 
-# Push migrations to production
-npx supabase db push
+# Push migrations to production (IMPORTANT: use --linked flag!)
+npx supabase db push --linked --password adsdf7897JKH
 
 # Pull production schema to local
 npx supabase db pull
 
-# View migration status
+# View migration status (local vs remote)
 npx supabase migration list
+
+# View your Supabase projects
+npx supabase projects list
+```
+
+---
+
+## Troubleshooting
+
+### "Tenant or user not found" Error
+**Problem:** Connection fails with this error
+**Solution:** Use the `--linked` flag instead of `--db-url`:
+```bash
+npx supabase db push --linked --password adsdf7897JKH
+```
+
+### "Connection timeout" Errors
+**Problem:** Can't connect to pooler
+**Solution:** This is expected. The `--linked` flag handles the connection correctly. Don't try to use the pooler URL directly.
+
+### "Password authentication failed"
+**Problem:** Wrong database password
+**Solution:** The correct password is `adsdf7897JKH` (stored in `.env.production`)
+
+### Migrations Not Appearing in Production
+**Problem:** Ran `npx supabase db push` but migrations didn't apply
+**Solution:** You forgot the `--linked` flag. Always use:
+```bash
+npx supabase db push --linked --password adsdf7897JKH
 ```
 
 ---
@@ -192,3 +241,20 @@ npx supabase migration list
 ---
 
 🎉 **You're all set!** Your production database is live and ready to use.
+
+### Quick Reference Card
+
+**Push migrations to production:**
+```bash
+npx supabase db push --linked --password adsdf7897JKH
+```
+
+**Create new migration:**
+```bash
+npx supabase migration new my_feature_name
+```
+
+**Check migration status:**
+```bash
+npx supabase migration list
+```
