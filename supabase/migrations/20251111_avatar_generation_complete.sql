@@ -49,16 +49,13 @@ ADD COLUMN IF NOT EXISTS leonardo_api_credits_used INTEGER;
 
 -- 4. Update subscription_tiers with regeneration limits
 -- ================================================
-ALTER TABLE public.subscription_tiers
-ADD COLUMN IF NOT EXISTS avatar_regenerations_per_month INTEGER DEFAULT 1;
-
--- Set regeneration limits per tier
+-- Column already exists in schema, just update values
 UPDATE public.subscription_tiers
 SET avatar_regenerations_per_month = CASE
-    WHEN name = 'free' THEN 1
-    WHEN name = 'moonlight' THEN 5
-    WHEN name = 'starlight' THEN 10
-    WHEN name = 'supernova' THEN 999 -- Effectively unlimited
+    WHEN tier_name = 'free' THEN 1
+    WHEN tier_name = 'moonlight' THEN 5
+    WHEN tier_name = 'starlight' THEN 10
+    WHEN tier_name = 'supernova' THEN 999 -- Effectively unlimited
     ELSE 1
 END;
 

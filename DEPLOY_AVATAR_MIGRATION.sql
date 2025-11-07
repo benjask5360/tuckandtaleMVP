@@ -50,25 +50,15 @@ ADD COLUMN IF NOT EXISTS leonardo_api_credits_used INTEGER;
 
 -- 4. Update subscription_tiers with regeneration limits
 -- ================================================
-ALTER TABLE public.subscription_tiers
-ADD COLUMN IF NOT EXISTS avatar_regenerations_per_month INTEGER DEFAULT 1;
-
 -- Update existing tiers with regeneration limits
 UPDATE public.subscription_tiers
-SET avatar_regenerations_per_month = 1
-WHERE name = 'free' AND avatar_regenerations_per_month IS NULL;
-
-UPDATE public.subscription_tiers
-SET avatar_regenerations_per_month = 5
-WHERE name = 'moonlight' AND avatar_regenerations_per_month IS NULL;
-
-UPDATE public.subscription_tiers
-SET avatar_regenerations_per_month = 10
-WHERE name = 'starlight' AND avatar_regenerations_per_month IS NULL;
-
-UPDATE public.subscription_tiers
-SET avatar_regenerations_per_month = 999
-WHERE name = 'supernova' AND avatar_regenerations_per_month IS NULL;
+SET avatar_regenerations_per_month = CASE
+    WHEN tier_name = 'free' THEN 1
+    WHEN tier_name = 'moonlight' THEN 5
+    WHEN tier_name = 'starlight' THEN 10
+    WHEN tier_name = 'supernova' THEN 999
+    ELSE 1
+END;
 
 -- 5. Create Generation Costs Table
 -- ================================================
