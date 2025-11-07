@@ -166,12 +166,14 @@ export class AIConfigService {
       .from('api_cost_logs')
       .insert({
         user_id: userId,
-        character_profile_id: characterProfileId,
-        service: aiConfig.provider,
-        endpoint: `${aiConfig.purpose}/${aiConfig.name}`,
-        cost: creditsUsed * aiConfig.cost_per_generation,
+        provider: aiConfig.provider,
+        operation: aiConfig.purpose,
+        model_used: aiConfig.model_name,
+        total_tokens: creditsUsed,
+        estimated_cost: creditsUsed * aiConfig.cost_per_generation,
         metadata: {
           ai_config_name: aiConfig.name,
+          character_profile_id: characterProfileId,
           model_id: aiConfig.model_id,
           model_name: aiConfig.model_name,
           credits_used: creditsUsed,

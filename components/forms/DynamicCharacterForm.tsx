@@ -24,7 +24,6 @@ export default function DynamicCharacterForm({
   const [error, setError] = useState<string | null>(null)
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null)
   const [characterId, setCharacterId] = useState<string | null>(initialValues?.id || null)
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialValues?.avatar_url || null)
   const [showAvatarGenerator, setShowAvatarGenerator] = useState(false)
   const router = useRouter()
 
@@ -64,8 +63,7 @@ export default function DynamicCharacterForm({
       const submitData = {
         name: formData.name,
         character_type: characterType.id,
-        attributes: { ...formData },
-        avatar_url: avatarUrl // Include avatar URL if available
+        attributes: { ...formData }
       }
 
       // If it's a child and we have DOB, add calculated age
@@ -122,15 +120,9 @@ export default function DynamicCharacterForm({
   }
 
   const handleAvatarGenerated = (newAvatarUrl: string) => {
-    setAvatarUrl(newAvatarUrl)
-    // Update the character with the new avatar URL
-    if (characterId) {
-      fetch(`/api/characters/${characterId}/update`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ avatar_url: newAvatarUrl })
-      }).catch(err => console.error('Failed to update avatar URL:', err))
-    }
+    // Avatar is automatically linked to character via avatar_cache_id
+    // No need to update the character record here
+    console.log('Avatar generated:', newAvatarUrl)
   }
 
   return (
@@ -175,7 +167,7 @@ export default function DynamicCharacterForm({
           <div className="max-w-sm">
             <AvatarDisplay
               characterId={characterId || initialValues?.id}
-              currentAvatarUrl={avatarUrl}
+              currentAvatarUrl={null}
               profileType={
                 characterType.category === 'child'
                   ? 'child'
