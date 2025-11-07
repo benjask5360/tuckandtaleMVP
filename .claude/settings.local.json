@@ -51,7 +51,10 @@
       "Bash(tee:*)",
       "Bash(npx tsx:*)",
       "Bash(npx tsc:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(git log:*)",
+      "Bash(Test-NetConnection -ComputerName aws-1-us-east-2.pooler.supabase.com -Port 5432)",
+      "Bash(node deploy-migration.js:*)"
     ],
     "deny": [],
     "ask": []
