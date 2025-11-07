@@ -86,6 +86,11 @@ export async function POST(
     }
 
     // Generate avatar prompt using existing prompt builder
+    console.log('Character data for prompt:', {
+      profile_type: character.profile_type,
+      attributes: character.attributes,
+    });
+
     const avatarPrompt = await generateAvatarPrompt(
       character.profile_type,
       {
@@ -100,6 +105,14 @@ export async function POST(
         creatureType: character.attributes?.creatureType,
       }
     );
+
+    console.log('Generated avatar prompt:', avatarPrompt);
+
+    // Validate prompt is not empty
+    if (!avatarPrompt || avatarPrompt.trim().length === 0) {
+      console.error('Empty prompt generated, using fallback');
+      throw new Error('Unable to generate valid prompt from character data');
+    }
 
     // Initialize Leonardo client
     const leonardo = new LeonardoClient();
