@@ -50,7 +50,8 @@
       "Bash(echo:*)",
       "Bash(tee:*)",
       "Bash(npx tsx:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git rm:*)"
     ],
     "deny": [],
     "ask": []
