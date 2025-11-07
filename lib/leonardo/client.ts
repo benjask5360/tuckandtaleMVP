@@ -72,6 +72,8 @@ export class LeonardoClient {
     if (config.sdVersion) requestBody.sd_version = config.sdVersion;
     if (config.tiling !== undefined) requestBody.tiling = config.tiling;
 
+    console.log('Leonardo API request:', JSON.stringify(requestBody, null, 2));
+
     const response = await fetch(`${this.baseUrl}/generations`, {
       method: 'POST',
       headers: {
@@ -82,8 +84,15 @@ export class LeonardoClient {
     });
 
     if (!response.ok) {
-      const error: LeonardoError = await response.json();
-      throw new Error(`Leonardo API error: ${error.message || response.statusText}`);
+      let errorDetails = `Status: ${response.status} ${response.statusText}`;
+      try {
+        const error = await response.json();
+        errorDetails = JSON.stringify(error, null, 2);
+        console.error('Leonardo API error response:', errorDetails);
+      } catch (e) {
+        console.error('Leonardo API error (unparseable response):', errorDetails);
+      }
+      throw new Error(`Leonardo API error: ${errorDetails}`);
     }
 
     const data = await response.json();
