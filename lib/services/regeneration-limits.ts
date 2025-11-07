@@ -171,7 +171,9 @@ export class RegenerationLimitsService {
       return 1; // Default to free tier limit
     }
 
-    return data.subscription_tiers?.avatar_regenerations_per_month || 1;
+    // Supabase returns related records as an object, not an array
+    const subscriptionTiers = data.subscription_tiers as any;
+    return subscriptionTiers?.avatar_regenerations_per_month || 1;
   }
 
   /**
