@@ -73,10 +73,10 @@ export async function GET() {
       available_tiers: allTiers,
       debug_info: {
         tier_has_new_columns: {
-          max_child_profiles: userProfile?.subscription_tiers?.max_child_profiles,
-          max_other_characters: userProfile?.subscription_tiers?.max_other_characters,
+          max_child_profiles: (userProfile?.subscription_tiers as any)?.max_child_profiles,
+          max_other_characters: (userProfile?.subscription_tiers as any)?.max_other_characters,
         },
-        tier_has_old_features: userProfile?.subscription_tiers?.features,
+        tier_has_old_features: (userProfile?.subscription_tiers as any)?.features,
       }
     })
   } catch (error: any) {
