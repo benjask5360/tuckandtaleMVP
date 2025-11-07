@@ -313,6 +313,13 @@ export async function GET(
         .eq('id', characterId);
 
       // Log cost
+      console.log('Logging API cost for generation:', {
+        userId: user.id,
+        characterId,
+        aiConfigName: avatarCache.ai_config_name,
+        creditCost: generation.creditCost,
+      });
+
       const aiConfig = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
       if (aiConfig) {
         await AIConfigService.logGenerationCost(
@@ -322,6 +329,9 @@ export async function GET(
           generation.creditCost || 1,
           { generation_id: generationId }
         );
+        console.log('API cost logged successfully');
+      } else {
+        console.error('Failed to get AI config for cost logging:', avatarCache.ai_config_name);
       }
 
       return NextResponse.json({
