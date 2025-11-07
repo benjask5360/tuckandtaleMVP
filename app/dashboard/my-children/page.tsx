@@ -104,7 +104,7 @@ export default function MyChildrenPage() {
     return age
   }
 
-  const maxChildren = userTier?.max_child_profiles ?? 1
+  const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
   const canAddMore = maxChildren === null || children.length < maxChildren
 
   if (loading) {

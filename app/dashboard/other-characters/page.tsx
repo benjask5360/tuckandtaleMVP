@@ -110,7 +110,7 @@ export default function OtherCharactersPage() {
     return config?.displayName || type
   }
 
-  const maxCharacters = userTier?.max_other_characters ?? 0
+  const maxCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
   const canAddMore = maxCharacters === null || characters.length < maxCharacters
 
   if (loading) {
