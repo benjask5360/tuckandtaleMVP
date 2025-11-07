@@ -12,6 +12,9 @@ interface ChildProfile {
   attributes: any
   is_primary: boolean
   created_at: string
+  avatar_cache?: {
+    image_url: string
+  } | null
 }
 
 export default function MyChildrenPage() {
@@ -37,7 +40,12 @@ export default function MyChildrenPage() {
 
       const { data, error } = await supabase
         .from('character_profiles')
-        .select('*')
+        .select(`
+          *,
+          avatar_cache:avatar_cache_id (
+            image_url
+          )
+        `)
         .eq('user_id', user.id)
         .eq('character_type', 'child')
         .is('deleted_at', null)
@@ -193,11 +201,21 @@ export default function MyChildrenPage() {
             {children.map(child => (
               <div key={child.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
                 <div className="p-6">
-                  {/* Avatar Placeholder */}
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-white">
-                      {child.name.charAt(0).toUpperCase()}
-                    </span>
+                  {/* Avatar */}
+                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                    {child.avatar_cache?.image_url ? (
+                      <img
+                        src={child.avatar_cache.image_url}
+                        alt={child.name}
+                        className="w-24 h-24 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full flex items-center justify-center">
+                        <span className="text-3xl font-bold text-white">
+                          {child.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Name & Primary Badge */}

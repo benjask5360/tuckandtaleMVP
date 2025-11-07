@@ -23,10 +23,15 @@ export default async function EditOtherCharacterPage({ params }: EditOtherCharac
     redirect('/auth/login')
   }
 
-  // Fetch the character profile
+  // Fetch the character profile with avatar
   const { data: characterProfile, error } = await supabase
     .from('character_profiles')
-    .select('*')
+    .select(`
+      *,
+      avatar_cache:avatar_cache_id (
+        image_url
+      )
+    `)
     .eq('id', params.id)
     .eq('user_id', user.id)
     .neq('character_type', 'child')

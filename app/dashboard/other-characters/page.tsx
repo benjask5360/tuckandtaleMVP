@@ -13,6 +13,9 @@ interface CharacterProfile {
   character_type: string
   attributes: any
   created_at: string
+  avatar_cache?: {
+    image_url: string
+  } | null
 }
 
 export default function OtherCharactersPage() {
@@ -38,7 +41,12 @@ export default function OtherCharactersPage() {
 
       const { data, error } = await supabase
         .from('character_profiles')
-        .select('*')
+        .select(`
+          *,
+          avatar_cache:avatar_cache_id (
+            image_url
+          )
+        `)
         .eq('user_id', user.id)
         .neq('character_type', 'child')
         .is('deleted_at', null)
@@ -208,10 +216,20 @@ export default function OtherCharactersPage() {
                 <div className="p-6">
                   {/* Avatar & Type Icon */}
                   <div className="relative">
-                    <div className="w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <span className="text-3xl font-bold text-white">
-                        {character.name.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                      {character.avatar_cache?.image_url ? (
+                        <img
+                          src={character.avatar_cache.image_url}
+                          alt={character.name}
+                          className="w-24 h-24 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full flex items-center justify-center">
+                          <span className="text-3xl font-bold text-white">
+                            {character.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="absolute top-0 right-1/4 transform translate-x-1/2 -translate-y-1">
                       <div className="bg-white rounded-full p-2 shadow-md text-purple-500">

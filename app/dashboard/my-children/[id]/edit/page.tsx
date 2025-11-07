@@ -23,10 +23,15 @@ export default async function EditChildPage({ params }: EditChildPageProps) {
     redirect('/auth/login')
   }
 
-  // Fetch the child profile
+  // Fetch the child profile with avatar
   const { data: childProfile, error } = await supabase
     .from('character_profiles')
-    .select('*')
+    .select(`
+      *,
+      avatar_cache:avatar_cache_id (
+        image_url
+      )
+    `)
     .eq('id', params.id)
     .eq('user_id', user.id)
     .eq('character_type', 'child')
