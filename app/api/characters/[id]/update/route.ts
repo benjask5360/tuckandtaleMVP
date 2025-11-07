@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { generateAIPrompt, generateAvatarPrompt } from '@/lib/descriptors/prompt-builder'
+import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
 
 function calculateAge(dateOfBirth: string): number | null {
   if (!dateOfBirth) return null
@@ -56,17 +58,42 @@ export async function PUT(
       )
     }
 
-    // Generate appearance description based on attributes
+    // Convert character_type to ProfileType for descriptor system
+    const profileType = character_type as ProfileType
+
+    // Build character selections from attributes
+    const selections: CharacterSelections = {
+      ...attributes,
+      age: attributes.age || calculateAge(attributes.dateOfBirth),
+    }
+
+    // Generate enhanced appearance description using descriptor system
     let appearance_description = `A ${character_type.replace('_', ' ')}`
-    if (attributes.age || attributes.dateOfBirth) {
-      const age = attributes.age || calculateAge(attributes.dateOfBirth)
-      appearance_description += ` ${age} years old`
-    }
-    if (attributes.hairColor) {
-      appearance_description += ` with ${attributes.hairColor} hair`
-    }
-    if (attributes.eyeColor) {
-      appearance_description += ` and ${attributes.eyeColor} eyes`
+    try {
+      const { prompt, enhancedDescriptors } = await generateAIPrompt({
+        profileType,
+        selections,
+        style: 'concise'
+      })
+      appearance_description = prompt
+
+      // Also generate avatar prompt for future use
+      const avatarPrompt = await generateAvatarPrompt(profileType, selections)
+      // Store avatar prompt in attributes for later use when Leonardo API is integrated
+      attributes._avatarPrompt = avatarPrompt
+    } catch (error) {
+      console.error('Error generating enhanced description:', error)
+      // Fallback to basic description if descriptor system fails
+      if (attributes.age || attributes.dateOfBirth) {
+        const age = attributes.age || calculateAge(attributes.dateOfBirth)
+        appearance_description += ` ${age} years old`
+      }
+      if (attributes.hairColor) {
+        appearance_description += ` with ${attributes.hairColor} hair`
+      }
+      if (attributes.eyeColor) {
+        appearance_description += ` and ${attributes.eyeColor} eyes`
+      }
     }
 
     // Update character in database
