@@ -83,7 +83,7 @@ export default function HomePage() {
       </section>
 
       {/* Stories Kids Actually Want Section */}
-      <section className="py-16 bg-blue-50">
+      <section className="py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -189,7 +189,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-blue-50">
+      <section className="py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -388,7 +388,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-blue-50">
+      <section className="py-16 bg-white">
         <div className="container-narrow section-padding text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Ready to create your first story?
