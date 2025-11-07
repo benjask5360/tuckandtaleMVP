@@ -52,10 +52,10 @@ export async function POST(request: Request) {
 
     const tier = userProfile?.subscription_tiers as any
 
-    // Check character limit based on type
+    // Check character limit based on type (null means unlimited, so only use defaults if undefined)
     const maxAllowed = character_type === 'child'
-      ? (tier?.max_child_profiles ?? 1)
-      : (tier?.max_other_characters ?? 0)
+      ? (tier?.max_child_profiles !== undefined ? tier.max_child_profiles : 1)
+      : (tier?.max_other_characters !== undefined ? tier.max_other_characters : 0)
 
     if (maxAllowed !== null) {
       // Count existing characters of this type

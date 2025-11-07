@@ -51,9 +51,9 @@ export default async function DashboardPage() {
 
   const primaryCharacter = children.find((c) => c.is_primary) || children[0]
 
-  // Calculate limits
-  const maxChildren = userTier?.max_child_profiles ?? 1
-  const maxOtherCharacters = userTier?.max_other_characters ?? 0
+  // Calculate limits (null means unlimited, so only use defaults if undefined)
+  const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
+  const maxOtherCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
