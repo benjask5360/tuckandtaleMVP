@@ -167,7 +167,7 @@ export default function DynamicCharacterForm({
           <div className="max-w-sm">
             <AvatarDisplay
               characterId={characterId || initialValues?.id}
-              currentAvatarUrl={null}
+              currentAvatarUrl={initialValues?.avatar_cache?.image_url || null}
               profileType={
                 characterType.category === 'child'
                   ? 'child'
