@@ -87,12 +87,12 @@ export async function POST(
 
     // Generate avatar prompt using existing prompt builder
     console.log('Character data for prompt:', {
-      profile_type: character.profile_type,
+      character_type: character.character_type,
       attributes: character.attributes,
     });
 
     const avatarPrompt = await generateAvatarPrompt(
-      character.profile_type,
+      character.character_type,
       {
         age: character.attributes?.age,
         gender: character.attributes?.gender,
@@ -121,6 +121,8 @@ export async function POST(
     const { generationId } = await leonardo.generateImage(leonardoConfig);
 
     // Create avatar cache entry
+    // Note: storage_path is set to 'pending' initially since image hasn't been uploaded yet
+    const fileName = `${characterId}/${generationId}.png`;
     const { data: avatarCache, error: cacheError } = await supabase
       .from('avatar_cache')
       .insert({
@@ -130,6 +132,8 @@ export async function POST(
         ai_config_id: aiConfig.id,
         ai_config_name: aiConfig.name,
         prompt_used: avatarPrompt,
+        storage_path: fileName, // Set the expected path upfront
+        image_url: '', // Will be set when processing completes
         processing_status: 'processing',
         generation_metadata: {
           config: leonardoConfig,
