@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { generateStoryPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
+import { generateAIPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
 import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
 
 function calculateAge(dateOfBirth: string): number | null {
@@ -99,8 +99,12 @@ export async function PUT(
     // Generate enhanced appearance description using descriptor system
     let appearance_description = `A ${character_type.replace('_', ' ')}`
     try {
-      const storyPrompt = await generateStoryPrompt(profileType, selections)
-      appearance_description = storyPrompt
+      const { prompt } = await generateAIPrompt({
+        profileType,
+        selections,
+        style: 'concise'
+      })
+      appearance_description = prompt
 
       // Also generate avatar prompt for future use
       const avatarPrompt = await generateAvatarPrompt(profileType, selections)
