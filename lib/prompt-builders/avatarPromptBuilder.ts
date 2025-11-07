@@ -22,79 +22,78 @@ export async function generateAvatarPrompt(
   profileType: ProfileType,
   selections: CharacterSelections
 ): Promise<string> {
+  console.log('Avatar prompt - Input:', { profileType, selections });
+
   const enhanced = await mapSelectionsToEnhanced(profileType, selections);
-  const parts: string[] = [];
+  console.log('Avatar prompt - Enhanced:', enhanced);
+
+  let prompt = '';
 
   switch (profileType) {
     case 'child':
     case 'storybook_character':
-      // Portrait style for human characters
-      parts.push('Portrait of a');
-
+      // Build base prompt
+      let baseChar = 'child';
       if (enhanced.gender) {
-        // Gender term is age-aware (e.g., "young boy", "middle-aged man")
-        parts.push(enhanced.gender);
+        baseChar = enhanced.gender; // e.g., "young boy"
       } else if (enhanced.age) {
-        parts.push(`${enhanced.age} child`);
-      } else {
-        parts.push('child');
+        baseChar = `${enhanced.age} child`;
       }
 
-      // Physical features in order of visual importance
-      if (enhanced.hair) {
-        parts.push(`with ${enhanced.hair} hair`);
-      }
-      if (enhanced.eyes) {
-        parts.push(`and ${enhanced.eyes} eyes`);
-      }
-      if (enhanced.skin) {
-        parts.push(`, ${enhanced.skin} skin`);
+      prompt = `Portrait of a ${baseChar}`;
+
+      // Add physical features
+      const features: string[] = [];
+      if (enhanced.hair) features.push(`${enhanced.hair} hair`);
+      if (enhanced.eyes) features.push(`${enhanced.eyes} eyes`);
+      if (enhanced.skin) features.push(`${enhanced.skin} skin`);
+
+      if (features.length > 0) {
+        prompt += ` with ${features.join(', ')}`;
       }
 
-      // Add style modifiers for better image generation
-      parts.push(', friendly expression, children\'s book illustration style');
+      prompt += ', friendly expression, warm smile, children\'s book illustration style, digital art, high quality';
       break;
 
     case 'pet':
-      // Full body for pets
-      parts.push('Cute');
+      const petType = enhanced.species || 'pet';
+      prompt = `Cute ${petType}`;
 
-      if (enhanced.species) {
-        parts.push(enhanced.species);
-      } else {
-        parts.push('pet');
+      const petFeatures: string[] = [];
+      if (enhanced.hair) petFeatures.push(`${enhanced.hair} fur`);
+      if (enhanced.eyes) petFeatures.push(`${enhanced.eyes} eyes`);
+
+      if (petFeatures.length > 0) {
+        prompt += ` with ${petFeatures.join(' and ')}`;
       }
 
-      if (enhanced.hair) {
-        parts.push(`with ${enhanced.hair} fur`);
-      }
-      if (enhanced.eyes) {
-        parts.push(`and ${enhanced.eyes} eyes`);
-      }
-
-      parts.push(', full body, friendly, children\'s book illustration style');
+      prompt += ', full body, friendly pose, children\'s book illustration style, digital art, high quality';
       break;
 
     case 'magical_creature':
-      // Fantasy style for magical creatures
-      parts.push('Magical');
+      const creatureType = enhanced.creature || 'creature';
+      prompt = `Magical ${creatureType}`;
 
-      if (enhanced.creature) {
-        parts.push(enhanced.creature);
-      } else {
-        parts.push('creature');
+      const magicFeatures: string[] = [];
+      if (enhanced.hair) magicFeatures.push(`${enhanced.hair} features`);
+      if (enhanced.eyes) magicFeatures.push(`${enhanced.eyes} eyes`);
+
+      if (magicFeatures.length > 0) {
+        prompt += ` with ${magicFeatures.join(' and ')}`;
       }
 
-      if (enhanced.hair) {
-        parts.push(`with ${enhanced.hair} features`);
-      }
-      if (enhanced.eyes) {
-        parts.push(`and ${enhanced.eyes} eyes`);
-      }
-
-      parts.push(', fantastical, whimsical, children\'s book illustration style');
+      prompt += ', fantastical, whimsical, enchanting, children\'s book illustration style, digital art, high quality';
       break;
+
+    default:
+      // Fallback for any unknown profile type
+      prompt = 'Portrait of a friendly character, children\'s book illustration style, digital art, high quality';
   }
 
-  return parts.join(' ');
+  console.log('Avatar prompt - Final:', prompt);
+
+  // Clean up any double spaces
+  prompt = prompt.replace(/\s+/g, ' ').trim();
+
+  return prompt;
 }

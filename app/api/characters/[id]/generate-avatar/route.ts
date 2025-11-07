@@ -108,12 +108,6 @@ export async function POST(
 
     console.log('Generated avatar prompt:', avatarPrompt);
 
-    // Validate prompt is not empty
-    if (!avatarPrompt || avatarPrompt.trim().length === 0) {
-      console.error('Empty prompt generated, using fallback');
-      throw new Error('Unable to generate valid prompt from character data');
-    }
-
     // Initialize Leonardo client
     const leonardo = new LeonardoClient();
 
