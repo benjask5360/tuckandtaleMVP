@@ -42,9 +42,9 @@ export async function POST(
     // Get character profile
     const { data: character, error: characterError } = await supabase
       .from('character_profiles')
-      .select('*, user_profiles!inner(*)')
+      .select('*')
       .eq('id', characterId)
-      .eq('user_profiles.id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (characterError || !character) {
