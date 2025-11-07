@@ -142,6 +142,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
+      id: character.id,
       character,
       message: 'Character created successfully',
     })

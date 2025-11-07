@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CharacterTypeConfig } from '@/lib/character-types'
 import FieldRenderer from './fields/FieldRenderer'
 import { useRouter } from 'next/navigation'
+import { AvatarDisplay } from '@/components/AvatarDisplay'
 
 interface DynamicCharacterFormProps {
   characterType: CharacterTypeConfig
@@ -22,6 +23,9 @@ export default function DynamicCharacterForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null)
+  const [characterId, setCharacterId] = useState<string | null>(initialValues?.id || null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialValues?.avatar_url || null)
+  const [showAvatarGenerator, setShowAvatarGenerator] = useState(false)
   const router = useRouter()
 
   // Calculate age from date of birth
@@ -60,7 +64,8 @@ export default function DynamicCharacterForm({
       const submitData = {
         name: formData.name,
         character_type: characterType.id,
-        attributes: { ...formData }
+        attributes: { ...formData },
+        avatar_url: avatarUrl // Include avatar URL if available
       }
 
       // If it's a child and we have DOB, add calculated age
@@ -90,17 +95,41 @@ export default function DynamicCharacterForm({
           throw new Error(data.error || 'Failed to save character')
         }
 
-        // Redirect based on character type
-        if (characterType.category === 'child') {
-          router.push('/dashboard/my-children')
-        } else {
-          router.push('/dashboard/other-characters')
+        const responseData = await response.json()
+
+        // If creating new character, store the ID for avatar generation
+        if (!isEditing && responseData.id) {
+          setCharacterId(responseData.id)
+          // Show avatar generation after successful creation
+          setShowAvatarGenerator(true)
+        }
+
+        // Don't redirect immediately if showing avatar generator
+        if (!showAvatarGenerator) {
+          // Redirect based on character type
+          if (characterType.category === 'child') {
+            router.push('/dashboard/my-children')
+          } else {
+            router.push('/dashboard/other-characters')
+          }
         }
       }
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAvatarGenerated = (newAvatarUrl: string) => {
+    setAvatarUrl(newAvatarUrl)
+    // Update the character with the new avatar URL
+    if (characterId) {
+      fetch(`/api/characters/${characterId}/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar_url: newAvatarUrl })
+      }).catch(err => console.error('Failed to update avatar URL:', err))
     }
   }
 
@@ -139,15 +168,37 @@ export default function DynamicCharacterForm({
         </div>
       ))}
 
+      {/* Avatar Generation Section */}
+      {(characterId || (isEditing && initialValues?.id)) && (
+        <div className="border-t border-neutral-200 pt-6">
+          <h3 className="text-lg font-bold text-neutral-800 mb-4">Character Avatar</h3>
+          <div className="max-w-sm">
+            <AvatarDisplay
+              characterId={characterId || initialValues?.id}
+              currentAvatarUrl={avatarUrl}
+              profileType={
+                characterType.category === 'child'
+                  ? 'child'
+                  : characterType.id === 'pet'
+                  ? 'pet'
+                  : characterType.id === 'magical_creature'
+                  ? 'magical_creature'
+                  : 'storybook_character'
+              }
+              onAvatarGenerated={handleAvatarGenerated}
+              isNew={!isEditing}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex gap-4 pt-6">
-        <button
-          type="button"
-          disabled={loading}
-          className="px-8 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
-        >
-          Generate Avatar (Coming Soon)
-        </button>
+        {!characterId && !isEditing && (
+          <div className="text-sm text-neutral-600">
+            Save the profile first to generate an avatar
+          </div>
+        )}
 
         <button
           type="submit"
@@ -156,6 +207,23 @@ export default function DynamicCharacterForm({
         >
           {loading ? 'Saving...' : isEditing ? 'Update Profile' : 'Save Profile'}
         </button>
+
+        {showAvatarGenerator && characterId && (
+          <button
+            type="button"
+            onClick={() => {
+              // Redirect after avatar generation
+              if (characterType.category === 'child') {
+                router.push('/dashboard/my-children')
+              } else {
+                router.push('/dashboard/other-characters')
+              }
+            }}
+            className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
+          >
+            Continue to Dashboard
+          </button>
+        )}
       </div>
     </form>
   )

@@ -33,9 +33,10 @@ export async function PUT(
     }
 
     // Parse request body
-    const { name, character_type, attributes } = await request.json()
+    const { name, character_type, attributes, avatar_url } = await request.json()
 
-    if (!name || !character_type) {
+    // Allow partial updates for avatar_url
+    if (!avatar_url && (!name || !character_type)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -56,6 +57,34 @@ export async function PUT(
         { error: 'Character not found or unauthorized' },
         { status: 404 }
       )
+    }
+
+    // Handle avatar_url only update
+    if (avatar_url && !name && !character_type) {
+      const { data: character, error: updateError } = await supabase
+        .from('character_profiles')
+        .update({
+          avatar_url,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', params.id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.error('Error updating avatar URL:', updateError)
+        return NextResponse.json(
+          { error: 'Failed to update avatar URL' },
+          { status: 500 }
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        character,
+        message: 'Avatar URL updated successfully',
+      })
     }
 
     // Convert character_type to ProfileType for descriptor system
@@ -96,15 +125,21 @@ export async function PUT(
       }
     }
 
-    // Update character in database
+    // Update character in database - include avatar_url if provided
+    const updateData: any = {
+      character_type,
+      name,
+      attributes,
+      appearance_description,
+    }
+
+    if (avatar_url) {
+      updateData.avatar_url = avatar_url
+    }
+
     const { data: character, error: updateError } = await supabase
       .from('character_profiles')
-      .update({
-        character_type,
-        name,
-        attributes,
-        appearance_description,
-      })
+      .update(updateData)
       .eq('id', params.id)
       .eq('user_id', user.id)
       .select()
