@@ -18,6 +18,7 @@ export default function EditOtherCharacterForm({ characterType, characterProfile
   const initialValues = {
     id: characterProfile.id,
     name: characterProfile.name,
+    avatar_cache: characterProfile.avatar_cache,
     ...characterProfile.attributes
   }
 

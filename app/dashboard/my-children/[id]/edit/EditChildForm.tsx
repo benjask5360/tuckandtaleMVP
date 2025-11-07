@@ -18,6 +18,7 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
   const initialValues = {
     id: childProfile.id,
     name: childProfile.name,
+    avatar_cache: childProfile.avatar_cache,
     ...childProfile.attributes
   }
 
