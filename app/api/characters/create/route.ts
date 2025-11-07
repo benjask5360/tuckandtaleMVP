@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { generateAIPrompt, generateAvatarPrompt } from '@/lib/descriptors/prompt-builder'
+import { generateStoryPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
 import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
 
 function calculateAge(dateOfBirth: string): number | null {
@@ -88,16 +88,12 @@ export async function POST(request: Request) {
     // Generate enhanced appearance description using descriptor system
     let appearance_description = `A ${character_type.replace('_', ' ')}`
     try {
-      const { prompt, enhancedDescriptors } = await generateAIPrompt({
-        profileType,
-        selections,
-        style: 'concise'
-      })
-      appearance_description = prompt
+      const storyPrompt = await generateStoryPrompt(profileType, selections)
+      appearance_description = storyPrompt
 
       // Also generate avatar prompt for future use
       const avatarPrompt = await generateAvatarPrompt(profileType, selections)
-      // Store avatar prompt in attributes for later use when Leonardo API is integrated
+      // Store avatar prompt in attributes for later use
       attributes._avatarPrompt = avatarPrompt
     } catch (error) {
       console.error('Error generating enhanced description:', error)
