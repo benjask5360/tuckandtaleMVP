@@ -41,19 +41,31 @@ export default function OtherCharactersPage() {
 
       const { data, error } = await supabase
         .from('character_profiles')
-        .select(`
-          *,
-          avatar_cache!avatar_cache_id (
-            image_url
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .neq('character_type', 'child')
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
 
       if (error) throw error
-      setCharacters(data || [])
+
+      // Manually fetch avatars for each character
+      const charactersWithAvatars = await Promise.all(
+        (data || []).map(async (character) => {
+          if (character.avatar_cache_id) {
+            const { data: avatar } = await supabase
+              .from('avatar_cache')
+              .select('image_url')
+              .eq('id', character.avatar_cache_id)
+              .single()
+
+            return { ...character, avatar_cache: avatar }
+          }
+          return { ...character, avatar_cache: null }
+        })
+      )
+
+      setCharacters(charactersWithAvatars)
     } catch (err: any) {
       setError(err.message)
     } finally {

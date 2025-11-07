@@ -23,15 +23,10 @@ export default async function EditChildPage({ params }: EditChildPageProps) {
     redirect('/auth/login')
   }
 
-  // Fetch the child profile with avatar
+  // Fetch the child profile
   const { data: childProfile, error } = await supabase
     .from('character_profiles')
-    .select(`
-      *,
-      avatar_cache!avatar_cache_id (
-        image_url
-      )
-    `)
+    .select('*')
     .eq('id', params.id)
     .eq('user_id', user.id)
     .eq('character_type', 'child')
@@ -40,6 +35,17 @@ export default async function EditChildPage({ params }: EditChildPageProps) {
 
   if (error || !childProfile) {
     notFound()
+  }
+
+  // Manually fetch avatar if it exists
+  if (childProfile.avatar_cache_id) {
+    const { data: avatar } = await supabase
+      .from('avatar_cache')
+      .select('image_url')
+      .eq('id', childProfile.avatar_cache_id)
+      .single()
+
+    childProfile.avatar_cache = avatar
   }
 
   const childType = getCharacterTypeById('child')

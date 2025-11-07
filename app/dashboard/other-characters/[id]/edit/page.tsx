@@ -23,15 +23,10 @@ export default async function EditOtherCharacterPage({ params }: EditOtherCharac
     redirect('/auth/login')
   }
 
-  // Fetch the character profile with avatar
+  // Fetch the character profile
   const { data: characterProfile, error } = await supabase
     .from('character_profiles')
-    .select(`
-      *,
-      avatar_cache!avatar_cache_id (
-        image_url
-      )
-    `)
+    .select('*')
     .eq('id', params.id)
     .eq('user_id', user.id)
     .neq('character_type', 'child')
@@ -40,6 +35,17 @@ export default async function EditOtherCharacterPage({ params }: EditOtherCharac
 
   if (error || !characterProfile) {
     notFound()
+  }
+
+  // Manually fetch avatar if it exists
+  if (characterProfile.avatar_cache_id) {
+    const { data: avatar } = await supabase
+      .from('avatar_cache')
+      .select('image_url')
+      .eq('id', characterProfile.avatar_cache_id)
+      .single()
+
+    characterProfile.avatar_cache = avatar
   }
 
   const characterType = getCharacterTypeById(characterProfile.character_type)

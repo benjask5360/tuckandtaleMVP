@@ -40,19 +40,31 @@ export default function MyChildrenPage() {
 
       const { data, error } = await supabase
         .from('character_profiles')
-        .select(`
-          *,
-          avatar_cache!avatar_cache_id (
-            image_url
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('character_type', 'child')
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
 
       if (error) throw error
-      setChildren(data || [])
+
+      // Manually fetch avatars for each character
+      const childrenWithAvatars = await Promise.all(
+        (data || []).map(async (child) => {
+          if (child.avatar_cache_id) {
+            const { data: avatar } = await supabase
+              .from('avatar_cache')
+              .select('image_url')
+              .eq('id', child.avatar_cache_id)
+              .single()
+
+            return { ...child, avatar_cache: avatar }
+          }
+          return { ...child, avatar_cache: null }
+        })
+      )
+
+      setChildren(childrenWithAvatars)
     } catch (err: any) {
       setError(err.message)
     } finally {
