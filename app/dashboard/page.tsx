@@ -67,10 +67,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-16 md:pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-16 md:pt-20">
 
         {/* Header - Centered and mobile-optimized */}
-        <div className="mb-6 md:mb-8 text-center">
+        <div className="mb-3 md:mb-4 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-gray-900 mb-2 md:mb-3">
             Welcome back, {firstName}!
           </h1>
@@ -78,7 +78,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Subscription Plan Badge - Centered and mobile-optimized */}
-        <div className="mb-6 md:mb-8 flex justify-center">
+        <div className="mb-4 md:mb-6 flex justify-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
             <span className="font-semibold">{userTier.display_name} Plan</span>
             <span className="hidden sm:inline">•</span>
@@ -90,7 +90,7 @@ export default async function DashboardPage() {
 
         {/* Create Story CTA - Mobile-optimized */}
         {primaryCharacter ? (
-          <button className="w-full mb-10 md:mb-12 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px]">
+          <button className="w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px]">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
                 <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center shadow-soft flex-shrink-0">
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
             </div>
           </button>
         ) : (
-          <div className="w-full mb-10 md:mb-12 p-6 md:p-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl md:rounded-3xl border-2 border-yellow-300 shadow-soft">
+          <div className="w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl md:rounded-3xl border-2 border-yellow-300 shadow-soft">
             <div className="text-center">
               <p className="text-yellow-900 font-semibold text-base md:text-lg mb-4">Add a child profile first to create stories</p>
               <Link
