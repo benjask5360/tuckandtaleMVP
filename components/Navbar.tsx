@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { Settings } from 'lucide-react'
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -49,13 +50,25 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Login/Dashboard Button */}
+          {/* Auth Actions */}
           {isAuthenticated ? (
-            <Link href="/dashboard">
-              <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
-                Dashboard
-              </button>
-            </Link>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link
+                href="/dashboard/settings"
+                className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 text-neutral-700" />
+              </Link>
+              <form action="/auth/signout" method="post" className="inline">
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-neutral-700 hover:bg-white/50 rounded-lg transition-colors font-medium text-sm sm:text-base"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </div>
           ) : (
             <Link href="/auth/login">
               <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
