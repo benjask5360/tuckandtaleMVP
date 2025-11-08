@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Edit, Trash2, Star, Dog, Sparkles } from 'lucide-react'
+import { Plus, Edit, Trash2, Star, Dog, Sparkles, Settings, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getCharacterTypeById } from '@/lib/character-types'
 
@@ -148,12 +148,31 @@ export default function OtherCharactersPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
-          >
-            ← Back to Dashboard
-          </Link>
+          <div className="flex justify-between items-center mb-4">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              ← Back to Dashboard
+            </Link>
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard/settings"
+                className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 text-neutral-700" />
+              </Link>
+              <form action="/auth/signout" method="post" className="inline">
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-neutral-700 hover:bg-white/50 rounded-lg transition-colors font-medium"
+                >
+                  Sign Out
+                </button>
+              </form>
+            </div>
+          </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-8">
             <div className="flex justify-between items-center">
@@ -314,6 +333,28 @@ export default function OtherCharactersPage() {
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer className="py-8 bg-white border-t border-neutral-200 mt-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col items-center gap-4 text-sm text-neutral-600">
+            <p className="flex items-center gap-1 text-primary-500">
+              Made with <Heart className="w-4 h-4 fill-red-500 text-red-500" /> for little dreamers everywhere
+            </p>
+            <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
+              <p className="text-center md:text-left">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-6 gap-y-3 text-center md:text-left">
+                <a href="#" className="hover:text-primary-500 transition-colors">About</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Contact Us</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">FAQ</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Founder Parents</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Terms of Service</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
