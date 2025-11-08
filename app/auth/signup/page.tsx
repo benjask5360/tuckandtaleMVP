@@ -161,8 +161,8 @@ export default function SignupPage() {
             </div>
           </Link>
 
-          <div className="card p-10 shadow-xl">
-            <h2 className="text-3xl font-display font-bold text-gray-900 mb-8 text-center">Create Your Account</h2>
+          <div className="card p-6 md:p-10">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6 md:mb-8 text-center">Create Your Account</h2>
 
             <form onSubmit={handleSignup} className="space-y-6">
               {error && (
