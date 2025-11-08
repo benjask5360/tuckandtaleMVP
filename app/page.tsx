@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section - Mobile-optimized */}
-      <section className="relative overflow-hidden bg-gradient-bg-warm py-12 md:py-16 lg:py-20 pt-18">
+      <section className="relative overflow-hidden bg-gradient-bg-warm py-12 md:py-16 lg:py-20 pt-16">
         <div className="absolute inset-0 gradient-mesh opacity-40"></div>
         <div className="container-narrow section-padding relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
