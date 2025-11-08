@@ -298,21 +298,21 @@ export default function MyChildrenPage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-12 bg-gray-900 text-gray-300 mt-20">
+      <footer className="py-12 bg-white border-t border-gray-200 mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
-            <p className="flex items-center gap-2 text-lg">
+            <p className="flex items-center gap-2 text-lg text-gray-700">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
-              <p className="text-center md:text-left text-gray-400">© 2024 Tuck and Tale™. All rights reserved.</p>
-              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left">
-                <a href="#" className="hover:text-primary-400 transition-colors">About</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Contact Us</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">FAQ</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Founder Parents</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-primary-400 transition-colors">Terms of Service</a>
+              <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
+                <a href="#" className="hover:text-primary-600 transition-colors">About</a>
+                <a href="#" className="hover:text-primary-600 transition-colors">Contact Us</a>
+                <a href="#" className="hover:text-primary-600 transition-colors">FAQ</a>
+                <a href="#" className="hover:text-primary-600 transition-colors">Founder Parents</a>
+                <a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a>
               </nav>
             </div>
           </div>
