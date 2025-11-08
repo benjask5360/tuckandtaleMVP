@@ -325,14 +325,22 @@ export default function MyChildrenPage() {
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
               <p className="text-center md:text-left">© 2024 Tuck and Tale™. All rights reserved.</p>
-              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-6 gap-y-3 text-center md:text-left">
-                <a href="#" className="hover:text-primary-500 transition-colors">About</a>
-                <a href="#" className="hover:text-primary-500 transition-colors">Contact Us</a>
-                <a href="#" className="hover:text-primary-500 transition-colors">FAQ</a>
-                <a href="#" className="hover:text-primary-500 transition-colors">Founder Parents</a>
-                <a href="#" className="hover:text-primary-500 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-primary-500 transition-colors">Terms of Service</a>
-              </nav>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/dashboard/settings"
+                  className="hover:text-primary-500 transition-colors font-medium"
+                >
+                  Settings
+                </Link>
+                <form action="/auth/signout" method="post" className="inline">
+                  <button
+                    type="submit"
+                    className="hover:text-primary-500 transition-colors font-medium"
+                  >
+                    Sign Out
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
