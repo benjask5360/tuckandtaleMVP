@@ -245,7 +245,7 @@ export default function MyChildrenPage() {
 
                 <div className="flex flex-col items-center">
                   {/* Large Square Avatar */}
-                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-md">
                     {child.avatar_cache?.image_url ? (
                       <img
                         src={child.avatar_cache.image_url}

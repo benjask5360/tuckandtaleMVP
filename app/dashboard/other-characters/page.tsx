@@ -258,7 +258,7 @@ export default function OtherCharactersPage() {
 
                 <div className="flex flex-col items-center">
                   {/* Large Square Avatar */}
-                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-sm">
+                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-white shadow-md">
                     {character.avatar_cache?.image_url ? (
                       <img
                         src={character.avatar_cache.image_url}
