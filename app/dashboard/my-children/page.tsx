@@ -139,9 +139,9 @@ export default function MyChildrenPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-16 md:pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
         {/* Header */}
-        <div className="mb-6 md:mb-8">
+        <div className="mb-4 md:mb-6">
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
