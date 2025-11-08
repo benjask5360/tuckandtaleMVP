@@ -388,8 +388,8 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-gray-200">
-        <div className="container-narrow section-padding">
+      <footer className="py-12 bg-white border-t border-gray-200 mt-20">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
             <p className="flex items-center gap-2 text-lg text-gray-700">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
