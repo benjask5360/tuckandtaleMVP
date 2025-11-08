@@ -27,11 +27,11 @@ export default function Navbar() {
   }, [])
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-gray-200/60 shadow-soft">
       <div className="container-narrow section-padding">
         <div className="flex items-center justify-between h-20">
           {/* Logo and Brand */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 hover:opacity-90 transition-all hover:scale-[1.02]">
             <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
               <Image
                 src="/images/logo.png"
@@ -43,27 +43,27 @@ export default function Navbar() {
               />
             </div>
             <div className="flex items-start gap-0.5">
-              <span className="gradient-text whitespace-nowrap" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
+              <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
                 Tuck and Tale
               </span>
-              <span className="gradient-text" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
+              <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
             </div>
           </Link>
 
           {/* Auth Actions */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 href="/dashboard/settings"
-                className="p-2 hover:bg-white/50 rounded-lg transition-colors"
+                className="p-2.5 hover:bg-primary-50 rounded-xl transition-all hover:scale-105"
                 aria-label="Settings"
               >
-                <Settings className="w-5 h-5 text-neutral-700" />
+                <Settings className="w-5 h-5 text-gray-700 hover:text-primary-600 transition-colors" />
               </Link>
               <form action="/auth/signout" method="post" className="inline">
                 <button
                   type="submit"
-                  className="px-3 py-1.5 sm:px-4 sm:py-2 text-neutral-700 hover:bg-white/50 rounded-lg transition-colors font-medium text-sm sm:text-base"
+                  className="btn-ghost btn-sm"
                 >
                   Sign Out
                 </button>
@@ -71,7 +71,7 @@ export default function Navbar() {
             </div>
           ) : (
             <Link href="/auth/login">
-              <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
+              <button className="btn-primary btn-sm">
                 Login
               </button>
             </Link>

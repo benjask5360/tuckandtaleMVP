@@ -53,15 +53,15 @@ export default function LoginPage() {
       title="Welcome Back!"
       subtitle="Login to continue your story adventures"
     >
-      <form onSubmit={handleLogin} className="space-y-5">
+      <form onSubmit={handleLogin} className="space-y-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl text-sm font-medium">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 mb-2">
+          <label htmlFor="email" className="label">
             Email
           </label>
           <input
@@ -70,17 +70,17 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-blue-50 border-0 rounded-xl focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-neutral-900 placeholder-neutral-500"
-            placeholder="ben@novapointai.com"
+            className="input"
+            placeholder="you@example.com"
           />
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label htmlFor="password" className="block text-sm font-semibold text-neutral-700">
+            <label htmlFor="password" className="label">
               Password
             </label>
-            <Link href="/auth/reset-password" className="text-sm text-blue-500 hover:text-blue-600 font-medium">
+            <Link href="/auth/reset-password" className="text-sm text-primary-600 hover:text-primary-700 font-semibold transition-colors">
               Forgot password?
             </Link>
           </div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-blue-50 border-0 rounded-xl focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-neutral-900"
+            className="input"
             placeholder="••••••••"
           />
         </div>
@@ -98,28 +98,14 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-8 py-4 text-white font-semibold rounded-3xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
-          style={{
-            background: 'linear-gradient(135deg, #4AC5FF 0%, #2D5BFF 100%)',
-            boxShadow: '0 8px 24px rgba(45, 91, 255, 0.3)'
-          }}
-          onMouseEnter={(e) => {
-            if (!loading) {
-              e.currentTarget.style.boxShadow = '0 12px 32px rgba(45, 91, 255, 0.4)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading) {
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(45, 91, 255, 0.3)'
-            }
-          }}
+          className="btn-primary btn-lg w-full"
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
 
-        <p className="text-center text-sm text-neutral-600">
+        <p className="text-center text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link href="/auth/signup" className="text-blue-500 hover:text-blue-600 font-semibold">
+          <Link href="/auth/signup" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
             Sign up
           </Link>
         </p>
