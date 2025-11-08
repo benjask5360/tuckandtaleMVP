@@ -52,39 +52,39 @@ export default async function EditOtherCharacterPage({ params }: EditOtherCharac
 
   if (!characterType) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-red-600">Configuration error: Character type not found</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="card p-6 md:p-8 max-w-md">
+          <p className="text-red-600 font-medium text-center">Configuration error: Character type not found</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4 md:mb-6">
           <Link
             href="/dashboard/other-characters"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
+            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Other Characters
           </Link>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+          <div className="card p-6 md:p-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-2">
               Edit {characterProfile.name}'s Profile
             </h1>
-            <p className="text-neutral-600">
+            <p className="text-base md:text-lg text-gray-600">
               Update this character's profile information
             </p>
           </div>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
+        <div className="card p-6 md:p-8">
           <EditOtherCharacterForm
             characterType={characterType}
             characterProfile={characterProfile}

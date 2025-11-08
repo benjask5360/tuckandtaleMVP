@@ -16,40 +16,40 @@ export default function CreateOtherCharacterPage() {
 
   if (!otherTypes || otherTypes.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-red-600">Configuration error: No character types found</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="card p-6 md:p-8 max-w-md">
+          <p className="text-red-600 font-medium text-center">Configuration error: No character types found</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-4 md:mb-6">
           <Link
             href="/dashboard/other-characters"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
+            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Other Characters
           </Link>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+          <div className="card p-6 md:p-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-2">
               Add a Character
             </h1>
-            <p className="text-neutral-600">
+            <p className="text-base md:text-lg text-gray-600">
               Create magical friends for your stories
             </p>
           </div>
         </div>
 
         {/* Character Type Selector */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-3">
+        <div className="card p-6 md:p-8 mb-6 md:mb-8">
+          <h3 className="text-sm md:text-base font-bold text-gray-900 mb-4">
             Choose Character Type
           </h3>
           <div className="flex flex-wrap gap-3">
@@ -59,10 +59,10 @@ export default function CreateOtherCharacterPage() {
                 type="button"
                 onClick={() => setSelectedType(type)}
                 className={`
-                  px-6 py-3 rounded-xl font-medium transition-all duration-200
+                  px-5 py-3 rounded-xl font-semibold transition-all duration-200 min-h-[44px]
                   ${selectedType?.id === type.id
-                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
-                    : 'bg-white border-2 border-neutral-200 text-neutral-700 hover:border-blue-300 hover:shadow-md'
+                    ? 'bg-gradient-primary text-white shadow-blue-glow scale-105'
+                    : 'bg-white border-2 border-gray-200 text-gray-700 active:border-primary-300 active:shadow-md md:hover:border-primary-300 md:hover:shadow-md'
                   }
                 `}
               >
@@ -74,7 +74,7 @@ export default function CreateOtherCharacterPage() {
 
         {/* Form */}
         {selectedType && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="card p-6 md:p-8">
             <DynamicCharacterForm
               key={selectedType.id} // Force re-render when type changes
               characterType={selectedType}

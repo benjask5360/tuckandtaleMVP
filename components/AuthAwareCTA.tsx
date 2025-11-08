@@ -10,7 +10,7 @@ interface AuthAwareCTAProps {
   children?: React.ReactNode
 }
 
-export default function AuthAwareCTA({ className = "btn-primary btn-lg group", children }: AuthAwareCTAProps) {
+export default function AuthAwareCTA({ className = "btn-primary btn-xl group", children }: AuthAwareCTAProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()

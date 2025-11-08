@@ -12,8 +12,10 @@ export default function CharacterOnboarding() {
 
   if (!childType) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 flex items-center justify-center">
-        <p className="text-red-600">Configuration error: Child character type not found</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="card p-6 md:p-8 max-w-md">
+          <p className="text-red-600 font-medium text-center">Configuration error: Child character type not found</p>
+        </div>
       </div>
     )
   }
@@ -40,34 +42,34 @@ export default function CharacterOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-6 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-3xl">
         {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-[60px] h-[60px] relative flex-shrink-0">
+        <Link href="/" className="flex items-center justify-center gap-2 mb-6 md:mb-8 min-h-[44px] hover:opacity-80 transition-opacity">
+          <div className="w-[60px] h-[60px] md:w-[70px] md:h-[70px] relative flex-shrink-0">
             <Image
               src="/images/logo.png"
               alt="Tuck and Tale Logo"
-              width={60}
-              height={60}
+              width={70}
+              height={70}
               className="object-contain"
               priority
             />
           </div>
           <div className="flex items-start gap-0.5">
-            <span className="gradient-text whitespace-nowrap" style={{ fontWeight: 800, fontSize: '2rem' }}>
+            <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
               Tuck and Tale
             </span>
-            <span className="gradient-text" style={{ fontWeight: 800, fontSize: '1.5rem' }}>™</span>
+            <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.75vw, 1.5rem)' }}>™</span>
           </div>
         </Link>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-neutral-900 mb-3">
+        <div className="card p-6 md:p-8 lg:p-10">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-3">
               Let's Create Your Child's Profile
             </h1>
-            <p className="text-neutral-600">
+            <p className="text-base md:text-lg text-gray-600">
               Just a few details to personalize their magical stories
             </p>
           </div>

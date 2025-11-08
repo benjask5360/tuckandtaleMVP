@@ -10,10 +10,10 @@ interface AuthCardProps {
 
 export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-blue-50 py-16">
-      <div className="w-full max-w-lg px-4 relative z-10">
+    <section className="relative min-h-screen flex items-center justify-center bg-gray-50 py-12 md:py-16">
+      <div className="w-full max-w-lg px-4 sm:px-6 relative z-10">
         {/* Logo/Brand */}
-        <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity mb-8">
+        <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity mb-6 md:mb-8 min-h-[44px]">
           <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
             <Image
               src="/images/logo.png"
@@ -25,27 +25,27 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
             />
           </div>
           <div className="flex items-start gap-0.5">
-            <span className="gradient-text whitespace-nowrap" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
+            <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
               Tuck and Tale
             </span>
-            <span className="gradient-text" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
+            <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
           </div>
         </Link>
 
         {/* Title and Subtitle outside white box */}
-        <div className="text-center mb-6">
-          <h1 className="font-display text-3xl font-bold gradient-text mb-2">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-neutral-600">
+            <p className="text-base md:text-lg text-gray-600">
               {subtitle}
             </p>
           )}
         </div>
 
         {/* White card with form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="card p-6 md:p-8">
           {children}
         </div>
 
@@ -53,7 +53,7 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="text-sm text-blue-500 hover:text-blue-600 font-medium inline-flex items-center gap-1"
+            className="text-sm md:text-base text-primary-600 hover:text-primary-700 font-semibold inline-flex items-center gap-1 transition-colors min-h-[44px]"
           >
             ← Back to Home
           </Link>

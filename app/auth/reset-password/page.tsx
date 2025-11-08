@@ -33,41 +33,42 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="card p-6 md:p-8">
           {/* Logo */}
-          <div className="flex justify-center mb-8">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-16 h-16 relative">
+          <div className="flex justify-center mb-6 md:mb-8">
+            <Link href="/" className="flex items-center gap-2 min-h-[44px] hover:opacity-80 transition-opacity">
+              <div className="w-14 h-14 md:w-16 md:h-16 relative">
                 <Image
                   src="/images/logo.png"
                   alt="Tuck and Tale Logo"
                   width={64}
                   height={64}
                   className="object-contain"
+                  priority
                 />
               </div>
-              <span className="gradient-text text-3xl font-bold">
+              <span className="gradient-text text-2xl md:text-3xl font-display font-extrabold">
                 Tuck and Tale™
               </span>
             </Link>
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl font-bold text-center text-neutral-900 mb-2">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-center text-gray-900 mb-2">
             Reset Your Password
           </h1>
-          <p className="text-center text-neutral-600 mb-8">
+          <p className="text-center text-base md:text-lg text-gray-600 mb-6 md:mb-8">
             Enter your email and we'll send you a link to reset your password
           </p>
 
           {/* Alert Messages */}
           {message && (
-            <div className={`p-4 rounded-lg mb-6 ${
+            <div className={`px-5 py-4 rounded-2xl mb-6 border-2 font-medium ${
               message.type === 'success'
-                ? 'bg-green-50 text-green-800 border border-green-200'
-                : 'bg-red-50 text-red-600 border border-red-200'
+                ? 'bg-green-50 text-green-700 border-green-200'
+                : 'bg-red-50 text-red-700 border-red-200'
             }`}>
               {message.text}
             </div>
@@ -76,7 +77,7 @@ export default function ResetPasswordPage() {
           {/* Form */}
           <form onSubmit={handleResetPassword} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-neutral-700 mb-2">
+              <label htmlFor="email" className="label">
                 Email
               </label>
               <input
@@ -85,7 +86,7 @@ export default function ResetPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 bg-blue-50 border-0 rounded-xl focus:ring-2 focus:ring-primary-400 focus:bg-white transition-all text-neutral-900 placeholder-neutral-500"
+                className="input"
                 placeholder="your@email.com"
               />
             </div>
@@ -93,17 +94,17 @@ export default function ResetPasswordPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary btn-lg w-full"
             >
               {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
 
           {/* Links */}
-          <div className="mt-8 text-center">
-            <p className="text-neutral-600">
+          <div className="mt-6 md:mt-8 text-center">
+            <p className="text-sm md:text-base text-gray-600">
               Remember your password?{' '}
-              <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link href="/auth/login" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
                 Back to Login
               </Link>
             </p>
