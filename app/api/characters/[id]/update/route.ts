@@ -77,7 +77,7 @@ export async function PUT(
       })
       appearance_description = prompt
 
-      // Also generate avatar prompt for future use
+        // Also generate avatar prompt for future use
       const avatarPrompt = await generateAvatarPrompt(profileType, selections)
       // Store avatar prompt in attributes for later use
       attributes._avatarPrompt = avatarPrompt
@@ -96,13 +96,17 @@ export async function PUT(
       }
     }
 
+    // Remove avatar_cache from attributes - it's managed separately via avatar_cache_id
+    // This prevents the form from overwriting the avatar relationship
+    const { avatar_cache, ...cleanAttributes } = attributes
+
     // Update character in database
     const { data: character, error: updateError } = await supabase
       .from('character_profiles')
       .update({
         character_type,
         name,
-        attributes,
+        attributes: cleanAttributes,
         appearance_description,
       })
       .eq('id', params.id)

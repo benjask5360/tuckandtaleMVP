@@ -22,6 +22,9 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
     ...childProfile.attributes
   }
 
+  // Extract base URL without query params for key
+  const avatarKeyUrl = childProfile.avatar_cache?.image_url?.split('?')[0] || childProfile.id
+
   const handleSubmit = async (data: any) => {
     try {
       const response = await fetch(`/api/characters/${childProfile.id}/update`, {
@@ -35,8 +38,8 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
         throw new Error(errorData.error || 'Failed to update profile')
       }
 
-      router.push('/dashboard/my-children')
-      router.refresh()
+      // Use window.location.href for full page reload to ensure fresh data
+      window.location.href = '/dashboard/my-children'
     } catch (err: any) {
       setError(err.message)
       throw err
@@ -51,6 +54,7 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
         </div>
       )}
       <DynamicCharacterForm
+        key={avatarKeyUrl}
         characterType={characterType}
         initialValues={initialValues}
         isEditing={true}

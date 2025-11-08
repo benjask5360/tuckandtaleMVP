@@ -18,11 +18,14 @@ interface RegenerationStatus {
 }
 
 interface AvatarDisplayProps {
-  characterId: string;
+  characterId?: string;
   currentAvatarUrl?: string | null;
   profileType: 'child' | 'storybook_character' | 'pet' | 'magical_creature';
-  onAvatarGenerated?: (avatarUrl: string) => void;
+  onAvatarGenerated?: (avatarUrl: string, avatarCacheId?: string) => void;
   isNew?: boolean; // Is this a new character being created?
+  previewMode?: boolean; // Generate without character ID (preview)
+  formData?: Record<string, any>; // Form data for preview generation
+  calculatedAge?: number | null; // Calculated age for child characters
 }
 
 type GenerationState = 'idle' | 'generating' | 'polling' | 'complete' | 'error';
@@ -33,6 +36,9 @@ export function AvatarDisplay({
   profileType,
   onAvatarGenerated,
   isNew = false,
+  previewMode = false,
+  formData,
+  calculatedAge,
 }: AvatarDisplayProps) {
   const [state, setState] = useState<GenerationState>('idle');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(currentAvatarUrl || null);
@@ -41,7 +47,15 @@ export function AvatarDisplay({
   const [errorMessage, setErrorMessage] = useState('');
   const [regenerationStatus, setRegenerationStatus] = useState<RegenerationStatus | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
+  const [avatarCacheId, setAvatarCacheId] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+
+  // Update avatar URL when currentAvatarUrl prop changes
+  useEffect(() => {
+    if (currentAvatarUrl) {
+      setAvatarUrl(currentAvatarUrl);
+    }
+  }, [currentAvatarUrl]);
 
   // Clean up polling on unmount
   useEffect(() => {
@@ -62,30 +76,75 @@ export function AvatarDisplay({
       setMessage('Starting avatar generation...');
       setErrorMessage('');
 
-      // Call generation API
-      const response = await fetch(`/api/characters/${characterId}/generate-avatar`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          regenerate: !!avatarUrl,
-        }),
-      });
+      let response;
+      let data;
 
-      const data = await response.json();
+      if (previewMode && !characterId) {
+        // Preview mode - generate without character ID
+        response = await fetch('/api/avatars/generate-preview', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            profileType,
+            attributes: {
+              age: calculatedAge ?? formData?.age,
+              gender: formData?.gender,
+              hairColor: formData?.hairColor,
+              hairLength: formData?.hairLength,
+              eyeColor: formData?.eyeColor,
+              skinTone: formData?.skinTone,
+              bodyType: formData?.bodyType,
+              hasGlasses: formData?.hasGlasses,
+              species: formData?.species,
+              breed: formData?.breed,
+              creatureType: formData?.creatureType,
+            },
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate avatar');
+        data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate preview avatar');
+        }
+
+        setGenerationId(data.generationId);
+        setAvatarCacheId(data.avatarCacheId);
+        setMessage('Generating your unique avatar...');
+        setProgress(10);
+
+        // Start polling for preview status
+        startPreviewPolling(data.generationId);
+      } else if (characterId) {
+        // Normal mode - generate with character ID
+        response = await fetch(`/api/characters/${characterId}/generate-avatar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            regenerate: !!avatarUrl,
+          }),
+        });
+
+        data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to generate avatar');
+        }
+
+        setGenerationId(data.generationId);
+        setRegenerationStatus(data.regenerationStatus);
+        setMessage('Generating your unique avatar...');
+        setProgress(10);
+
+        // Start polling for status
+        startPolling(data.generationId);
+      } else {
+        throw new Error('Either characterId or preview mode with formData is required');
       }
-
-      setGenerationId(data.generationId);
-      setRegenerationStatus(data.regenerationStatus);
-      setMessage('Generating your unique avatar...');
-      setProgress(10);
-
-      // Start polling for status
-      startPolling(data.generationId);
     } catch (error: any) {
       console.error('Avatar generation error:', error);
       setState('error');
@@ -137,7 +196,82 @@ export function AvatarDisplay({
           setMessage('Avatar generated successfully!');
 
           if (onAvatarGenerated) {
-            onAvatarGenerated(data.imageUrl);
+            onAvatarGenerated(data.imageUrl, avatarCacheId || undefined);
+          }
+
+          // Clear success message after 3 seconds
+          setTimeout(() => {
+            setMessage('');
+          }, 3000);
+        } else if (data.status === 'failed') {
+          // Failed
+          clearInterval(interval);
+          setState('error');
+          setErrorMessage(data.error || 'Generation failed');
+          setMessage('');
+          setProgress(0);
+        }
+
+        // Continue polling if still processing
+      } catch (error) {
+        console.error('Polling error:', error);
+        // Continue polling unless we've exceeded max attempts
+        if (pollCount >= maxPolls) {
+          clearInterval(interval);
+          setState('error');
+          setErrorMessage('Generation timed out. Please try again.');
+          setMessage('');
+          setProgress(0);
+        }
+      }
+    }, 2000); // Poll every 2 seconds
+
+    setPollingInterval(interval);
+  };
+
+  /**
+   * Poll for preview generation status
+   */
+  const startPreviewPolling = (genId: string) => {
+    setState('polling');
+    let pollCount = 0;
+    const maxPolls = 30; // 60 seconds max
+
+    const interval = setInterval(async () => {
+      pollCount++;
+
+      // Update progress based on poll count
+      const progressValue = Math.min(90, 10 + (pollCount / maxPolls) * 80);
+      setProgress(progressValue);
+
+      // Update message based on time elapsed
+      if (pollCount < 5) {
+        setMessage('Generating your unique avatar...');
+      } else if (pollCount < 10) {
+        setMessage('Adding finishing touches...');
+      } else if (pollCount < 20) {
+        setMessage('Almost ready...');
+      } else {
+        setMessage('This is taking a bit longer than usual...');
+      }
+
+      try {
+        const response = await fetch(
+          `/api/avatars/generate-preview?generationId=${genId}`
+        );
+
+        const data = await response.json();
+
+        if (data.status === 'complete') {
+          // Success!
+          clearInterval(interval);
+          setState('complete');
+          setAvatarUrl(data.imageUrl);
+          setProgress(100);
+          setMessage('Avatar generated successfully!');
+
+          if (onAvatarGenerated) {
+            onAvatarGenerated(data.imageUrl, data.avatarCacheId);
           }
 
           // Clear success message after 3 seconds
@@ -207,6 +341,12 @@ export function AvatarDisplay({
                 <Sparkles className="w-12 h-12 text-white" />
               </div>
             )}
+            {/* Show pending indicator if avatar is newly generated */}
+            {avatarUrl !== currentAvatarUrl && state !== 'generating' && state !== 'polling' && (
+              <div className="absolute top-2 right-2 bg-amber-500 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg">
+                Pending
+              </div>
+            )}
           </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
@@ -244,6 +384,13 @@ export function AvatarDisplay({
       {errorMessage && (
         <div className="text-sm text-red-600 dark:text-red-400">
           {errorMessage}
+        </div>
+      )}
+
+      {/* Pending Avatar Message */}
+      {avatarUrl && avatarUrl !== currentAvatarUrl && state !== 'generating' && state !== 'polling' && (
+        <div className="text-sm text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-900/20 px-3 py-2 rounded-md">
+          Click "Update Profile" to save this avatar
         </div>
       )}
 

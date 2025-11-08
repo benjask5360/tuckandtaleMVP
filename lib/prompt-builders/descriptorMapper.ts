@@ -61,6 +61,24 @@ export async function mapSelectionsToEnhanced(
     });
   }
 
+  if (selections.hairLength) {
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: selections.hairLength,
+      filters: { attribute_type: 'hair_length' }
+    });
+  }
+
+  if (selections.hasGlasses !== undefined) {
+    // Convert boolean to string for descriptor lookup
+    const glassesTerm = selections.hasGlasses ? 'true' : 'false';
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: glassesTerm,
+      filters: { attribute_type: 'glasses' }
+    });
+  }
+
   // Map age
   if (selections.age !== undefined) {
     fetchMappings.push({
@@ -126,6 +144,9 @@ export async function mapSelectionsToEnhanced(
         case 'hair':
           enhanced.hair = descriptor.rich_description;
           break;
+        case 'hair_length':
+          enhanced.hairLength = descriptor.rich_description;
+          break;
         case 'eyes':
           enhanced.eyes = descriptor.rich_description;
           break;
@@ -134,6 +155,9 @@ export async function mapSelectionsToEnhanced(
           break;
         case 'body':
           enhanced.body = descriptor.rich_description;
+          break;
+        case 'glasses':
+          enhanced.glasses = descriptor.rich_description;
           break;
       }
     } else if (key.startsWith('descriptors_age_')) {

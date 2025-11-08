@@ -40,9 +40,9 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Gender',
             required: true,
             options: [
-              { value: 'boy', label: 'Boy', emoji: '👦' },
-              { value: 'girl', label: 'Girl', emoji: '👧' },
-              { value: 'prefer_not_to_say', label: 'Prefer not to say', emoji: '🌟' }
+              { value: 'male', label: 'Boy', emoji: '👦' },
+              { value: 'female', label: 'Girl', emoji: '👧' },
+              { value: 'non-binary', label: 'Prefer not to say', emoji: '🌟' }
             ]
           }
         ]

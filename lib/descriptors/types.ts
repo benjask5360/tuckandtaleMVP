@@ -7,7 +7,7 @@
 // BASE TYPES
 // =====================================================
 
-export type AttributeType = 'hair' | 'eyes' | 'skin' | 'body';
+export type AttributeType = 'hair' | 'eyes' | 'skin' | 'body' | 'hair_length' | 'glasses';
 export type ProfileType = 'child' | 'storybook_character' | 'pet' | 'magical_creature';
 export type SizeCategory = 'tiny' | 'small' | 'medium' | 'large' | 'giant';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
@@ -141,9 +141,11 @@ export interface CharacterDescriptors {
 export interface CharacterSelections {
   // Physical attributes
   hairColor?: string;
+  hairLength?: string;
   eyeColor?: string;
   skinTone?: string;
   bodyType?: string;
+  hasGlasses?: boolean;
 
   // Demographics
   age?: number;
@@ -166,9 +168,11 @@ export interface CharacterSelections {
 export interface EnhancedDescriptors {
   // Enhanced versions for AI prompts
   hair?: string;        // e.g., "jet black"
+  hairLength?: string;  // e.g., "shoulder-length"
   eyes?: string;        // e.g., "ocean blue"
   skin?: string;        // e.g., "porcelain"
   body?: string;        // e.g., "athletic"
+  glasses?: string;     // e.g., "wearing glasses" or empty
   age?: string;         // e.g., "six-year-old"
   gender?: string;      // e.g., "young girl"
   species?: string;     // For pets

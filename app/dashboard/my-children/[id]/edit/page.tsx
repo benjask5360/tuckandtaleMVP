@@ -11,6 +11,10 @@ interface EditChildPageProps {
   }
 }
 
+// Force dynamic rendering to always fetch fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function EditChildPage({ params }: EditChildPageProps) {
   const supabase = await createClient()
 
@@ -37,16 +41,49 @@ export default async function EditChildPage({ params }: EditChildPageProps) {
     notFound()
   }
 
+  console.log('=== EDIT PAGE - CHARACTER PROFILE DATA ===')
+  console.log('Character ID:', childProfile.id)
+  console.log('Character Name:', childProfile.name)
+  console.log('avatar_cache_id from character_profiles:', childProfile.avatar_cache_id)
+
   // Manually fetch avatar if it exists
+  // Add timestamp to bust any client-side cache
   if (childProfile.avatar_cache_id) {
-    const { data: avatar } = await supabase
+    const { data: avatar, error: avatarError } = await supabase
       .from('avatar_cache')
-      .select('image_url')
+      .select('*')
       .eq('id', childProfile.avatar_cache_id)
       .single()
 
-    childProfile.avatar_cache = avatar
+    console.log('Avatar fetch for ID', childProfile.avatar_cache_id, ':', {
+      found: !!avatar,
+      error: avatarError,
+      avatar_id: avatar?.id,
+      image_url: avatar?.image_url,
+      is_current: avatar?.is_current,
+      processing_status: avatar?.processing_status,
+      created_at: avatar?.created_at
+    })
+
+    if (avatarError) {
+      console.error('Error fetching avatar:', avatarError)
+    }
+
+    // Add cache-busting timestamp to the image URL
+    if (avatar?.image_url) {
+      childProfile.avatar_cache = {
+        image_url: `${avatar.image_url}?t=${Date.now()}`
+      }
+      console.log('Final avatar URL with cache bust:', childProfile.avatar_cache.image_url)
+    } else {
+      childProfile.avatar_cache = avatar
+      console.log('No avatar image_url found')
+    }
+  } else {
+    console.log('No avatar_cache_id set on character profile')
   }
+
+  console.log('=== END EDIT PAGE DATA ===\n')
 
   const childType = getCharacterTypeById('child')
 

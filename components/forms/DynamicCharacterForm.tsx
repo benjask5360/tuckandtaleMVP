@@ -25,6 +25,9 @@ export default function DynamicCharacterForm({
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null)
   const [characterId, setCharacterId] = useState<string | null>(initialValues?.id || null)
   const [showAvatarGenerator, setShowAvatarGenerator] = useState(false)
+  const [pendingAvatarUrl, setPendingAvatarUrl] = useState<string | null>(null)
+  const [pendingAvatarCacheId, setPendingAvatarCacheId] = useState<string | null>(null) // Store preview avatar cache ID
+  const [hasNewAvatar, setHasNewAvatar] = useState(false) // Track if avatar was generated in this session
   const router = useRouter()
 
   // Calculate age from date of birth
@@ -74,6 +77,11 @@ export default function DynamicCharacterForm({
       // Remove name from attributes since it's a top-level field
       delete submitData.attributes.name
 
+      // Save avatar FIRST if needed (before calling custom onSubmit or default API)
+      if (isEditing && hasNewAvatar) {
+        await saveMostRecentAvatar()
+      }
+
       if (onSubmit) {
         await onSubmit(submitData)
       } else {
@@ -95,21 +103,25 @@ export default function DynamicCharacterForm({
 
         const responseData = await response.json()
 
-        // If creating new character, store the ID for avatar generation
-        if (!isEditing && responseData.id) {
-          setCharacterId(responseData.id)
-          // Show avatar generation after successful creation
-          setShowAvatarGenerator(true)
+        // If creating new character and there's a preview avatar, link it
+        if (!isEditing && responseData.id && pendingAvatarCacheId) {
+          await linkPreviewAvatar(responseData.id, pendingAvatarCacheId)
         }
 
-        // Don't redirect immediately if showing avatar generator
-        if (!showAvatarGenerator) {
-          // Redirect based on character type
-          if (characterType.category === 'child') {
-            router.push('/dashboard/my-children')
-          } else {
-            router.push('/dashboard/other-characters')
-          }
+        // If creating new character, store the ID
+        if (!isEditing && responseData.id) {
+          setCharacterId(responseData.id)
+        }
+      }
+
+      // Handle redirects after everything is saved
+      // Note: If using custom onSubmit, that handler is responsible for redirecting
+      if (!onSubmit && !showAvatarGenerator) {
+        // Use window.location.href for full page reload to ensure avatar updates are visible
+        if (characterType.category === 'child') {
+          window.location.href = '/dashboard/my-children'
+        } else {
+          window.location.href = '/dashboard/other-characters'
         }
       }
     } catch (err: any) {
@@ -119,10 +131,72 @@ export default function DynamicCharacterForm({
     }
   }
 
-  const handleAvatarGenerated = (newAvatarUrl: string) => {
-    // Avatar is automatically linked to character via avatar_cache_id
-    // No need to update the character record here
-    console.log('Avatar generated:', newAvatarUrl)
+  const saveMostRecentAvatar = async () => {
+    if (!characterId) {
+      return
+    }
+
+    try {
+      // Call API to save the most recent avatar
+      const response = await fetch(`/api/characters/${characterId}/save-latest-avatar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      const data = await response.json()
+
+      if (!response.ok && response.status !== 404) {
+        // 404 means no new avatar to save, which is fine
+        throw new Error(data.error || 'Failed to save avatar')
+      }
+    } catch (error) {
+      console.error('Error saving avatar:', error)
+      // Don't throw - avatar save is optional
+    }
+  }
+
+  const linkPreviewAvatar = async (newCharacterId: string, avatarCacheId: string) => {
+    try {
+      const response = await fetch(`/api/avatars/link-preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterId: newCharacterId,
+          avatarCacheId: avatarCacheId
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to link preview avatar')
+      }
+    } catch (error) {
+      console.error('Error linking preview avatar:', error)
+      // Don't throw - avatar linking is optional
+    }
+  }
+
+  const handleAvatarGenerated = (newAvatarUrl: string, avatarCacheId?: string) => {
+    // Store the new avatar URL as pending
+    setPendingAvatarUrl(newAvatarUrl)
+    if (avatarCacheId) {
+      setPendingAvatarCacheId(avatarCacheId)
+    }
+    setHasNewAvatar(true) // Mark that a new avatar was generated in this session
+  }
+
+  const handleCancel = () => {
+    // Reset form to initial values and discard pending avatar
+    setFormData(initialValues)
+    setPendingAvatarUrl(null)
+    setHasNewAvatar(false) // Clear the flag so avatar isn't saved
+
+    // Redirect based on character type (use window.location for full reload)
+    if (characterType.category === 'child') {
+      window.location.href = '/dashboard/my-children'
+    } else {
+      window.location.href = '/dashboard/other-characters'
+    }
   }
 
   return (
@@ -160,38 +234,33 @@ export default function DynamicCharacterForm({
         </div>
       ))}
 
-      {/* Avatar Generation Section */}
-      {(characterId || (isEditing && initialValues?.id)) && (
-        <div className="border-t border-neutral-200 pt-6">
-          <h3 className="text-lg font-bold text-neutral-800 mb-4">Character Avatar</h3>
-          <div className="max-w-sm">
-            <AvatarDisplay
-              characterId={characterId || initialValues?.id}
-              currentAvatarUrl={initialValues?.avatar_cache?.image_url || null}
-              profileType={
-                characterType.category === 'child'
-                  ? 'child'
-                  : characterType.id === 'pet'
-                  ? 'pet'
-                  : characterType.id === 'magical_creature'
-                  ? 'magical_creature'
-                  : 'storybook_character'
-              }
-              onAvatarGenerated={handleAvatarGenerated}
-              isNew={!isEditing}
-            />
-          </div>
+      {/* Avatar Generation Section - Always show */}
+      <div className="border-t border-neutral-200 pt-6">
+        <h3 className="text-lg font-bold text-neutral-800 mb-4">Character Avatar</h3>
+        <div className="max-w-sm">
+          <AvatarDisplay
+            characterId={characterId || initialValues?.id || undefined}
+            currentAvatarUrl={pendingAvatarUrl || initialValues?.avatar_cache?.image_url || null}
+            profileType={
+              characterType.category === 'child'
+                ? 'child'
+                : characterType.id === 'pet'
+                ? 'pet'
+                : characterType.id === 'magical_creature'
+                ? 'magical_creature'
+                : 'storybook_character'
+            }
+            previewMode={!characterId && !isEditing}
+            formData={formData}
+            calculatedAge={calculatedAge}
+            onAvatarGenerated={handleAvatarGenerated}
+            isNew={!isEditing}
+          />
         </div>
-      )}
+      </div>
 
       {/* Action Buttons */}
       <div className="flex gap-4 pt-6">
-        {!characterId && !isEditing && (
-          <div className="text-sm text-neutral-600">
-            Save the profile first to generate an avatar
-          </div>
-        )}
-
         <button
           type="submit"
           disabled={loading}
@@ -199,6 +268,17 @@ export default function DynamicCharacterForm({
         >
           {loading ? 'Saving...' : isEditing ? 'Update Profile' : 'Save Profile'}
         </button>
+
+        {isEditing && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={loading}
+            className="px-8 py-3 bg-neutral-200 text-neutral-700 font-semibold rounded-xl hover:bg-neutral-300 transition-all duration-300 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        )}
 
         {showAvatarGenerator && characterId && (
           <button

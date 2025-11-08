@@ -97,9 +97,11 @@ export async function POST(
         age: character.attributes?.age,
         gender: character.attributes?.gender,
         hairColor: character.attributes?.hairColor,
+        hairLength: character.attributes?.hairLength,
         eyeColor: character.attributes?.eyeColor,
         skinTone: character.attributes?.skinTone,
         bodyType: character.attributes?.bodyType,
+        hasGlasses: character.attributes?.hasGlasses,
         species: character.attributes?.species,
         breed: character.attributes?.breed,
         creatureType: character.attributes?.creatureType,
@@ -292,25 +294,18 @@ export async function GET(
         })
         .eq('id', avatarCache.id);
 
-      // Set as current avatar for character
+      // NOTE: We don't auto-save the avatar to character profile here
+      // The user must click "Update Profile" to save the new avatar
+      // This allows them to regenerate multiple times or cancel if they don't like it
+
+      // Mark this avatar as the latest generated (but not necessarily current)
       await supabase
         .from('avatar_cache')
         .update({ is_current: false })
-        .eq('character_profile_id', characterId);
+        .eq('character_profile_id', characterId)
+        .eq('is_current', true);
 
-      await supabase
-        .from('avatar_cache')
-        .update({ is_current: true })
-        .eq('id', avatarCache.id);
-
-      // Update character profile
-      await supabase
-        .from('character_profiles')
-        .update({
-          avatar_cache_id: avatarCache.id,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', characterId);
+      // The avatar is ready but not set as current - user must save the form to apply it
 
       // Log cost
       console.log('Logging API cost for generation:', {

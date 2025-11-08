@@ -26,6 +26,12 @@ export async function generateAvatarPrompt(
 
   const enhanced = await mapSelectionsToEnhanced(profileType, selections);
   console.log('Avatar prompt - Enhanced:', enhanced);
+  console.log('Avatar prompt - Gender check:', {
+    hasGender: !!enhanced.gender,
+    genderValue: enhanced.gender,
+    hasAge: !!enhanced.age,
+    ageValue: enhanced.age
+  });
 
   let prompt = '';
 
@@ -44,15 +50,28 @@ export async function generateAvatarPrompt(
 
       // Add physical features
       const features: string[] = [];
-      if (enhanced.hair) features.push(`${enhanced.hair} hair`);
+
+      // Combine hair color and length if both present
+      if (enhanced.hair && enhanced.hairLength) {
+        features.push(`${enhanced.hairLength} ${enhanced.hair} hair`);
+      } else if (enhanced.hair) {
+        features.push(`${enhanced.hair} hair`);
+      } else if (enhanced.hairLength) {
+        features.push(`${enhanced.hairLength} hair`);
+      }
+
       if (enhanced.eyes) features.push(`${enhanced.eyes} eyes`);
       if (enhanced.skin) features.push(`${enhanced.skin} skin`);
+      if (enhanced.body) features.push(enhanced.body);  // Descriptor already includes "build"
+      if (enhanced.glasses && enhanced.glasses.trim()) {
+        features.push(enhanced.glasses);  // "wearing glasses"
+      }
 
       if (features.length > 0) {
         prompt += ` with ${features.join(', ')}`;
       }
 
-      prompt += ', friendly expression, warm smile, children\'s book illustration style, digital art, high quality';
+      prompt += ', friendly expression, warm smile, full body standing, white background, Pixar Disney style, 3D animated character, high quality';
       break;
 
     case 'pet':
@@ -67,7 +86,7 @@ export async function generateAvatarPrompt(
         prompt += ` with ${petFeatures.join(' and ')}`;
       }
 
-      prompt += ', full body, friendly pose, children\'s book illustration style, digital art, high quality';
+      prompt += ', full body standing, white background, Pixar Disney style, 3D animated character, high quality';
       break;
 
     case 'magical_creature':
@@ -82,12 +101,12 @@ export async function generateAvatarPrompt(
         prompt += ` with ${magicFeatures.join(' and ')}`;
       }
 
-      prompt += ', fantastical, whimsical, enchanting, children\'s book illustration style, digital art, high quality';
+      prompt += ', fantastical, whimsical, enchanting, full body standing, white background, Pixar Disney style, 3D animated character, high quality';
       break;
 
     default:
       // Fallback for any unknown profile type
-      prompt = 'Portrait of a friendly character, children\'s book illustration style, digital art, high quality';
+      prompt = 'Full body standing character, white background, Pixar Disney style, 3D animated character, high quality';
   }
 
   console.log('Avatar prompt - Final:', prompt);

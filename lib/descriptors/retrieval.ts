@@ -258,6 +258,8 @@ export async function getDescriptorBySimpleTerm(
 ): Promise<any> {
   const supabase = await createClient();
 
+  console.log('getDescriptorBySimpleTerm called:', { tableName, simpleTerm, additionalFilters });
+
   let query = supabase
     .from(tableName)
     .select('*')
@@ -277,6 +279,7 @@ export async function getDescriptorBySimpleTerm(
   // Handle special _age_lookup filter for age-aware gender descriptors
   if (additionalFilters?._age_lookup !== undefined) {
     const age = additionalFilters._age_lookup;
+    console.log('Age-aware lookup:', { age, condition: `min_age <= ${age} AND max_age >= ${age}` });
     // Query for gender descriptor where age falls within min_age and max_age range
     // age >= min_age AND age <= max_age
     query = query.lte('min_age', age).gte('max_age', age);
@@ -296,6 +299,8 @@ export async function getDescriptorBySimpleTerm(
   const finalQuery = query.single();
 
   const { data, error } = await finalQuery;
+
+  console.log('Query result:', { tableName, simpleTerm, data, error: error?.message, errorCode: error?.code });
 
   if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
     console.error('Error fetching descriptor by simple term:', error);
