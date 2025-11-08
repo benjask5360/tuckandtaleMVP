@@ -1,7 +1,30 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Navbar() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setIsAuthenticated(!!user)
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-neutral-100">
       <div className="container-narrow section-padding">
@@ -26,12 +49,20 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Login Button */}
-          <Link href="/auth/login">
-            <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
-              Login
-            </button>
-          </Link>
+          {/* Login/Dashboard Button */}
+          {isAuthenticated ? (
+            <Link href="/dashboard">
+              <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
+                Dashboard
+              </button>
+            </Link>
+          ) : (
+            <Link href="/auth/login">
+              <button className="btn-primary px-4 py-1.5 sm:px-6 sm:py-2 text-sm sm:text-base">
+                Login
+              </button>
+            </Link>
+          )}
         </div>
       </div>
     </nav>
