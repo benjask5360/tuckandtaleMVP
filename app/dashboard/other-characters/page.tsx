@@ -155,6 +155,28 @@ export default function OtherCharactersPage() {
             ← Back to Dashboard
           </Link>
 
+          {/* Navigation Tabs */}
+          <div className="flex gap-3 mb-6">
+            <Link
+              href="/dashboard/my-children"
+              className="px-6 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Manage Child Profiles
+            </Link>
+            <Link
+              href="/dashboard/other-characters"
+              className="px-6 py-3 bg-blue-100 text-blue-700 font-semibold rounded-xl transition-colors"
+            >
+              Manage Characters
+            </Link>
+            <Link
+              href="/dashboard/story-library"
+              className="px-6 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              Manage Stories
+            </Link>
+          </div>
+
           <div className="card p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6">
               <div className="text-center md:text-left">
