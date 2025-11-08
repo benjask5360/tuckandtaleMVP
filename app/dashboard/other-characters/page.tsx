@@ -145,7 +145,7 @@ export default function OtherCharactersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-20 md:pt-24">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-16 md:pt-20">
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <Link
