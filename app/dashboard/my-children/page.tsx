@@ -228,7 +228,7 @@ export default function MyChildrenPage() {
                       <img
                         src={child.avatar_cache.image_url}
                         alt={child.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
@@ -238,21 +238,9 @@ export default function MyChildrenPage() {
                   </div>
 
                   {/* Name */}
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
                     {child.name}
                   </h3>
-
-                  {/* Character Type Label */}
-                  {child.attributes.species && (
-                    <p className="text-sm text-blue-600 font-medium mb-4 capitalize">
-                      {child.attributes.species}
-                    </p>
-                  )}
-                  {!child.attributes.species && child.character_type && (
-                    <p className="text-sm text-blue-600 font-medium mb-4 capitalize">
-                      {child.character_type === 'child' ? 'Human' : child.character_type.replace('_', ' ')}
-                    </p>
-                  )}
 
                   {/* Click to Edit Button */}
                   <Link

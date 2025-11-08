@@ -241,7 +241,7 @@ export default function OtherCharactersPage() {
                       <img
                         src={character.avatar_cache.image_url}
                         alt={character.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
@@ -251,14 +251,9 @@ export default function OtherCharactersPage() {
                   </div>
 
                   {/* Name */}
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">
                     {character.name}
                   </h3>
-
-                  {/* Character Type Label */}
-                  <p className="text-sm text-blue-600 font-medium mb-4">
-                    {getCharacterTypeDisplay(character.character_type)}
-                  </p>
 
                   {/* Click to Edit Button */}
                   <Link
