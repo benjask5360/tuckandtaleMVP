@@ -11,9 +11,7 @@ interface Story {
   title: string
   content: string
   created_at: string
-  character_profiles?: {
-    name: string
-  } | null
+  character_name?: string | null
 }
 
 export default function StoryLibraryPage() {
@@ -25,6 +23,7 @@ export default function StoryLibraryPage() {
 
   useEffect(() => {
     loadStories()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadStories = async () => {
@@ -42,16 +41,42 @@ export default function StoryLibraryPage() {
           title,
           content,
           created_at,
-          character_profiles (
-            name
-          )
+          character_id
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      setStories(data || [])
+      // Fetch character names for stories that have a character_id
+      const storiesWithCharacterNames = await Promise.all(
+        (data || []).map(async (story) => {
+          if (story.character_id) {
+            const { data: character } = await supabase
+              .from('character_profiles')
+              .select('name')
+              .eq('id', story.character_id)
+              .single()
+
+            return {
+              id: story.id,
+              title: story.title,
+              content: story.content,
+              created_at: story.created_at,
+              character_name: character?.name || null
+            }
+          }
+          return {
+            id: story.id,
+            title: story.title,
+            content: story.content,
+            created_at: story.created_at,
+            character_name: null
+          }
+        })
+      )
+
+      setStories(storiesWithCharacterNames)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -145,9 +170,9 @@ export default function StoryLibraryPage() {
                     <h3 className="text-xl font-bold text-neutral-800 mb-1">
                       {story.title}
                     </h3>
-                    {story.character_profiles && (
+                    {story.character_name && (
                       <p className="text-sm text-neutral-500">
-                        Featuring {story.character_profiles.name}
+                        Featuring {story.character_name}
                       </p>
                     )}
                   </div>

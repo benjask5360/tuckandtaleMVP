@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Edit, Trash2, User, Calendar, Settings, Heart } from 'lucide-react'
+import { Plus, Edit, Trash2, User, Calendar, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface ChildProfile {

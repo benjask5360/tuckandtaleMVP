@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { BookOpen, Users, Sparkles, Library, Settings, User, Heart } from 'lucide-react'
+import { Users, Sparkles, Library, User, Heart } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -214,16 +214,4 @@ export default async function DashboardPage() {
       </footer>
     </div>
   )
-}
-
-function calculateAge(dateOfBirth: string): number | null {
-  if (!dateOfBirth) return null
-  const today = new Date()
-  const birthDate = new Date(dateOfBirth)
-  let age = today.getFullYear() - birthDate.getFullYear()
-  const monthDiff = today.getMonth() - birthDate.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--
-  }
-  return age
 }

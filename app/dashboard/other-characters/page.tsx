@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Edit, Trash2, Star, Dog, Sparkles, Settings, Heart } from 'lucide-react'
+import { Plus, Edit, Trash2, Star, Dog, Sparkles, Heart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getCharacterTypeById } from '@/lib/character-types'
 
