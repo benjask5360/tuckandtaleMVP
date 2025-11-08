@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { BookOpen, Users, Sparkles, Library, Settings, User } from 'lucide-react'
+import { BookOpen, Users, Sparkles, Library, Settings, User, Heart } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -200,6 +200,28 @@ export default async function DashboardPage() {
 
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="py-8 bg-white border-t border-neutral-200 mt-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col items-center gap-4 text-sm text-neutral-600">
+            <p className="flex items-center gap-1 text-primary-500">
+              Made with <Heart className="w-4 h-4 fill-red-500 text-red-500" /> for little dreamers everywhere
+            </p>
+            <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
+              <p className="text-center md:text-left">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-6 gap-y-3 text-center md:text-left">
+                <a href="#" className="hover:text-primary-500 transition-colors">About</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Contact Us</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">FAQ</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Founder Parents</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Terms of Service</a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
