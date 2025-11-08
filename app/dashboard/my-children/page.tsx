@@ -211,70 +211,56 @@ export default function MyChildrenPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {children.map(child => (
-              <div key={child.id} className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
-                <div>
-                  {/* Avatar */}
-                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+              <div key={child.id} className="relative card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
+                {/* Delete Button - Top Right */}
+                <button
+                  onClick={() => handleDelete(child.id)}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  aria-label="Delete character"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <div className="flex flex-col items-center">
+                  {/* Large Square Avatar */}
+                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
                     {child.avatar_cache?.image_url ? (
                       <img
                         src={child.avatar_cache.image_url}
                         alt={child.name}
-                        className="w-24 h-24 rounded-full object-cover"
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-24 h-24 bg-gradient-to-br from-blue-200 to-purple-200 rounded-full flex items-center justify-center">
-                        <span className="text-3xl font-bold text-white">
-                          {child.name.charAt(0).toUpperCase()}
-                        </span>
+                      <div className="w-full h-full bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
+                        <User className="w-1/3 h-1/3 text-white opacity-50" />
                       </div>
                     )}
                   </div>
 
-                  {/* Name & Primary Badge */}
-                  <div className="text-center mb-3 md:mb-4">
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-800">
-                      {child.name}
-                    </h3>
-                    {child.is_primary && (
-                      <span className="inline-block mt-2 badge-primary text-xs md:text-sm">
-                        Primary
-                      </span>
-                    )}
-                  </div>
+                  {/* Name */}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {child.name}
+                  </h3>
 
-                  {/* Details */}
-                  <div className="space-y-2 text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                    {child.attributes.dateOfBirth && (
-                      <div className="flex items-center gap-2 justify-center md:justify-start">
-                        <Calendar className="w-4 h-4" />
-                        <span>Age: {calculateAge(child.attributes.dateOfBirth)} years</span>
-                      </div>
-                    )}
-                    {child.attributes.gender && (
-                      <div className="text-center md:text-left">Gender: {child.attributes.gender}</div>
-                    )}
-                    {child.attributes.interests && child.attributes.interests.length > 0 && (
-                      <div className="text-center md:text-left">Interests: {child.attributes.interests.slice(0, 3).join(', ')}</div>
-                    )}
-                  </div>
+                  {/* Character Type Label */}
+                  {child.attributes.species && (
+                    <p className="text-sm text-blue-600 font-medium mb-4 capitalize">
+                      {child.attributes.species}
+                    </p>
+                  )}
+                  {!child.attributes.species && child.character_type && (
+                    <p className="text-sm text-blue-600 font-medium mb-4 capitalize">
+                      {child.character_type === 'child' ? 'Human' : child.character_type.replace('_', ' ')}
+                    </p>
+                  )}
 
-                  {/* Actions */}
-                  <div className="flex gap-2 md:gap-3">
-                    <Link
-                      href={`/dashboard/my-children/${child.id}/edit`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-50 text-primary-600 font-semibold rounded-xl active:bg-primary-100 md:hover:bg-primary-100 transition-colors min-h-[44px]"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(child.id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 font-semibold rounded-xl active:bg-red-100 md:hover:bg-red-100 transition-colors min-h-[44px]"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
+                  {/* Click to Edit Button */}
+                  <Link
+                    href={`/dashboard/my-children/${child.id}/edit`}
+                    className="w-full px-4 py-3 text-center text-gray-400 font-medium rounded-xl hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Click to edit
+                  </Link>
                 </div>
               </div>
             ))}

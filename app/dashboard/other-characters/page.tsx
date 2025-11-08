@@ -113,15 +113,15 @@ export default function OtherCharactersPage() {
     }
   }
 
-  const getCharacterIcon = (type: string) => {
+  const getCharacterIcon = (type: string, className: string = "w-6 h-6") => {
     switch(type) {
       case 'pet':
-        return <Dog className="w-6 h-6" />
+        return <Dog className={className} />
       case 'magical_creature':
-        return <Sparkles className="w-6 h-6" />
+        return <Sparkles className={className} />
       case 'storybook_character':
       default:
-        return <Star className="w-6 h-6" />
+        return <Star className={className} />
     }
   }
 
@@ -224,75 +224,49 @@ export default function OtherCharactersPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {characters.map(character => (
-              <div key={character.id} className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
-                <div>
-                  {/* Avatar & Type Icon */}
-                  <div className="relative">
-                    <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                      {character.avatar_cache?.image_url ? (
-                        <img
-                          src={character.avatar_cache.image_url}
-                          alt={character.name}
-                          className="w-24 h-24 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-full flex items-center justify-center">
-                          <span className="text-3xl font-bold text-white">
-                            {character.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="absolute top-0 right-1/4 transform translate-x-1/2 -translate-y-1">
-                      <div className="bg-white rounded-full p-2 shadow-md text-purple-500">
-                        {getCharacterIcon(character.character_type)}
+              <div key={character.id} className="relative card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
+                {/* Delete Button - Top Right */}
+                <button
+                  onClick={() => handleDelete(character.id)}
+                  className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  aria-label="Delete character"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+
+                <div className="flex flex-col items-center">
+                  {/* Large Square Avatar */}
+                  <div className="w-full aspect-square mb-4 flex items-center justify-center rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50">
+                    {character.avatar_cache?.image_url ? (
+                      <img
+                        src={character.avatar_cache.image_url}
+                        alt={character.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
+                        {getCharacterIcon(character.character_type, 'w-1/3 h-1/3 text-white opacity-50')}
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Name & Type */}
-                  <div className="text-center mb-3 md:mb-4">
-                    <h3 className="text-xl md:text-2xl font-bold text-gray-800">
-                      {character.name}
-                    </h3>
-                    <span className="inline-block mt-2 badge-purple text-xs md:text-sm">
-                      {getCharacterTypeDisplay(character.character_type)}
-                    </span>
-                  </div>
-
-                  {/* Details */}
-                  <div className="space-y-2 text-sm md:text-base text-gray-600 mb-4 md:mb-6">
-                    {character.character_type === 'pet' && character.attributes.species && (
-                      <div className="text-center md:text-left">Species: {character.attributes.species}</div>
-                    )}
-                    {character.character_type === 'pet' && character.attributes.breed && (
-                      <div className="text-center md:text-left">Breed: {character.attributes.breed}</div>
-                    )}
-                    {character.character_type === 'magical_creature' && character.attributes.creatureType && (
-                      <div className="text-center md:text-left">Type: {character.attributes.creatureType}</div>
-                    )}
-                    {character.character_type === 'storybook_character' && character.attributes.age && (
-                      <div className="text-center md:text-left">Age: {character.attributes.age} years</div>
                     )}
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 md:gap-3">
-                    <Link
-                      href={`/dashboard/other-characters/${character.id}/edit`}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-50 text-purple-600 font-semibold rounded-xl active:bg-purple-100 md:hover:bg-purple-100 transition-colors min-h-[44px]"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(character.id)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 font-semibold rounded-xl active:bg-red-100 md:hover:bg-red-100 transition-colors min-h-[44px]"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
+                  {/* Name */}
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {character.name}
+                  </h3>
+
+                  {/* Character Type Label */}
+                  <p className="text-sm text-blue-600 font-medium mb-4">
+                    {getCharacterTypeDisplay(character.character_type)}
+                  </p>
+
+                  {/* Click to Edit Button */}
+                  <Link
+                    href={`/dashboard/other-characters/${character.id}/edit`}
+                    className="w-full px-4 py-3 text-center text-gray-400 font-medium rounded-xl hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    Click to edit
+                  </Link>
                 </div>
               </div>
             ))}
