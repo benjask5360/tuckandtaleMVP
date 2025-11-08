@@ -6,13 +6,13 @@ import AuthAwareCTA from '@/components/AuthAwareCTA'
 export default function HomePage() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-bg-warm py-20 lg:py-28">
+      {/* Hero Section - Mobile-optimized */}
+      <section className="relative overflow-hidden bg-gradient-bg-warm py-16 md:py-20 lg:py-28 pt-20 md:pt-24">
         <div className="absolute inset-0 gradient-mesh opacity-40"></div>
         <div className="container-narrow section-padding relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-fade-in-up">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
+          <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+            <div className="animate-fade-in-up text-center lg:text-left">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
                 Bedtime Stories Where<br />
                 <span className="gradient-text">
                   YOUR Child
@@ -20,17 +20,17 @@ export default function HomePage() {
                 is the Hero
               </h1>
 
-              <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-lg leading-relaxed">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
                 Personalized AI adventures featuring your child by name, making bedtime magical.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
+              <div className="flex flex-col gap-4 mb-6">
                 <AuthAwareCTA />
               </div>
 
-              <p className="text-sm text-gray-500 mb-8 flex items-center gap-2">
-                <Check className="w-4 h-4 text-primary-500" />
-                No credit card required • Start with 3 free stories
+              <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
+                <Check className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                <span>No credit card required • Start with 3 free stories</span>
               </p>
 
               {/* Mobile Hero Image */}
@@ -215,50 +215,50 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 bg-gradient-bg-warm">
+      {/* Pricing Section - Mobile-optimized */}
+      <section className="py-16 md:py-20 bg-gradient-bg-warm">
         <div className="container-narrow section-padding">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
               Choose Your Plan
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 px-4">
               Select the perfect plan for your family's storytelling adventures
             </p>
 
-            <div className="inline-flex items-center gap-2 badge-primary mt-6 px-5 py-2.5 text-base">
+            <div className="inline-flex items-center gap-2 badge-primary mt-6 px-5 py-2.5 text-sm md:text-base">
               <span>Save 30%</span>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
-            <div className="card p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all">
-              <h3 className="text-2xl font-bold mb-2 text-gray-900">Moonlight</h3>
-              <p className="text-gray-600 mb-6">Perfect for trying out bedtime stories</p>
-              <div className="mb-8">
-                <span className="text-5xl font-bold text-gray-900">Free</span>
+            <div className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all">
+              <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Moonlight</h3>
+              <p className="text-sm md:text-base text-gray-600 mb-6">Perfect for trying out bedtime stories</p>
+              <div className="mb-6 md:mb-8">
+                <span className="text-4xl md:text-5xl font-bold text-gray-900">Free</span>
               </div>
-              <ul className="space-y-4 mb-10">
+              <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">3 stories per month</span>
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">3 stories per month</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">1 child profile</span>
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">1 child profile</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Basic story customization</span>
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Basic story customization</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Save one album</span>
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Save one album</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Standard illustrations</span>
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Standard illustrations</span>
                 </li>
               </ul>
               <button className="btn-secondary btn-md w-full">
@@ -267,19 +267,19 @@ export default function HomePage() {
             </div>
 
             {/* Starlight Plan */}
-            <div className="card p-8 relative border-2 border-primary-400 shadow-blue-glow scale-105 hover:shadow-xl transition-all">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-gradient-primary text-white px-5 py-2 rounded-full text-sm font-semibold shadow-button">
+            <div className="card p-6 md:p-8 relative border-2 border-primary-400 shadow-blue-glow md:scale-105 active:scale-[0.98] md:hover:shadow-xl transition-all">
+              <div className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-gradient-primary text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold shadow-button">
                   Most Popular
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-2 text-gray-900">Starlight</h3>
-              <p className="text-gray-600 mb-6">Ideal for regular bedtime storytelling</p>
-              <div className="mb-8">
-                <span className="text-5xl font-bold gradient-text">$9.99</span>
-                <span className="text-gray-600 text-lg">/month</span>
+              <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Starlight</h3>
+              <p className="text-sm md:text-base text-gray-600 mb-6">Ideal for regular bedtime storytelling</p>
+              <div className="mb-6 md:mb-8">
+                <span className="text-4xl md:text-5xl font-bold gradient-text">$9.99</span>
+                <span className="text-gray-600 text-base md:text-lg">/month</span>
               </div>
-              <ul className="space-y-4 mb-10">
+              <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
                   <span className="text-gray-700">30 stories per month</span>

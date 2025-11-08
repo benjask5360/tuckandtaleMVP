@@ -100,52 +100,55 @@
            focus:ring-teal-400;
   }
 
-  /* Button Sizes */
+  /* Button Sizes - Mobile-optimized with minimum 44px touch targets */
   .btn-sm {
-    @apply text-sm px-4 py-2 rounded-xl;
+    @apply text-base px-5 py-3 rounded-xl min-h-[44px];
   }
 
   .btn-md {
-    @apply text-base px-6 py-2.5 rounded-2xl;
+    @apply text-base px-6 py-3.5 rounded-2xl min-h-[48px];
   }
 
   .btn-lg {
-    @apply text-lg px-8 py-3.5 rounded-2xl;
+    @apply text-lg px-8 py-4 rounded-2xl min-h-[52px];
   }
 
   .btn-xl {
-    @apply text-xl px-10 py-4 rounded-3xl;
+    @apply text-xl px-10 py-5 rounded-3xl min-h-[56px];
   }
 
-  /* Cards */
+  /* Cards - Mobile-optimized */
   .card {
-    @apply bg-white rounded-3xl shadow-card border border-gray-100
+    @apply bg-white rounded-2xl md:rounded-3xl shadow-card border border-gray-100
            transition-all duration-300 ease-smooth;
   }
 
   .card-interactive {
     @apply card cursor-pointer
-           hover:shadow-card-hover hover:-translate-y-1 hover:border-primary-200
-           active:translate-y-0;
+           active:shadow-card-hover active:scale-[0.98]
+           md:hover:shadow-card-hover md:hover:-translate-y-1 md:hover:border-primary-200
+           md:active:translate-y-0;
   }
 
   .card-feature {
-    @apply card p-8 text-center
-           hover:shadow-xl hover:-translate-y-2 hover:border-primary-200;
+    @apply card p-6 md:p-8 text-center
+           active:shadow-xl active:scale-[0.98]
+           md:hover:shadow-xl md:hover:-translate-y-2 md:hover:border-primary-200;
   }
 
-  /* Input Fields */
+  /* Input Fields - Mobile-optimized */
   .input {
-    @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-white
-           text-gray-800 placeholder-gray-400
+    @apply w-full px-4 py-4 rounded-xl border-2 border-gray-200 bg-white
+           text-base text-gray-800 placeholder-gray-400
            transition-all duration-200
            focus:outline-none focus:border-primary-400 focus:ring-4 focus:ring-primary-100
            hover:border-gray-300
-           disabled:bg-gray-50 disabled:cursor-not-allowed;
+           disabled:bg-gray-50 disabled:cursor-not-allowed
+           min-h-[48px];
   }
 
   .textarea {
-    @apply input resize-none min-h-[120px];
+    @apply input resize-none min-h-[120px] leading-relaxed;
   }
 
   .select {
@@ -155,14 +158,14 @@
   }
 
   .checkbox {
-    @apply w-5 h-5 rounded border-2 border-gray-300 text-primary-500
+    @apply w-6 h-6 rounded-md border-2 border-gray-300 text-primary-500
            focus:ring-2 focus:ring-primary-400 focus:ring-offset-0
            transition-all cursor-pointer
            hover:border-primary-400;
   }
 
   .radio {
-    @apply w-5 h-5 border-2 border-gray-300 text-primary-500
+    @apply w-6 h-6 border-2 border-gray-300 text-primary-500
            focus:ring-2 focus:ring-primary-400 focus:ring-offset-0
            transition-all cursor-pointer
            hover:border-primary-400;
@@ -213,17 +216,17 @@
     -webkit-text-fill-color: transparent;
   }
 
-  /* Layout */
+  /* Layout - Mobile-first spacing */
   .section-padding {
-    @apply px-6 sm:px-8 lg:px-12 xl:px-16;
+    @apply px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16;
   }
 
   .container-narrow {
-    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+    @apply max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-12;
   }
 
   .container-tight {
-    @apply max-w-4xl mx-auto px-6 sm:px-8;
+    @apply max-w-4xl mx-auto px-4 sm:px-6 md:px-8;
   }
 
   /* Misc */

@@ -67,49 +67,49 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12 pt-20 md:pt-24">
 
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-3">
+        {/* Header - Mobile-optimized */}
+        <div className="mb-8 md:mb-10 text-center md:text-left">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-gray-900 mb-2 md:mb-3">
             Welcome back, {firstName}!
           </h1>
-          <p className="text-lg text-gray-600">Ready to create some magical stories?</p>
+          <p className="text-base md:text-lg text-gray-600">Ready to create some magical stories?</p>
         </div>
 
-        {/* Subscription Plan Badge */}
-        <div className="mb-10">
-          <div className="inline-flex items-center gap-3 px-6 py-3 badge-primary text-base shadow-blue-glow">
+        {/* Subscription Plan Badge - Mobile-optimized */}
+        <div className="mb-8 md:mb-10 flex justify-center md:justify-start">
+          <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
             <span className="font-semibold">{userTier.display_name} Plan</span>
-            <span>•</span>
-            <span>
+            <span className="hidden sm:inline">•</span>
+            <span className="text-xs sm:text-sm md:text-base">
               0 stories this month ({maxChildren === null ? 'Unlimited' : '3 remaining'})
             </span>
           </div>
         </div>
 
-        {/* Create Story CTA - Fully Clickable */}
+        {/* Create Story CTA - Mobile-optimized */}
         {primaryCharacter ? (
-          <button className="w-full mb-12 p-10 bg-gradient-primary rounded-3xl shadow-blue-glow hover:shadow-xl transition-all duration-300 group hover:scale-[1.02]">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-5">
-                <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-soft">
-                  <Sparkles className="w-10 h-10 text-white" />
+          <button className="w-full mb-10 md:mb-12 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center shadow-soft flex-shrink-0">
+                  <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white" />
                 </div>
-                <div className="text-left">
-                  <h2 className="text-3xl font-bold text-white mb-2">Create Story</h2>
-                  <p className="text-sky-100 text-lg">Generate magical personalized stories</p>
+                <div className="text-center sm:text-left">
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Create Story</h2>
+                  <p className="text-sky-100 text-base md:text-lg">Generate magical personalized stories</p>
                 </div>
               </div>
-              <div className="badge bg-white/20 text-white border-white/30 text-sm">Coming Soon</div>
+              <div className="badge bg-white/20 text-white border-white/30 text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2">Coming Soon</div>
             </div>
           </button>
         ) : (
-          <div className="w-full mb-12 p-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-3xl border-2 border-yellow-300 shadow-soft">
+          <div className="w-full mb-10 md:mb-12 p-6 md:p-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl md:rounded-3xl border-2 border-yellow-300 shadow-soft">
             <div className="text-center">
-              <p className="text-yellow-900 font-semibold text-lg mb-4">Add a child profile first to create stories</p>
+              <p className="text-yellow-900 font-semibold text-base md:text-lg mb-4">Add a child profile first to create stories</p>
               <Link
-                href="/dashboard/my-children/create"
+                href="/dashboard/my-children"
                 className="btn-primary btn-md inline-flex items-center gap-2"
               >
                 Add Your First Child →
@@ -118,75 +118,75 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Three Main Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Three Main Sections - Mobile-optimized */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
 
-          {/* Child Profiles - Fully Clickable */}
+          {/* Child Profiles - Mobile-optimized */}
           <Link
             href="/dashboard/my-children"
-            className="card p-10 hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 group hover:border-primary-300"
+            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-primary-300 min-h-[240px]"
           >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-sky rounded-2xl flex items-center justify-center shadow-blue-glow">
-                <User className="w-8 h-8 text-white" />
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-sky rounded-xl md:rounded-2xl flex items-center justify-center shadow-blue-glow flex-shrink-0">
+                <User className="w-7 h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Child Profiles</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Child Profiles</h2>
             </div>
 
-            <div className="text-center py-8">
-              <div className="text-6xl font-bold gradient-text mb-2">{children.length}</div>
-              <div className="text-sm text-gray-500 font-medium">
+            <div className="text-center py-6 md:py-8">
+              <div className="text-5xl md:text-6xl font-bold gradient-text mb-2">{children.length}</div>
+              <div className="text-xs md:text-sm text-gray-500 font-medium">
                 {maxChildren === null ? 'Unlimited' : `of ${maxChildren} profiles`}
               </div>
             </div>
 
-            <button className="w-full mt-6 btn-primary btn-md">
+            <button className="w-full mt-4 md:mt-6 btn-primary btn-md pointer-events-none">
               Manage Profiles
             </button>
           </Link>
 
-          {/* Character Profiles - Fully Clickable */}
+          {/* Character Profiles - Mobile-optimized */}
           <Link
             href="/dashboard/other-characters"
-            className="card p-10 hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 group hover:border-purple-300"
+            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-purple-300 min-h-[240px]"
           >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-purple rounded-2xl flex items-center justify-center shadow-purple-glow">
-                <Users className="w-8 h-8 text-white" />
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-purple rounded-xl md:rounded-2xl flex items-center justify-center shadow-purple-glow flex-shrink-0">
+                <Users className="w-7 h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Character Profiles</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Character Profiles</h2>
             </div>
 
-            <div className="text-center py-8">
-              <div className="text-6xl font-bold gradient-text-purple mb-2">{otherCharacters.length}</div>
-              <div className="text-sm text-gray-500 font-medium">
+            <div className="text-center py-6 md:py-8">
+              <div className="text-5xl md:text-6xl font-bold gradient-text-purple mb-2">{otherCharacters.length}</div>
+              <div className="text-xs md:text-sm text-gray-500 font-medium">
                 {maxOtherCharacters === null ? 'Unlimited' : `of ${maxOtherCharacters} characters`}
               </div>
             </div>
 
-            <button className="w-full mt-6 btn-purple btn-md">
+            <button className="w-full mt-4 md:mt-6 btn-purple btn-md pointer-events-none">
               Manage Characters
             </button>
           </Link>
 
-          {/* Story Library - Fully Clickable */}
+          {/* Story Library - Mobile-optimized */}
           <Link
             href="/dashboard/story-library"
-            className="card p-10 hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 group hover:border-teal-300"
+            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-teal-300 min-h-[240px]"
           >
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-teal rounded-2xl flex items-center justify-center shadow-teal-glow">
-                <Library className="w-8 h-8 text-white" />
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-teal rounded-xl md:rounded-2xl flex items-center justify-center shadow-teal-glow flex-shrink-0">
+                <Library className="w-7 h-7 md:w-8 md:h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Story Library</h2>
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Story Library</h2>
             </div>
 
-            <div className="text-center py-8">
-              <div className="text-6xl font-bold text-gray-900 mb-2">{storyCount || 0}</div>
-              <div className="text-sm text-gray-500 font-medium">stories created</div>
+            <div className="text-center py-6 md:py-8">
+              <div className="text-5xl md:text-6xl font-bold text-gray-900 mb-2">{storyCount || 0}</div>
+              <div className="text-xs md:text-sm text-gray-500 font-medium">stories created</div>
             </div>
 
-            <button className="w-full mt-6 btn-teal btn-md">
+            <button className="w-full mt-4 md:mt-6 btn-teal btn-md pointer-events-none">
               View Library
             </button>
           </Link>
