@@ -55,6 +55,12 @@ export default async function DashboardPage() {
 
   const primaryCharacter = children.find((c) => c.is_primary) || children[0]
 
+  // Fetch story count
+  const { count: storyCount } = await supabase
+    .from('stories')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+
   // Calculate limits (null means unlimited, so only use defaults if undefined)
   const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
   const maxOtherCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
@@ -161,7 +167,10 @@ export default async function DashboardPage() {
           </Link>
 
           {/* Story Library - Fully Clickable */}
-          <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 opacity-60 cursor-not-allowed">
+          <Link
+            href="/dashboard/story-library"
+            className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 group"
+          >
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center">
                 <Library className="w-6 h-6 text-white" />
@@ -170,14 +179,14 @@ export default async function DashboardPage() {
             </div>
 
             <div className="text-center py-6">
-              <div className="text-4xl font-bold text-neutral-900 mb-1">0</div>
+              <div className="text-4xl font-bold text-neutral-900 mb-1">{storyCount || 0}</div>
               <div className="text-sm text-neutral-500">stories created</div>
             </div>
 
-            <button disabled className="w-full mt-4 px-4 py-3 bg-gray-200 text-gray-500 font-medium rounded-lg cursor-not-allowed">
-              Coming Soon
+            <button className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white font-medium rounded-lg hover:shadow-lg transition-all">
+              View Library
             </button>
-          </div>
+          </Link>
 
         </div>
       </div>
