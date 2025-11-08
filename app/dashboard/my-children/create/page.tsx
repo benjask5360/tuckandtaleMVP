@@ -20,9 +20,9 @@ export default function CreateChildPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 md:py-12 pt-20 md:pt-24">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-8 pt-20 md:pt-24">
         {/* Header */}
-        <div className="mb-8 md:mb-10">
+        <div className="mb-6 md:mb-8">
           <Link
             href="/dashboard/my-children"
             className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
