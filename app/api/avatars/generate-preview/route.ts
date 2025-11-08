@@ -170,9 +170,10 @@ export async function GET(request: NextRequest) {
     const leonardo = new LeonardoClient();
 
     // Check generation status
-    const generationStatus = await leonardo.getGenerationStatus(generationId);
+    const generationStatus = await leonardo.getGeneration(generationId);
 
-    if (generationStatus.status === 'COMPLETE' && generationStatus.imageUrl) {
+    if (generationStatus.status === 'COMPLETE' && generationStatus.images && generationStatus.images.length > 0) {
+      const imageUrl = generationStatus.images[0].url;
       // Get the avatar cache entry
       const { data: avatarCache } = await supabase
         .from('avatar_cache')
@@ -193,7 +194,7 @@ export async function GET(request: NextRequest) {
 
       try {
         // Download image from Leonardo
-        const imageResponse = await fetch(generationStatus.imageUrl);
+        const imageResponse = await fetch(imageUrl);
         const imageBlob = await imageResponse.blob();
         const imageBuffer = await imageBlob.arrayBuffer();
 

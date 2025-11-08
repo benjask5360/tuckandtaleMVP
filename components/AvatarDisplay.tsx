@@ -324,7 +324,7 @@ export function AvatarDisplay({
   }, [regenerationStatus]);
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="w-full flex flex-col items-center space-y-4">
       {/* Avatar Display Area */}
       <div className="relative w-48 h-64 bg-muted rounded-lg overflow-hidden border-2 border-border">
         {avatarUrl ? (
@@ -400,17 +400,17 @@ export function AvatarDisplay({
           <button
             onClick={generateAvatar}
             disabled={!!(regenerationStatus && regenerationStatus.remaining === 0)}
-            className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            className="w-full px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {avatarUrl ? (
               <>
                 <RefreshCw className="w-4 h-4" />
-                Regenerate Avatar
+                Regenerate AI Avatar (Optional)
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                Generate Avatar
+                Generate AI Avatar (Optional)
               </>
             )}
           </button>

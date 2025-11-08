@@ -236,27 +236,25 @@ export default function DynamicCharacterForm({
 
       {/* Avatar Generation Section - Always show */}
       <div className="border-t border-neutral-200 pt-6">
-        <h3 className="text-lg font-bold text-neutral-800 mb-4">Character Avatar</h3>
-        <div className="max-w-sm">
-          <AvatarDisplay
-            characterId={characterId || initialValues?.id || undefined}
-            currentAvatarUrl={pendingAvatarUrl || initialValues?.avatar_cache?.image_url || null}
-            profileType={
-              characterType.category === 'child'
-                ? 'child'
-                : characterType.id === 'pet'
-                ? 'pet'
-                : characterType.id === 'magical_creature'
-                ? 'magical_creature'
-                : 'storybook_character'
-            }
-            previewMode={!characterId && !isEditing}
-            formData={formData}
-            calculatedAge={calculatedAge}
-            onAvatarGenerated={handleAvatarGenerated}
-            isNew={!isEditing}
-          />
-        </div>
+        <h3 className="text-lg font-bold text-neutral-800 mb-4 text-center">Character Avatar</h3>
+        <AvatarDisplay
+          characterId={characterId || initialValues?.id || undefined}
+          currentAvatarUrl={pendingAvatarUrl || initialValues?.avatar_cache?.image_url || null}
+          profileType={
+            characterType.category === 'child'
+              ? 'child'
+              : characterType.id === 'pet'
+              ? 'pet'
+              : characterType.id === 'magical_creature'
+              ? 'magical_creature'
+              : 'storybook_character'
+          }
+          previewMode={!characterId && !isEditing}
+          formData={formData}
+          calculatedAge={calculatedAge}
+          onAvatarGenerated={handleAvatarGenerated}
+          isNew={!isEditing}
+        />
       </div>
 
       {/* Action Buttons */}
@@ -264,21 +262,19 @@ export default function DynamicCharacterForm({
         <button
           type="submit"
           disabled={loading}
-          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+          className="flex-[3] px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : isEditing ? 'Update Profile' : 'Save Profile'}
+          {loading ? 'Saving...' : isEditing ? 'Update Profile' : 'Create Profile'}
         </button>
 
-        {isEditing && (
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={loading}
-            className="px-8 py-3 bg-neutral-200 text-neutral-700 font-semibold rounded-xl hover:bg-neutral-300 transition-all duration-300 disabled:opacity-50"
-          >
-            Cancel
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={loading}
+          className="flex-[1] px-8 py-3 bg-neutral-200 text-neutral-700 font-semibold rounded-xl hover:bg-neutral-300 transition-all duration-300 disabled:opacity-50"
+        >
+          Cancel
+        </button>
 
         {showAvatarGenerator && characterId && (
           <button
