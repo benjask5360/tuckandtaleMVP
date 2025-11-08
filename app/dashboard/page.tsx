@@ -63,28 +63,9 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-6xl mx-auto px-6 py-8">
 
-        {/* Header with Settings and Sign Out */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-neutral-900">Welcome back, {firstName}!</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard/settings"
-              className="p-2 hover:bg-white/50 rounded-lg transition-colors"
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5 text-neutral-700" />
-            </Link>
-            <form action="/auth/signout" method="post" className="inline">
-              <button
-                type="submit"
-                className="px-4 py-2 text-neutral-700 hover:bg-white/50 rounded-lg transition-colors font-medium"
-              >
-                Sign Out
-              </button>
-            </form>
-          </div>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-neutral-900">Welcome back, {firstName}!</h1>
         </div>
 
         {/* Subscription Plan Badge */}
@@ -210,22 +191,14 @@ export default async function DashboardPage() {
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-4">
               <p className="text-center md:text-left">© 2024 Tuck and Tale™. All rights reserved.</p>
-              <div className="flex items-center gap-4">
-                <Link
-                  href="/dashboard/settings"
-                  className="hover:text-primary-500 transition-colors font-medium"
-                >
-                  Settings
-                </Link>
-                <form action="/auth/signout" method="post" className="inline">
-                  <button
-                    type="submit"
-                    className="hover:text-primary-500 transition-colors font-medium"
-                  >
-                    Sign Out
-                  </button>
-                </form>
-              </div>
+              <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-6 gap-y-3 text-center md:text-left">
+                <a href="#" className="hover:text-primary-500 transition-colors">About</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Contact Us</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">FAQ</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Founder Parents</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-primary-500 transition-colors">Terms of Service</a>
+              </nav>
             </div>
           </div>
         </div>
