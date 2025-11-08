@@ -1,6 +1,7 @@
 import { Star, Check, ArrowRight, BookOpen, Moon, Users, Shield, Heart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import AuthAwareCTA from '@/components/AuthAwareCTA'
 
 export default function HomePage() {
   return (
@@ -40,12 +41,7 @@ export default function HomePage() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Link href="/auth/signup">
-                  <button className="btn-primary btn-lg group">
-                    Start Creating Stories
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link>
+                <AuthAwareCTA />
               </div>
 
               <p className="text-sm text-neutral-500 mb-8">
@@ -396,12 +392,12 @@ export default function HomePage() {
           <p className="text-xl text-neutral-500 mb-8">
             Craft captivating stories today — no credit card required.
           </p>
-          <Link href="/auth/signup">
-            <button className="btn-primary btn-lg group">
+          <AuthAwareCTA>
+            <>
               Get started now
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </Link>
+            </>
+          </AuthAwareCTA>
         </div>
       </section>
 
