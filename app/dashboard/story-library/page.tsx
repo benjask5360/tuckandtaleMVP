@@ -84,7 +84,17 @@ export default function StoryLibraryPage() {
 
       if (error) throw error
 
-      setStories(data || [])
+      // Transform the data to handle nested arrays from joins
+      const transformedData = data?.map(story => ({
+        ...story,
+        content_characters: story.content_characters?.map((cc: any) => ({
+          character_profiles: Array.isArray(cc.character_profiles)
+            ? cc.character_profiles[0]
+            : cc.character_profiles
+        })) || []
+      })) || []
+
+      setStories(transformedData)
     } catch (err: any) {
       setError(err.message)
     } finally {

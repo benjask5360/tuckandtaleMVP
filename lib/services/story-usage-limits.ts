@@ -182,13 +182,15 @@ export class StoryUsageLimitsService {
     const supabase = await createClient();
 
     // Try to get existing record
-    let { data: usage, error } = await supabase
+    const { data, error } = await supabase
       .from('generation_usage')
       .select('*')
       .eq('user_id', userId)
       .eq('month_year', monthYear)
       .eq('generation_type', this.GENERATION_TYPE)
       .single();
+
+    let usage = data;
 
     // Create if doesn't exist
     if (error && error.code === 'PGRST116') {

@@ -53,13 +53,21 @@ export default function CreateStoryPage() {
 
       if (error) throw error
 
+      // Transform the data to handle avatar_cache being an array from the join
+      const transformedData = data?.map(profile => ({
+        ...profile,
+        avatar_cache: Array.isArray(profile.avatar_cache)
+          ? profile.avatar_cache[0]
+          : profile.avatar_cache
+      })) || []
+
       // Check if user has at least one child character (required for hero)
-      const hasChildren = data && data.some(profile => profile.character_type === 'child')
+      const hasChildren = transformedData && transformedData.some(profile => profile.character_type === 'child')
 
       if (!hasChildren) {
         setError('no-children')
       } else {
-        setChildProfiles(data)
+        setChildProfiles(transformedData)
       }
     } catch (err: any) {
       console.error('Error loading child profiles:', err)

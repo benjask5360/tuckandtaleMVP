@@ -67,7 +67,7 @@ export async function PUT(
     if (!usageCheck.allowed) {
       return NextResponse.json(
         {
-          error: usageCheck.reason || 'Story generation limit reached',
+          error: 'Story generation limit reached',
           limits: usageCheck,
         },
         { status: 429 }

@@ -242,7 +242,7 @@ export class StoryGenerationService {
     adHocCharacters.forEach(char => {
       characters.push({
         name: char.name,
-        role: char.role || 'friend',
+        role: (char.role as 'hero' | 'sidekick' | 'pet' | 'friend' | 'family' | 'other') || 'friend',
       });
     });
 
@@ -271,12 +271,12 @@ export class StoryGenerationService {
   /**
    * Infer character role from profile type
    */
-  private static inferRole(profileType: string): string {
-    const roleMap: Record<string, string> = {
+  private static inferRole(profileType: string): 'hero' | 'sidekick' | 'pet' | 'friend' | 'family' | 'other' {
+    const roleMap: Record<string, 'hero' | 'sidekick' | 'pet' | 'friend' | 'family' | 'other'> = {
       child: 'friend',
       pet: 'pet',
       storybook_character: 'sidekick',
-      magical_creature: 'magical_friend',
+      magical_creature: 'friend',
     };
     return roleMap[profileType] || 'friend';
   }
@@ -325,7 +325,7 @@ export class StoryGenerationService {
   private static async callOpenAI(
     prompt: string,
     aiConfig: AIConfig
-  ): Promise<{ content: string; tokens: number }> {
+  ): Promise<{ content: string; tokens: number; promptTokens: number; completionTokens: number }> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error('OpenAI API key not configured');
