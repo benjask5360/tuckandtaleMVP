@@ -272,8 +272,8 @@ export async function getDescriptorBySimpleTerm(
       query = query.eq('age_value', ageValue);
     }
   } else {
-    // For all other descriptor tables, use simple_term
-    query = query.eq('simple_term', simpleTerm);
+    // For all other descriptor tables, use simple_term with case-insensitive matching
+    query = query.ilike('simple_term', simpleTerm);
   }
 
   // Handle special _age_lookup filter for age-aware gender descriptors
@@ -291,7 +291,12 @@ export async function getDescriptorBySimpleTerm(
   // Add any additional filters (e.g., attribute_type for descriptors_attribute)
   if (additionalFilters && Object.keys(additionalFilters).length > 0) {
     Object.entries(additionalFilters).forEach(([key, value]) => {
-      query = query.eq(key, value);
+      // Use case-insensitive matching for text filters
+      if (typeof value === 'string') {
+        query = query.ilike(key, value);
+      } else {
+        query = query.eq(key, value);
+      }
     });
   }
 
@@ -355,6 +360,9 @@ export async function getGroupedAttributeDescriptors(
     eyes: [],
     skin: [],
     body: [],
+    hair_length: [],
+    glasses: [],
+    pet_color: [],
   };
 
   attributes.forEach((attr) => {
