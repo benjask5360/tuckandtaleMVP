@@ -39,7 +39,7 @@ export default function HomePage() {
                   src="/images/hero.png"
                   alt="Family reading bedtime stories together"
                   fill
-                  sizes="100vw"
+                  sizes="(max-width: 768px) 90vw, (max-width: 1024px) 85vw, 50vw"
                   className="object-contain"
                   priority
                 />

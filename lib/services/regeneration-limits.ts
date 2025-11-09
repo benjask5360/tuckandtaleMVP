@@ -1,6 +1,9 @@
 /**
  * Regeneration Limits Service
  * Manages monthly avatar regeneration limits based on subscription tiers
+ *
+ * Uses unified generation_usage table for tracking monthly counts
+ * Uses api_cost_logs for detailed generation history and AI config tracking
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -50,22 +53,23 @@ export class RegenerationLimitsService {
       };
     }
 
-    // Get last config used
-    const monthYear = this.getCurrentMonthYear();
-    const { data: usageData } = await supabase
-      .from('avatar_generation_usage')
+    // Get last config used from api_cost_logs
+    const { data: costLog } = await supabase
+      .from('api_cost_logs')
       .select('ai_config_name')
       .eq('user_id', userId)
       .eq('character_profile_id', characterProfileId)
-      .eq('month_year', monthYear)
-      .single();
+      .eq('operation', 'avatar_generation')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     return {
       used: result.used || 0,
       limit: result.limit_count || 1,
       remaining: result.remaining || 0,
       resetsInDays: result.resets_in_days || 30,
-      lastConfigUsed: usageData?.ai_config_name,
+      lastConfigUsed: costLog?.ai_config_name,
     };
   }
 
@@ -135,11 +139,13 @@ export class RegenerationLimitsService {
   ): Promise<any[]> {
     const supabase = await createClient();
 
+    // Get avatar generation history from api_cost_logs
     const { data, error } = await supabase
-      .from('avatar_generation_usage')
+      .from('api_cost_logs')
       .select('*')
       .eq('user_id', userId)
       .eq('character_profile_id', characterProfileId)
+      .eq('operation', 'avatar_generation')
       .order('created_at', { ascending: false });
 
     if (error) {
