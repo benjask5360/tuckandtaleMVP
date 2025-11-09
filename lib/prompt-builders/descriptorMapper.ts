@@ -37,6 +37,25 @@ export async function mapSelectionsToEnhanced(
     });
   }
 
+  // Map pet color (primaryColor) separately - will be used for fur/feathers/scales
+  if (profileType === 'pet' && selections.primaryColor) {
+    console.log('Pet color mapping:', {
+      primaryColor: selections.primaryColor,
+      profileType,
+      willFetch: true
+    });
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: selections.primaryColor,
+      filters: { attribute_type: 'pet_color' }
+    });
+  } else if (profileType === 'pet') {
+    console.log('Pet detected but no primaryColor:', {
+      selections,
+      hasPrimaryColor: !!selections.primaryColor
+    });
+  }
+
   if (selections.eyeColor) {
     fetchMappings.push({
       table: 'descriptors_attribute',
@@ -159,6 +178,9 @@ export async function mapSelectionsToEnhanced(
         case 'glasses':
           enhanced.glasses = descriptor.rich_description;
           break;
+        case 'pet_color':
+          enhanced.petColor = descriptor.rich_description;
+          break;
       }
     } else if (key.startsWith('descriptors_age_')) {
       enhanced.age = descriptor.rich_description;
@@ -170,6 +192,52 @@ export async function mapSelectionsToEnhanced(
       enhanced.creature = descriptor.rich_description;
     }
   });
+
+  // Fallback logic: Use raw input if no descriptor was found
+  // This ensures custom user inputs are preserved in prompts
+
+  if (selections.hairColor && !enhanced.hair) {
+    console.log('Hair color fallback - using raw input:', selections.hairColor);
+    enhanced.hair = selections.hairColor;
+  }
+
+  if (selections.hairLength && !enhanced.hairLength) {
+    console.log('Hair length fallback - using raw input:', selections.hairLength);
+    enhanced.hairLength = selections.hairLength;
+  }
+
+  if (selections.eyeColor && !enhanced.eyes) {
+    console.log('Eye color fallback - using raw input:', selections.eyeColor);
+    enhanced.eyes = selections.eyeColor;
+  }
+
+  if (selections.skinTone && !enhanced.skin) {
+    console.log('Skin tone fallback - using raw input:', selections.skinTone);
+    enhanced.skin = selections.skinTone;
+  }
+
+  if (selections.bodyType && !enhanced.body) {
+    console.log('Body type fallback - using raw input:', selections.bodyType);
+    enhanced.body = selections.bodyType;
+  }
+
+  if (profileType === 'pet' && selections.primaryColor && !enhanced.petColor) {
+    console.log('Pet color fallback - using raw input:', selections.primaryColor);
+    enhanced.petColor = selections.primaryColor;
+  }
+
+  // For pets: if breed/species descriptors weren't found, use raw inputs
+  if (profileType === 'pet' && (selections.breed || selections.species) && !enhanced.species) {
+    const fallbackSpecies = selections.breed || selections.species;
+    console.log('Pet species/breed fallback - using raw input:', fallbackSpecies);
+    enhanced.species = fallbackSpecies;
+  }
+
+  // For magical creatures: if no creature descriptor found, use raw input
+  if (profileType === 'magical_creature' && selections.creatureType && !enhanced.creature) {
+    console.log('Creature type fallback - using raw input:', selections.creatureType);
+    enhanced.creature = selections.creatureType;
+  }
 
   return enhanced;
 }

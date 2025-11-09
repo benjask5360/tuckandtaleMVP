@@ -23,6 +23,7 @@ interface PreviewGenerationRequest {
     hasGlasses?: boolean;
     species?: string;
     breed?: string;
+    primaryColor?: string;  // Pet fur/feather/scale color
     creatureType?: string;
   };
   configName?: string;
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       hasGlasses: attributes?.hasGlasses,
       species: attributes?.species,
       breed: attributes?.breed,
+      primaryColor: attributes?.primaryColor,
       creatureType: attributes?.creatureType,
     });
 

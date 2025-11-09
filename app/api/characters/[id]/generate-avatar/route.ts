@@ -104,6 +104,7 @@ export async function POST(
         hasGlasses: character.attributes?.hasGlasses,
         species: character.attributes?.species,
         breed: character.attributes?.breed,
+        primaryColor: character.attributes?.primaryColor,
         creatureType: character.attributes?.creatureType,
       }
     );

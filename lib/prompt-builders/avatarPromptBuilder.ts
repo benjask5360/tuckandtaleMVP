@@ -79,7 +79,7 @@ export async function generateAvatarPrompt(
       prompt = `Cute ${petType}`;
 
       const petFeatures: string[] = [];
-      if (enhanced.hair) petFeatures.push(`${enhanced.hair} fur`);
+      if (enhanced.petColor) petFeatures.push(enhanced.petColor);
       if (enhanced.eyes) petFeatures.push(`${enhanced.eyes} eyes`);
 
       if (petFeatures.length > 0) {

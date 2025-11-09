@@ -332,7 +332,7 @@ export const characterTypes: CharacterTypeConfig[] = [
           {
             id: 'primaryColor',
             type: 'buttons',
-            label: 'Primary Color',
+            label: 'Fur/Feather Color',
             customOptions: true,
             options: [
               { value: 'white', label: 'White' },
@@ -343,6 +343,21 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'orange', label: 'Orange' },
               { value: 'spotted', label: 'Spotted' },
               { value: 'striped', label: 'Striped' }
+            ]
+          },
+          {
+            id: 'eyeColor',
+            type: 'buttons',
+            label: 'Eye Color',
+            customOptions: true,
+            options: [
+              { value: 'blue', label: 'Blue' },
+              { value: 'brown', label: 'Brown' },
+              { value: 'green', label: 'Green' },
+              { value: 'amber', label: 'Amber' },
+              { value: 'hazel', label: 'Hazel' },
+              { value: 'gray', label: 'Gray' },
+              { value: 'black', label: 'Black' }
             ]
           }
         ]
