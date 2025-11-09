@@ -155,25 +155,94 @@ export class AIConfigService {
    */
   static async logGenerationCost(
     userId: string,
-    characterProfileId: string,
+    characterProfileId: string | null,
     aiConfig: AIConfig,
     creditsUsed: number,
     metadata?: any
   ) {
     const supabase = await createClient();
 
+    // Extract cost-related data from metadata
+    const promptUsed = metadata?.prompt_used;
+    const actualCost = metadata?.actual_cost; // Real cost from API provider (e.g., Leonardo apiCreditCost)
+    const promptTokens = metadata?.prompt_tokens; // Input tokens (OpenAI)
+    const completionTokens = metadata?.completion_tokens; // Output tokens (OpenAI)
+
+    // Calculate actual_cost_usd from api_prices table
+    let actualCostUsd: number | null = null;
+
+    // Get pricing from database
+    // Try to find pricing by provider + model_id first (for OpenAI models)
+    let { data: pricing } = await supabase
+      .from('api_prices')
+      .select('cost_per_unit, input_cost_per_unit, output_cost_per_unit')
+      .eq('provider', aiConfig.provider)
+      .eq('model_id', aiConfig.model_id)
+      .maybeSingle();
+
+    // Fallback to provider-only pricing (for Leonardo)
+    if (!pricing) {
+      const { data: fallbackPricing } = await supabase
+        .from('api_prices')
+        .select('cost_per_unit, input_cost_per_unit, output_cost_per_unit')
+        .eq('provider', aiConfig.provider)
+        .is('model_id', null)
+        .maybeSingle();
+
+      pricing = fallbackPricing;
+    }
+
+    if (pricing) {
+      // OpenAI/Anthropic: Use separate input/output pricing if tokens provided
+      if (pricing.input_cost_per_unit && pricing.output_cost_per_unit &&
+          promptTokens !== undefined && completionTokens !== undefined) {
+        const inputCost = promptTokens * pricing.input_cost_per_unit;
+        const outputCost = completionTokens * pricing.output_cost_per_unit;
+        actualCostUsd = inputCost + outputCost;
+
+        console.log('💵 Calculated USD cost from token breakdown:', {
+          provider: aiConfig.provider,
+          promptTokens,
+          completionTokens,
+          inputCostPerToken: pricing.input_cost_per_unit,
+          outputCostPerToken: pricing.output_cost_per_unit,
+          inputCost,
+          outputCost,
+          totalCostUsd: actualCostUsd,
+        });
+      }
+      // Leonardo: Use single cost_per_unit for credits
+      else if (pricing.cost_per_unit && actualCost !== undefined && actualCost !== null) {
+        actualCostUsd = actualCost * pricing.cost_per_unit;
+
+        console.log('💵 Calculated USD cost from credits:', {
+          provider: aiConfig.provider,
+          actualCost,
+          costPerUnit: pricing.cost_per_unit,
+          actualCostUsd,
+        });
+      }
+    }
+
     const { error } = await supabase
       .from('api_cost_logs')
       .insert({
         user_id: userId,
+        character_profile_id: characterProfileId, // Now a top-level field (can be null for previews)
+        ai_config_name: aiConfig.name, // Now a top-level field
         provider: aiConfig.provider,
         operation: aiConfig.purpose,
         model_used: aiConfig.model_name,
-        total_tokens: creditsUsed,
-        estimated_cost: creditsUsed * aiConfig.cost_per_generation,
+        total_tokens: Math.ceil(creditsUsed), // Round up to integer (Leonardo uses whole credits)
+        prompt_tokens: promptTokens ?? null, // Input tokens (OpenAI)
+        completion_tokens: completionTokens ?? null, // Output tokens (OpenAI)
+        estimated_cost: aiConfig.cost_per_generation, // Our fallback estimate
+        actual_cost: actualCost ?? null, // Real cost from provider in credits/tokens (null if not available)
+        actual_cost_usd: actualCostUsd, // Real cost in USD (calculated from tokens * pricing)
+        processing_status: 'completed',
+        completed_at: new Date().toISOString(),
+        prompt_used: promptUsed || null, // Include prompt if available
         metadata: {
-          ai_config_name: aiConfig.name,
-          character_profile_id: characterProfileId,
           model_id: aiConfig.model_id,
           model_name: aiConfig.model_name,
           credits_used: creditsUsed,
