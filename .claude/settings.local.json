@@ -55,7 +55,19 @@
       "Bash(git log:*)",
       "Bash(Test-NetConnection -ComputerName aws-1-us-east-2.pooler.supabase.com -Port 5432)",
       "Bash(node deploy-migration.js:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(git pull:*)",
+      "Bash(copy:*)",
+      "Bash(unset:*)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://iolimejvugpcpnmruqww.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbGltZWp2dWdwY3BubXJ1cXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNzQwOTQsImV4cCI6MjA3Nzk1MDA5NH0.imnMAeEpfT3HsCs6bjZi4affIrubNc6ImRWb9HOkvUY npm run dev:*)",
+      "Bash(node apply-migration.js:*)",
+      "Bash(del:*)",
+      "Bash(node apply-descriptor-migration.js:*)",
+      "Bash(node check-ai-configs.js:*)",
+      "Bash(node fix-gender-values.js:*)",
+      "Bash(NEXT_PUBLIC_SUPABASE_URL=https://iolimejvugpcpnmruqww.supabase.co SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbGltZWp2dWdwY3BubXJ1cXd3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjM3NDA5NCwiZXhwIjoyMDc3OTUwMDk0fQ.ybv7KgWy0fdRTik1UkX3nAjdgLsBEExpLUrvnG2FRMA node:*)",
+      "Bash(rm:*)",
+      "Bash(node add-bald-descriptor.js:*)"
     ],
     "deny": [],
     "ask": []

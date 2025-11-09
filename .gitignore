@@ -52,3 +52,17 @@ Thumbs.db
 **/supabase/.branches
 **/supabase/.temp
 .vercel
+
+# Temporary/utility scripts
+apply-*.js
+deploy-*.js
+
+# Legacy files
+*.legacy
+
+# Implementation docs (optional - keep if wanted)
+*_SUMMARY.md
+
+# One-off migration scripts
+supabase/migrations/update-*.sql
+supabase/migrations/fix-*.sql
