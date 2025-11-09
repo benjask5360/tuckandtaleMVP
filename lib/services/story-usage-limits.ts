@@ -182,7 +182,7 @@ export class StoryUsageLimitsService {
     const supabase = await createClient();
 
     // Try to get existing record
-    let { data: usage, error } = await supabase
+    const { data: usage, error } = await supabase
       .from('generation_usage')
       .select('*')
       .eq('user_id', userId)
