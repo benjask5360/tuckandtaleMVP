@@ -121,7 +121,9 @@ export async function POST(
     );
 
     // Start generation
-    const { generationId } = await leonardo.generateImage(leonardoConfig);
+    const { generationId, apiCreditCost } = await leonardo.generateImage(leonardoConfig);
+
+    console.log('Leonardo POST response - generationId:', generationId, 'apiCreditCost:', apiCreditCost);
 
     // Create avatar cache entry
     // Storage path follows RLS policy: {userId}/{characterId}/{generationId}.png
@@ -142,6 +144,7 @@ export async function POST(
         generation_metadata: {
           config: leonardoConfig,
           timestamp: new Date().toISOString(),
+          initial_api_credit_cost: apiCreditCost, // Store the cost from initial POST response
         },
       })
       .select()
@@ -279,6 +282,20 @@ export async function GET(
         .from('avatars')
         .getPublicUrl(fileName);
 
+      // Get AI config for cost calculation
+      const aiConfigForCost = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
+
+      // Use the apiCreditCost stored from the initial POST response, or fall back to our config
+      const initialApiCreditCost = avatarCache.generation_metadata?.initial_api_credit_cost;
+      const actualCost = initialApiCreditCost ?? (aiConfigForCost ? aiConfigForCost.cost_per_generation : 1);
+
+      console.log('Cost calculation:', {
+        initialApiCreditCost,
+        configCostPerGeneration: aiConfigForCost?.cost_per_generation,
+        actualCostUsed: actualCost,
+        source: initialApiCreditCost !== undefined ? 'leonardo_initial_post' : 'ai_config',
+      });
+
       // Update avatar cache
       await supabase
         .from('avatar_cache')
@@ -286,7 +303,7 @@ export async function GET(
           processing_status: 'completed',
           image_url: publicUrl,
           storage_path: fileName,
-          leonardo_api_credits_used: generation.creditCost,
+          leonardo_api_credits_used: actualCost,
           generation_metadata: {
             ...avatarCache.generation_metadata,
             leonardo_response: generation,
@@ -308,22 +325,26 @@ export async function GET(
 
       // The avatar is ready but not set as current - user must save the form to apply it
 
-      // Log cost
+      // Log cost (reuse the actualCost calculated above)
+      const aiConfig = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
+
       console.log('Logging API cost for generation:', {
         userId: user.id,
         characterId,
         aiConfigName: avatarCache.ai_config_name,
-        creditCost: generation.creditCost,
+        creditCost: actualCost,
       });
 
-      const aiConfig = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
       if (aiConfig) {
         await AIConfigService.logGenerationCost(
           user.id,
           characterId,
           aiConfig,
-          generation.creditCost || 1,
-          { generation_id: generationId }
+          actualCost,
+          {
+            generation_id: generationId,
+            actual_cost: initialApiCreditCost, // Pass the real Leonardo cost from initial POST
+          }
         );
         console.log('API cost logged successfully');
       } else {

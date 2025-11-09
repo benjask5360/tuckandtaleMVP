@@ -99,7 +99,9 @@ export async function POST(request: NextRequest) {
     );
 
     // Start generation
-    const { generationId } = await leonardo.generateImage(leonardoConfig);
+    const { generationId, apiCreditCost } = await leonardo.generateImage(leonardoConfig);
+
+    console.log('Preview - Leonardo POST response - generationId:', generationId, 'apiCreditCost:', apiCreditCost);
 
     // Create a temporary avatar cache entry (not linked to any character yet)
     // We'll use a special flag to indicate this is a preview
@@ -114,6 +116,10 @@ export async function POST(request: NextRequest) {
         storage_path: null, // Will be set when Leonardo completes
         image_url: null, // Will be set when Leonardo completes
         style: 'default', // Default style for now
+        generation_metadata: {
+          timestamp: new Date().toISOString(),
+          initial_api_credit_cost: apiCreditCost, // Store the cost from initial POST response
+        },
       })
       .select()
       .single();
@@ -218,6 +224,20 @@ export async function GET(request: NextRequest) {
           .from('avatars')
           .getPublicUrl(fileName);
 
+        // Get AI config for cost calculation
+        const aiConfig = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
+
+        // Use the apiCreditCost stored from the initial POST response, or fall back to our config
+        const initialApiCreditCost = avatarCache.generation_metadata?.initial_api_credit_cost;
+        const actualCost = initialApiCreditCost ?? (aiConfig ? aiConfig.cost_per_generation : 1);
+
+        console.log('Preview cost calculation:', {
+          initialApiCreditCost,
+          configCostPerGeneration: aiConfig?.cost_per_generation,
+          actualCostUsed: actualCost,
+          source: initialApiCreditCost !== undefined ? 'leonardo_initial_post' : 'ai_config',
+        });
+
         // Update avatar cache with storage info
         await supabase
           .from('avatar_cache')
@@ -225,8 +245,33 @@ export async function GET(request: NextRequest) {
             storage_path: fileName,
             processing_status: 'completed',
             image_url: urlData.publicUrl,
+            leonardo_api_credits_used: actualCost,
           })
           .eq('id', avatarCache.id);
+
+        console.log('Logging preview avatar cost:', {
+          userId: user.id,
+          aiConfigName: avatarCache.ai_config_name,
+          creditCost: actualCost,
+        });
+
+        if (aiConfig) {
+          await AIConfigService.logGenerationCost(
+            user.id,
+            null, // No character ID for preview
+            aiConfig,
+            actualCost,
+            {
+              generation_id: generationId,
+              is_preview: true,
+              prompt_used: avatarCache.prompt_used,
+              actual_cost: initialApiCreditCost, // Pass the real Leonardo cost from initial POST
+            }
+          );
+          console.log('Preview avatar cost logged successfully');
+        } else {
+          console.error('Failed to get AI config for preview cost logging:', avatarCache.ai_config_name);
+        }
 
         return NextResponse.json({
           status: 'complete',

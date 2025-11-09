@@ -54,7 +54,7 @@ export class LeonardoClient {
   /**
    * Initiate image generation
    */
-  async generateImage(config: LeonardoGenerationConfig): Promise<{ generationId: string }> {
+  async generateImage(config: LeonardoGenerationConfig): Promise<{ generationId: string; apiCreditCost?: number }> {
     const requestBody: any = {
       prompt: config.prompt,
       modelId: config.modelId,
@@ -101,7 +101,12 @@ export class LeonardoClient {
       throw new Error('No generation ID returned from Leonardo API');
     }
 
-    return { generationId: data.sdGenerationJob.generationId };
+    console.log('Leonardo generation POST response:', JSON.stringify(data.sdGenerationJob, null, 2));
+
+    return {
+      generationId: data.sdGenerationJob.generationId,
+      apiCreditCost: data.sdGenerationJob.apiCreditCost,
+    };
   }
 
   /**
@@ -126,6 +131,9 @@ export class LeonardoClient {
       throw new Error('Generation not found');
     }
 
+    // Log the raw Leonardo response to debug credit cost
+    console.log('Raw Leonardo API response:', JSON.stringify(data, null, 2));
+
     return {
       generationId: generation.id,
       status: generation.status,
@@ -134,7 +142,7 @@ export class LeonardoClient {
         url: img.url,
         nsfw: img.nsfw || false,
       })) || [],
-      creditCost: generation.creditCost,
+      creditCost: generation.apiCreditCost, // Changed from creditCost to apiCreditCost
     };
   }
 
