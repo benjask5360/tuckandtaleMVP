@@ -72,7 +72,8 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'short', label: 'Short' },
               { value: 'medium', label: 'Medium' },
               { value: 'long', label: 'Long' },
-              { value: 'very_long', label: 'Very Long' }
+              { value: 'very_long', label: 'Very Long' },
+              { value: 'bald', label: 'Bald' }
             ]
           },
           {
@@ -234,7 +235,8 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'short', label: 'Short' },
               { value: 'medium', label: 'Medium' },
               { value: 'long', label: 'Long' },
-              { value: 'very_long', label: 'Very Long' }
+              { value: 'very_long', label: 'Very Long' },
+              { value: 'bald', label: 'Bald' }
             ]
           },
           {

@@ -137,7 +137,13 @@ export default function DynamicCharacterForm({
     }
 
     try {
-      // Call API to save the most recent avatar
+      // If there's a pending avatar from preview generation, link it
+      if (pendingAvatarCacheId) {
+        await linkPreviewAvatar(characterId, pendingAvatarCacheId)
+        return
+      }
+
+      // Otherwise, find and save the most recent avatar
       const response = await fetch(`/api/characters/${characterId}/save-latest-avatar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }

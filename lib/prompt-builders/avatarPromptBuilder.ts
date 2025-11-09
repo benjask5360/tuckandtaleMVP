@@ -46,13 +46,15 @@ export async function generateAvatarPrompt(
         baseChar = `${enhanced.age} child`;
       }
 
-      prompt = `Portrait of a ${baseChar}`;
+      prompt = `Disney Pixar style full body avatar of a friendly ${baseChar}`;
 
       // Add physical features
       const features: string[] = [];
 
-      // Combine hair color and length if both present
-      if (enhanced.hair && enhanced.hairLength) {
+      // Special handling for bald - skip hair color
+      if (enhanced.hairLength === 'bald') {
+        features.push('bald head');
+      } else if (enhanced.hair && enhanced.hairLength) {
         features.push(`${enhanced.hairLength} ${enhanced.hair} hair`);
       } else if (enhanced.hair) {
         features.push(`${enhanced.hair} hair`);
@@ -68,45 +70,45 @@ export async function generateAvatarPrompt(
       }
 
       if (features.length > 0) {
-        prompt += ` with ${features.join(', ')}`;
+        prompt += `, ${features.join(', ')}`;
       }
 
-      prompt += ', friendly expression, warm smile, full body standing, white background, Pixar Disney style, 3D animated character, high quality';
+      prompt += ', wearing age-appropriate clothing, white background, high quality';
       break;
 
     case 'pet':
       const petType = enhanced.species || 'pet';
-      prompt = `Cute ${petType}`;
+      prompt = `Disney Pixar style full body pet avatar: happy ${petType}`;
 
       const petFeatures: string[] = [];
       if (enhanced.petColor) petFeatures.push(enhanced.petColor);
-      if (enhanced.eyes) petFeatures.push(`${enhanced.eyes} eyes`);
+      if (enhanced.eyes) petFeatures.push(`${enhanced.eyes}`);
 
       if (petFeatures.length > 0) {
-        prompt += ` with ${petFeatures.join(' and ')}`;
+        prompt += `, ${petFeatures.join(', ')}`;
       }
 
-      prompt += ', full body standing, white background, Pixar Disney style, 3D animated character, high quality';
+      prompt += ', white background, high quality';
       break;
 
     case 'magical_creature':
       const creatureType = enhanced.creature || 'creature';
-      prompt = `Magical ${creatureType}`;
+      prompt = `Disney Pixar style full body magical creature avatar: happy and enchanting ${creatureType}`;
 
       const magicFeatures: string[] = [];
       if (enhanced.hair) magicFeatures.push(`${enhanced.hair} features`);
-      if (enhanced.eyes) magicFeatures.push(`${enhanced.eyes} eyes`);
+      if (enhanced.eyes) magicFeatures.push(`${enhanced.eyes}`);
 
       if (magicFeatures.length > 0) {
-        prompt += ` with ${magicFeatures.join(' and ')}`;
+        prompt += `, ${magicFeatures.join(', ')}`;
       }
 
-      prompt += ', fantastical, whimsical, enchanting, full body standing, white background, Pixar Disney style, 3D animated character, high quality';
+      prompt += ', white background, high quality';
       break;
 
     default:
       // Fallback for any unknown profile type
-      prompt = 'Full body standing character, white background, Pixar Disney style, 3D animated character, high quality';
+      prompt = 'Disney Pixar style full body friendly character avatar, white background, high quality';
   }
 
   console.log('Avatar prompt - Final:', prompt);
