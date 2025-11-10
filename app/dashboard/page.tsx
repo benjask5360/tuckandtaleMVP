@@ -25,7 +25,8 @@ export default async function DashboardPage() {
         tier_name,
         display_name,
         max_child_profiles,
-        max_other_characters
+        max_other_characters,
+        stories_per_month
       )
     `)
     .eq('id', user.id)
@@ -35,16 +36,22 @@ export default async function DashboardPage() {
     tier_name: 'free',
     display_name: 'Free',
     max_child_profiles: 1,
-    max_other_characters: 0
+    max_other_characters: 0,
+    stories_per_month: 3
   }
 
   // Get first name from full_name
   const firstName = userProfile?.full_name?.split(' ')[0] || 'there'
 
-  // Fetch all characters
+  // Fetch all characters with avatar images
   const { data: allCharacters } = await supabase
     .from('character_profiles')
-    .select('*')
+    .select(`
+      *,
+      avatar_cache:avatar_cache_id (
+        image_url
+      )
+    `)
     .eq('user_id', user.id)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
@@ -55,15 +62,18 @@ export default async function DashboardPage() {
 
   const primaryCharacter = children.find((c) => c.is_primary) || children[0]
 
-  // Fetch story count
-  const { count: storyCount } = await supabase
+  // Fetch stories
+  const { data: stories, count: storyCount } = await supabase
     .from('stories')
-    .select('*', { count: 'exact', head: true })
+    .select('id, title', { count: 'exact' })
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(3)
 
   // Calculate limits (null means unlimited, so only use defaults if undefined)
   const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
   const maxOtherCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
+  const maxStories = userTier?.stories_per_month !== undefined ? userTier.stories_per_month : 3
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,20 +100,37 @@ export default async function DashboardPage() {
 
         {/* Create Story CTA - Mobile-optimized */}
         {primaryCharacter ? (
-          <button className="w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px]">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Link
+            href="/dashboard/stories/create"
+            className="block relative w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px] overflow-hidden"
+          >
+            {/* Decorative faded stars in background */}
+            <div className="absolute top-4 right-32 opacity-20">
+              <Sparkles className="w-12 h-12 text-yellow-300" />
+            </div>
+            <div className="absolute bottom-6 right-48 opacity-15">
+              <Sparkles className="w-8 h-8 text-yellow-300" />
+            </div>
+            <div className="absolute top-8 right-20 opacity-10">
+              <Sparkles className="w-6 h-6 text-yellow-300" />
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
               <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center shadow-soft flex-shrink-0">
-                  <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-transparent flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-yellow-400" />
                 </div>
                 <div className="text-center sm:text-left">
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Create Story</h2>
-                  <p className="text-sky-100 text-base md:text-lg">Generate magical personalized stories</p>
+                  <p className="text-sky-100 text-base md:text-lg">Generate a new magical personalized story</p>
                 </div>
               </div>
-              <div className="badge bg-white/20 text-white border-white/30 text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2">Coming Soon</div>
+              <div className="flex items-center gap-2 bg-white text-primary-600 px-4 md:px-6 py-2 md:py-3 rounded-full font-semibold shadow-lg group-hover:shadow-xl transition-all">
+                <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-yellow-500" />
+                <span className="text-sm md:text-base">Create Story</span>
+              </div>
             </div>
-          </button>
+          </Link>
         ) : (
           <div className="w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl md:rounded-3xl border-2 border-yellow-300 shadow-soft">
             <div className="text-center">
@@ -118,75 +145,122 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* Three Main Sections - Mobile-optimized */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+        {/* Three Main Sections - Cleaner Design */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
 
-          {/* Child Profiles - Mobile-optimized */}
+          {/* Child Profiles */}
           <Link
             href="/dashboard/my-children"
-            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-primary-300 min-h-[240px]"
+            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-sky rounded-xl md:rounded-2xl flex items-center justify-center shadow-blue-glow flex-shrink-0">
-                <User className="w-7 h-7 md:w-8 md:h-8 text-white" />
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Child Profiles</h2>
+            {/* Avatar circles */}
+            <div className="flex items-center gap-2 mb-4">
+              {children.slice(0, 3).map((child: any, idx: number) => (
+                <div key={child.id} className="relative">
+                  {child.avatar_cache?.image_url ? (
+                    <img
+                      src={Array.isArray(child.avatar_cache) ? child.avatar_cache[0]?.image_url : child.avatar_cache.image_url}
+                      alt={child.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-sky flex items-center justify-center border-2 border-white shadow-sm">
+                      <User className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {children.length > 3 && (
+                <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-sm font-semibold text-primary-600">+{children.length - 3}</span>
+                </div>
+              )}
             </div>
 
-            <div className="text-center py-6 md:py-8">
-              <div className="text-5xl md:text-6xl font-bold gradient-text mb-2">{children.length}</div>
-              <div className="text-xs md:text-sm text-gray-500 font-medium">
-                {maxChildren === null ? 'Unlimited' : `of ${maxChildren} profiles`}
-              </div>
-            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Child Profiles</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
+            </p>
 
-            <button className="w-full mt-4 md:mt-6 btn-primary btn-md pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
               Manage Profiles
             </button>
           </Link>
 
-          {/* Character Profiles - Mobile-optimized */}
+          {/* Character Profiles */}
           <Link
             href="/dashboard/other-characters"
-            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-purple-300 min-h-[240px]"
+            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-purple rounded-xl md:rounded-2xl flex items-center justify-center shadow-purple-glow flex-shrink-0">
-                <Users className="w-7 h-7 md:w-8 md:h-8 text-white" />
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Character Profiles</h2>
+            {/* Avatar circles */}
+            <div className="flex items-center gap-2 mb-4">
+              {otherCharacters.slice(0, 3).map((character: any, idx: number) => (
+                <div key={character.id} className="relative">
+                  {character.avatar_cache?.image_url ? (
+                    <img
+                      src={Array.isArray(character.avatar_cache) ? character.avatar_cache[0]?.image_url : character.avatar_cache.image_url}
+                      alt={character.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-purple flex items-center justify-center border-2 border-white shadow-sm">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              {otherCharacters.length > 3 && (
+                <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <span className="text-sm font-semibold text-primary-600">+{otherCharacters.length - 3}</span>
+                </div>
+              )}
             </div>
 
-            <div className="text-center py-6 md:py-8">
-              <div className="text-5xl md:text-6xl font-bold gradient-text-purple mb-2">{otherCharacters.length}</div>
-              <div className="text-xs md:text-sm text-gray-500 font-medium">
-                {maxOtherCharacters === null ? 'Unlimited' : `of ${maxOtherCharacters} characters`}
-              </div>
-            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Character Profiles</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'} · {maxOtherCharacters === null ? 'Unlimited' : `${maxOtherCharacters} max`}
+            </p>
 
-            <button className="w-full mt-4 md:mt-6 btn-purple btn-md pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
               Manage Characters
             </button>
           </Link>
 
-          {/* Story Library - Mobile-optimized */}
+          {/* Story Library */}
           <Link
             href="/dashboard/story-library"
-            className="card p-6 md:p-10 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-2 transition-all duration-300 group md:hover:border-teal-300 min-h-[240px]"
+            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
-              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-teal rounded-xl md:rounded-2xl flex items-center justify-center shadow-teal-glow flex-shrink-0">
-                <Library className="w-7 h-7 md:w-8 md:h-8 text-white" />
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Story Library</h2>
+            {/* Story cover circles */}
+            <div className="flex items-center gap-2 mb-4">
+              {stories && stories.length > 0 ? (
+                <>
+                  {stories.slice(0, 3).map((story: any) => (
+                    <div key={story.id} className="relative">
+                      <div className="w-12 h-12 rounded-full bg-gradient-teal flex items-center justify-center border-2 border-white shadow-sm">
+                        <Library className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  ))}
+                  {(storyCount || 0) > 3 && (
+                    <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                      <span className="text-sm font-semibold text-primary-600">+{(storyCount || 0) - 3}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white shadow-sm">
+                  <Library className="w-6 h-6 text-gray-400" />
+                </div>
+              )}
             </div>
 
-            <div className="text-center py-6 md:py-8">
-              <div className="text-5xl md:text-6xl font-bold text-gray-900 mb-2">{storyCount || 0}</div>
-              <div className="text-xs md:text-sm text-gray-500 font-medium">stories created</div>
-            </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Story Library</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
+            </p>
 
-            <button className="w-full mt-4 md:mt-6 btn-teal btn-md pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
               View Library
             </button>
           </Link>

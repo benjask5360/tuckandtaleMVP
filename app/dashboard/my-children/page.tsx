@@ -142,33 +142,35 @@ export default function MyChildrenPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
         {/* Header */}
         <div className="mb-4 md:mb-6">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
-          >
-            ← Back to Dashboard
-          </Link>
+          {/* Navigation - Back button and tabs on same line */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold min-h-[44px] transition-colors"
+            >
+              ← Back to Dashboard
+            </Link>
 
-          {/* Navigation Tabs */}
-          <div className="flex gap-3 mb-6">
-            <Link
-              href="/dashboard/my-children"
-              className="px-6 py-3 bg-blue-100 text-blue-700 font-semibold rounded-xl transition-colors"
-            >
-              Manage Child Profiles
-            </Link>
-            <Link
-              href="/dashboard/other-characters"
-              className="px-6 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              Manage Characters
-            </Link>
-            <Link
-              href="/dashboard/story-library"
-              className="px-6 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
-            >
-              Manage Stories
-            </Link>
+            <div className="flex gap-2 sm:gap-3">
+              <Link
+                href="/dashboard/my-children"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-100 text-blue-700 font-semibold rounded-xl transition-colors text-sm sm:text-base"
+              >
+                Manage Child Profiles
+              </Link>
+              <Link
+                href="/dashboard/other-characters"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base"
+              >
+                Manage Characters
+              </Link>
+              <Link
+                href="/dashboard/story-library"
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm sm:text-base"
+              >
+                Manage Stories
+              </Link>
+            </div>
           </div>
 
           <div className="card p-6 md:p-8">
@@ -183,7 +185,7 @@ export default function MyChildrenPage() {
               </div>
               <div className="text-center md:text-right flex-shrink-0">
                 <p className="text-sm md:text-base text-gray-500 mb-3 md:mb-4">
-                  {children.length} / {maxChildren === null ? '∞' : maxChildren} profiles
+                  {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
                 </p>
                 {canAddMore ? (
                   <Link

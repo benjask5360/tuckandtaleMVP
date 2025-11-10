@@ -11,7 +11,7 @@ export type AttributeType = 'hair' | 'eyes' | 'skin' | 'body' | 'hair_length' | 
 export type ProfileType = 'child' | 'storybook_character' | 'pet' | 'magical_creature';
 export type SizeCategory = 'tiny' | 'small' | 'medium' | 'large' | 'giant';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
-export type DevelopmentalStage = 'infant' | 'toddler' | 'preschool' | 'early childhood' | 'middle childhood' | 'pre-teen' | 'teen' | 'young adult';
+export type DevelopmentalStage = 'infant' | 'toddler' | 'preschool' | 'early childhood' | 'middle childhood' | 'pre-teen' | 'teen' | 'young adult' | 'adult' | 'middle-aged' | 'mature' | 'senior' | 'elderly';
 
 // =====================================================
 // DESCRIPTOR TABLE TYPES
@@ -38,11 +38,8 @@ export interface DescriptorAttribute {
 export interface DescriptorAge {
   id: string;
   age_value: number;          // Numeric age (e.g., 6)
-  age_label: string;          // Display label (e.g., "six-year-old")
-  rich_description: string;   // Enhanced for AI
-  developmental_stage?: DevelopmentalStage | null;
-  min_age?: number | null;
-  max_age?: number | null;
+  rich_description: string;   // Enhanced for AI (e.g., "six-year-old")
+  developmental_stage?: string | null;  // Optional categorical stage (infant, toddler, preschool, etc.)
   is_active?: boolean;
   created_at?: string;
   updated_at?: string;

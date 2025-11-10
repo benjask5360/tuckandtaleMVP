@@ -110,10 +110,12 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Body Type',
             customOptions: true,
             options: [
-              { value: 'slim', label: 'Slim' },
+              { value: 'petite', label: 'Petite' },
               { value: 'average', label: 'Average' },
               { value: 'athletic', label: 'Athletic' },
-              { value: 'stocky', label: 'Stocky' }
+              { value: 'strong', label: 'Strong' },
+              { value: 'husky', label: 'Husky' },
+              { value: 'round', label: 'Round' }
             ]
           },
           {
@@ -275,12 +277,12 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Body Type',
             customOptions: true,
             options: [
-              { value: 'slim', label: 'Slim' },
+              { value: 'petite', label: 'Petite' },
               { value: 'average', label: 'Average' },
               { value: 'athletic', label: 'Athletic' },
-              { value: 'stocky', label: 'Stocky' },
-              { value: 'tall', label: 'Tall' },
-              { value: 'short', label: 'Short' }
+              { value: 'strong', label: 'Strong' },
+              { value: 'husky', label: 'Husky' },
+              { value: 'round', label: 'Round' }
             ]
           },
           {
