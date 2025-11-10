@@ -296,19 +296,14 @@ export class StoryGenerationService {
   }
 
   /**
-   * Get AI config filtered by story mode
+   * Get AI config for story mode
    */
   private static async getAIConfigForMode(mode: 'fun' | 'growth'): Promise<AIConfig | null> {
-    const configs = await AIConfigService.getAvailableConfigs('story_generation');
+    // Map mode to explicit purpose
+    const purpose = mode === 'fun' ? 'story_fun' : 'story_growth';
 
-    // Find config with matching story_mode in settings
-    const modeConfig = configs.find(c => c.settings.story_mode === mode);
-    if (modeConfig) {
-      return modeConfig;
-    }
-
-    // Fallback to default
-    return await AIConfigService.getDefaultConfig('story_generation');
+    // Get default config for this specific purpose
+    return await AIConfigService.getDefaultConfig(purpose);
   }
 
   /**

@@ -50,7 +50,7 @@ export async function PUT(
       .from('api_cost_logs')
       .select('generation_params')
       .eq('content_id', storyId)
-      .eq('operation', 'story_generation')
+      .in('operation', ['story_fun', 'story_growth'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

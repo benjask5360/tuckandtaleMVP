@@ -69,7 +69,12 @@
       "Bash(rm:*)",
       "Bash(node add-bald-descriptor.js:*)",
       "Bash(NUL)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(node apply-age-granularity.js:*)",
+      "Bash(node verify-descriptors.js:*)",
+      "Bash(node apply-body-types.js:*)",
+      "Bash(node apply-enhanced-genders.js:*)",
+      "Bash(node apply-enhanced-genders-direct.js:*)"
     ],
     "deny": [],
     "ask": []

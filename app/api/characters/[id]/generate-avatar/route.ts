@@ -282,18 +282,17 @@ export async function GET(
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Get AI config for cost calculation
+      // Get AI config for logging
       const aiConfigForCost = await AIConfigService.getConfigByName(avatarCache.ai_config_name);
 
-      // Use the apiCreditCost stored from the initial POST response, or fall back to our config
+      // Use the apiCreditCost stored from the initial POST response
       const initialApiCreditCost = avatarCache.generation_metadata?.initial_api_credit_cost;
-      const actualCost = initialApiCreditCost ?? (aiConfigForCost ? aiConfigForCost.cost_per_generation : 1);
+      const actualCost = initialApiCreditCost ?? 1; // Fallback to 1 credit if not available
 
       console.log('Cost calculation:', {
         initialApiCreditCost,
-        configCostPerGeneration: aiConfigForCost?.cost_per_generation,
         actualCostUsed: actualCost,
-        source: initialApiCreditCost !== undefined ? 'leonardo_initial_post' : 'ai_config',
+        source: initialApiCreditCost !== undefined ? 'leonardo_initial_post' : 'fallback',
       });
 
       // Update avatar cache

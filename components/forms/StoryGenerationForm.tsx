@@ -164,7 +164,11 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
             <button
               key={child.id}
               type="button"
-              onClick={() => setHeroId(child.id)}
+              onClick={() => {
+                setHeroId(child.id)
+                // Remove the new hero from additional characters if they were selected
+                setAdditionalCharacterIds(prev => prev.filter(id => id !== child.id))
+              }}
               className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[120px] ${
                 heroId === child.id
                   ? 'border-primary-600 bg-primary-50'
@@ -194,7 +198,16 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           Who else should be in the story? (Optional)
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {childProfiles.filter(p => p.character_type !== 'child').map(character => (
+          {/* Show non-hero children first, then other character types */}
+          {childProfiles
+            .filter(p => p.id !== heroId) // Exclude the hero
+            .sort((a, b) => {
+              // Sort children first, then others
+              if (a.character_type === 'child' && b.character_type !== 'child') return -1
+              if (a.character_type !== 'child' && b.character_type === 'child') return 1
+              return 0
+            })
+            .map(character => (
             <button
               key={character.id}
               type="button"
@@ -448,8 +461,15 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         </div>
       )}
 
+      {/* Disclaimer */}
+      <div className="pt-2 pb-2">
+        <p className="text-xs text-gray-500 text-center italic">
+          Story style names are used for descriptive purposes only and are not affiliated with or endorsed by any brand.
+        </p>
+      </div>
+
       {/* Submit Button */}
-      <div className="pt-4">
+      <div className="pt-2">
         <button
           type="submit"
           disabled={generating || !heroId || !genreId || !toneId || !lengthId || (mode === 'growth' && !growthTopicId)}

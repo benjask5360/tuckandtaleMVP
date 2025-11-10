@@ -4,14 +4,16 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface AIConfig {
   id: string;
   name: string;
-  purpose: 'avatar_generation' | 'story_generation' | 'story_illustration';
+  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration';
   provider: 'leonardo' | 'openai' | 'stability' | 'midjourney';
   model_id: string;
   model_name: string;
+  model_type?: 'text' | 'audio' | 'image';
   settings: {
     width?: number;
     height?: number;
@@ -25,7 +27,6 @@ export interface AIConfig {
     tiling?: boolean;
     [key: string]: any;
   };
-  cost_per_generation: number;
   is_active: boolean;
   is_default: boolean;
 }
@@ -35,7 +36,7 @@ export class AIConfigService {
    * Get the default AI configuration for a specific purpose
    */
   static async getDefaultConfig(
-    purpose: 'avatar_generation' | 'story_generation' | 'story_illustration'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration'
   ): Promise<AIConfig | null> {
     const supabase = await createClient();
 
@@ -80,7 +81,7 @@ export class AIConfigService {
    * Get all available configs for a purpose
    */
   static async getAvailableConfigs(
-    purpose: 'avatar_generation' | 'story_generation' | 'story_illustration'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration'
   ): Promise<AIConfig[]> {
     const supabase = await createClient();
 
@@ -161,7 +162,8 @@ export class AIConfigService {
     metadata?: any,
     costLogId?: string | null
   ) {
-    const supabase = await createClient();
+    // Use admin client to bypass RLS for cost logging
+    const supabase = createAdminClient();
 
     // Extract cost-related data from metadata
     const promptUsed = metadata?.prompt_used;
@@ -236,7 +238,6 @@ export class AIConfigService {
           total_tokens: Math.ceil(creditsUsed),
           prompt_tokens: promptTokens ?? null,
           completion_tokens: completionTokens ?? null,
-          estimated_cost: aiConfig.cost_per_generation,
           actual_cost: actualCost ?? null,
           actual_cost_usd: actualCostUsd,
           processing_status: 'completed',
@@ -252,6 +253,7 @@ export class AIConfigService {
 
       if (error) {
         console.error('Error updating cost log:', error);
+        throw new Error(`Failed to update cost log: ${error.message}`);
       }
     } else {
       // Insert new cost log record (for avatar generation, etc.)
@@ -267,7 +269,6 @@ export class AIConfigService {
           total_tokens: Math.ceil(creditsUsed),
           prompt_tokens: promptTokens ?? null,
           completion_tokens: completionTokens ?? null,
-          estimated_cost: aiConfig.cost_per_generation,
           actual_cost: actualCost ?? null,
           actual_cost_usd: actualCostUsd,
           processing_status: 'completed',
