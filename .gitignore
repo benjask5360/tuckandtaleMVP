@@ -47,6 +47,7 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+nul
 
 # Supabase
 **/supabase/.branches
