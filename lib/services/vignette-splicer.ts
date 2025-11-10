@@ -128,9 +128,12 @@ export class VignetteSplicerService {
     console.log('[Vignette Story] Scenes:', vignetteStory.scenes.length);
 
     // 3. Build character descriptions
-    const characterDescriptions = params.characters.map(
-      (char) => `${char.name}: ${char.description || 'Character in the story'}`
-    );
+    const characterDescriptions = params.characters.map((char) => {
+      const desc = char.description || 'Character in the story';
+      // Clean up any duplicate words (e.g., "build build")
+      const cleaned = desc.replace(/\b(\w+)\s+\1\b/gi, '$1');
+      return `${char.name} ${cleaned}`;
+    });
 
     // 4. Build Leonardo prompt from visual scenes
     const leonardoPrompt = this.buildPanoramicPromptFromVisualScenes(
@@ -246,6 +249,7 @@ export class VignetteSplicerService {
 
   /**
    * Build Leonardo prompt from visual scenes (new approach)
+   * Format matches the proven good example structure
    */
   private static buildPanoramicPromptFromVisualScenes(
     title: string,
@@ -255,31 +259,31 @@ export class VignetteSplicerService {
     genre: string,
     tone: string
   ): string {
-    const style = this.determineVisualStyle(genre, tone);
+    // Opening with style and story overview
+    const opening = `A heartwarming Disney-Pixar style cinematic illustration showing nine connected vignettes flowing left to right in one panoramic image, telling a story about ${summary}`;
 
-    // Build concise character section
-    const characterSection =
-      characterDescriptions.length > 0
-        ? characterDescriptions.join(', ')
-        : 'Characters in a story';
+    // Character descriptions (join with periods for multiple characters)
+    const characterSection = characterDescriptions.join('. ') + '.';
 
-    // Build scene list (keep it compact)
+    // Add facial instruction
+    const facialInstruction =
+      'All faces have natural, well-proportioned eyes and realistic Pixar-style expressions.';
+
+    // Build numbered scene list with emoji numbers
+    const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
     const sceneList = visualScenes
       .map((scene, idx) => {
-        // Remove "Scene X:" prefix if present
-        const cleaned = scene.replace(/^Scene \d+:\s*/i, '');
-        return `${idx + 1}. ${cleaned}`;
+        const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
+        return `${numberEmojis[idx]} ${cleaned}`;
       })
       .join(' ');
 
-    // Assemble prompt - optimized for 1500 char limit
-    const prompt = `${style} panoramic storyboard: "${title}". ${summary}
+    // Closing technical specs
+    const closingSpecs =
+      'Pixar-style 3D realism, cinematic lighting consistency, expressive but anatomically correct faces and eyes, detailed background, warm natural color palette, emotional storytelling, cohesive panoramic composition — no text, no captions';
 
-Characters: ${characterSection}
-
-9 scenes: ${sceneList}
-
-Cohesive, cinematic, detailed backgrounds, warm lighting. No text or borders.`;
+    // Assemble full prompt
+    const prompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${sceneList} ${closingSpecs}`;
 
     console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('🎨 LEONARDO PROMPT (Panoramic Image Generation)');
@@ -306,14 +310,16 @@ Cohesive, cinematic, detailed backgrounds, warm lighting. No text or borders.`;
   ): Promise<string> {
     const supabase = await createServerClient();
 
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('content')
       .insert({
         user_id: userId,
-        content_type: 'vignette_story_prompt',
+        content_type: 'vignette_story',
         title: 'Generating vignette story...', // Placeholder
         body: 'Story generation in progress',
         theme: params.genre,
+        panel_count: 9, // 3×3 grid
+        source_story_id: null, // Not converted from another story
         generation_metadata: {
           mode: params.mode,
           genre: params.genre,
@@ -382,10 +388,12 @@ Cohesive, cinematic, detailed backgrounds, warm lighting. No text or borders.`;
       .from('content')
       .insert({
         user_id: userId,
-        content_type: 'vignette_story_prompt', // Visual scene descriptions for Leonardo
+        content_type: 'vignette_story', // Visual scene descriptions for Leonardo
         title: vignetteStory.title,
         body: vignetteStory.summary, // Use summary as body text
         theme: params.genre,
+        panel_count: 9, // 3×3 grid
+        source_story_id: null, // Not converted from another story
         vignette_helper_prompt: openaiPrompt, // OpenAI Call #1: Generate scene descriptions
         vignette_prompt: leonardoPrompt, // Leonardo Call #2: Generate panoramic image
         generation_metadata: {
@@ -800,16 +808,26 @@ Cinematic, detailed, warm palette, no text.`;
 
         // Upload to Supabase Storage using admin client (bypasses RLS)
         const storagePath = `vignettes/${storyId}/panels/panel_${panelNumber}.png`;
-        const { error: uploadError } = await supabaseAdmin.storage
+
+        // First, try to remove existing file if it exists
+        await supabaseAdmin.storage
+          .from('illustrations')
+          .remove([storagePath]);
+
+        // Then upload the new file
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
           .from('illustrations')
           .upload(storagePath, panelBuffer, {
             contentType: 'image/png',
-            upsert: true,
+            upsert: false, // Don't upsert since we just removed it
           });
 
         if (uploadError) {
+          console.error(`[Vignette Splicer] Upload error for panel ${panelNumber}:`, uploadError);
           throw new Error(`Failed to upload panel ${panelNumber}: ${uploadError.message}`);
         }
+
+        console.log(`[Vignette Splicer] Panel ${panelNumber} uploaded:`, uploadData);
 
         // Get public URL
         const { data: { publicUrl } } = supabaseAdmin.storage
@@ -837,6 +855,11 @@ Cinematic, detailed, warm palette, no text.`;
         });
 
         console.log(`[Vignette Splicer] Panel ${panelNumber} created: ${publicUrl}`);
+
+        // Add small delay to avoid rate limiting
+        if (panelNumber < 9) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
       }
     }
 

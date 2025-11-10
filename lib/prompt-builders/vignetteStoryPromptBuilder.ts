@@ -42,53 +42,48 @@ export function generateVignetteStoryPrompt(params: VignetteStoryParams): string
       : 'Focus on fun, adventure, imagination, and delightful moments.';
 
   // Build the prompt
-  const prompt = `You are a visual storytelling expert creating a 9-panel panoramic storyboard for children.
+  const prompt = `You will generate 9 brief scene descriptions for a Leonardo.ai panoramic image prompt.
 
-**Story Requirements:**
-- Story Type: ${mode === 'fun' ? 'Fun Adventure' : 'Growth & Learning'}
-- Genre: ${genre}
-- Tone: ${tone}
-- Target Age: ${heroAge} years old
-${customInstructions ? `- Special Instructions: ${customInstructions}` : ''}
+**Story Setup:**
+- Type: ${mode === 'fun' ? 'Fun Adventure' : 'Growth & Learning'}
+- Genre: ${genre} | Tone: ${tone} | Age: ${heroAge}
+${customInstructions ? `- Special: ${customInstructions}` : ''}
 
 **Characters:**
 ${characterList}
 
-**Task:**
-Create a ${genre} story with 9 visual scenes for a panoramic storyboard image. ${storyFocus}
+**CRITICAL INSTRUCTION:**
+Each scene must be 10-15 words describing what's happening in that moment. Use simple, clear action language.
 
-**Scene Guidelines:**
-- Scene 1: Cover illustration - Establish the main character(s) and setting
-- Scenes 2-8: Story progression with clear beginning, middle, and end
-- Scene 9: Satisfying conclusion
+**Good Examples:**
+- "Theo waking up early and running into his parents' bedroom, full of excitement."
+- "His parents smiling sleepily as he jumps onto the bed."
+- "They decide to make breakfast together in the kitchen, eggs and pancakes sizzling."
 
-For each scene, provide a 30-50 word visual description that includes:
-- Character positions and actions
-- Setting and background details
-- Lighting and atmosphere
-- Key visual elements
-- Emotional tone
+**Bad Examples (too visual/technical):**
+- "Bedroom interior, boy near bed, morning light, excited expression"
+- "Kitchen setting with stove, characters positioned left, warm lighting"
 
-**IMPORTANT: Return your response in this exact JSON format:**
+**Return JSON:**
 \`\`\`json
 {
   "title": "The Story Title",
-  "summary": "A 2-3 sentence engaging summary of the entire story for visual context.",
+  "summary": "Brief description of what the story is about (e.g., 'a young boy named Theo and his loving parents').",
   "scenes": [
-    "Scene 1: [Visual description for cover illustration]",
-    "Scene 2: [Visual description]",
-    "Scene 3: [Visual description]",
-    "Scene 4: [Visual description]",
-    "Scene 5": [Visual description]",
-    "Scene 6: [Visual description]",
-    "Scene 7: [Visual description]",
-    "Scene 8: [Visual description]",
-    "Scene 9: [Visual description - conclusion]"
+    "Brief scene 1 description with simple action and emotion.",
+    "Brief scene 2 description.",
+    "Brief scene 3 description.",
+    "Brief scene 4 description.",
+    "Brief scene 5 description.",
+    "Brief scene 6 description.",
+    "Brief scene 7 description.",
+    "Brief scene 8 description.",
+    "Brief scene 9 description with emotional resolution."
   ]
 }
 \`\`\`
 
-Create the storyboard now. Remember: Each scene description should be visual and concrete, not narrative prose.`;
+${storyFocus} Each scene should be 10-15 words showing what's happening, not technical framing.`;
 
   return prompt;
 }
