@@ -67,19 +67,10 @@ export class StoryGenerationService {
       costLogId = costLog?.id || null;
 
       // 5. Generate story
-      const story = await this._generateSync(userId, request, prompt, aiConfig);
+      const story = await this._generateSync(userId, request, prompt, aiConfig, costLogId);
 
-      // 6. Update cost log to 'completed'
-      if (costLogId) {
-        await supabase
-          .from('api_cost_logs')
-          .update({
-            processing_status: 'completed',
-            content_id: story.id,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', costLogId);
-      }
+      // 6. Cost log is already updated in _generateSync
+      // No need to update again here
 
       return story;
     } catch (error: any) {
@@ -105,7 +96,8 @@ export class StoryGenerationService {
     userId: string,
     request: StoryGenerationRequest,
     prompt: string,
-    aiConfig: AIConfig
+    aiConfig: AIConfig,
+    costLogId: string | null
   ): Promise<Story> {
     // 1. Call OpenAI
     const response = await this.callOpenAI(prompt, aiConfig);
@@ -119,14 +111,14 @@ export class StoryGenerationService {
     // 4. Link characters
     await this.linkCharacters(story.id, request.characters);
 
-    // 5. Log API costs (AIConfigService will calculate USD cost from token breakdown)
+    // 5. Update cost log with token data and completion status
     await this.logCosts(userId, aiConfig, response.tokens, {
       content_id: story.id,
       mode: request.mode,
       prompt_tokens: response.promptTokens,
       completion_tokens: response.completionTokens,
       total_tokens: response.tokens,
-    });
+    }, costLogId);
 
     return story;
   }
@@ -551,14 +543,16 @@ export class StoryGenerationService {
     userId: string,
     aiConfig: AIConfig,
     tokens: number,
-    metadata: any
+    metadata: any,
+    costLogId: string | null
   ): Promise<void> {
     await AIConfigService.logGenerationCost(
       userId,
       metadata.content_id,
       aiConfig,
       tokens,
-      metadata
+      metadata,
+      costLogId
     );
   }
 

@@ -158,7 +158,8 @@ export class AIConfigService {
     characterProfileId: string | null,
     aiConfig: AIConfig,
     creditsUsed: number,
-    metadata?: any
+    metadata?: any,
+    costLogId?: string | null
   ) {
     const supabase = await createClient();
 
@@ -224,34 +225,65 @@ export class AIConfigService {
       }
     }
 
-    const { error } = await supabase
-      .from('api_cost_logs')
-      .insert({
-        user_id: userId,
-        character_profile_id: characterProfileId, // Now a top-level field (can be null for previews)
-        ai_config_name: aiConfig.name, // Now a top-level field
-        provider: aiConfig.provider,
-        operation: aiConfig.purpose,
-        model_used: aiConfig.model_name,
-        total_tokens: Math.ceil(creditsUsed), // Round up to integer (Leonardo uses whole credits)
-        prompt_tokens: promptTokens ?? null, // Input tokens (OpenAI)
-        completion_tokens: completionTokens ?? null, // Output tokens (OpenAI)
-        estimated_cost: aiConfig.cost_per_generation, // Our fallback estimate
-        actual_cost: actualCost ?? null, // Real cost from provider in credits/tokens (null if not available)
-        actual_cost_usd: actualCostUsd, // Real cost in USD (calculated from tokens * pricing)
-        processing_status: 'completed',
-        completed_at: new Date().toISOString(),
-        prompt_used: promptUsed || null, // Include prompt if available
-        metadata: {
-          model_id: aiConfig.model_id,
-          model_name: aiConfig.model_name,
-          credits_used: creditsUsed,
-          ...metadata,
-        },
-      });
+    // If costLogId is provided, update existing record; otherwise insert new one
+    if (costLogId) {
+      // Update existing cost log record
+      const { error } = await supabase
+        .from('api_cost_logs')
+        .update({
+          content_id: characterProfileId, // Update content_id with the story/content ID
+          ai_config_name: aiConfig.name,
+          total_tokens: Math.ceil(creditsUsed),
+          prompt_tokens: promptTokens ?? null,
+          completion_tokens: completionTokens ?? null,
+          estimated_cost: aiConfig.cost_per_generation,
+          actual_cost: actualCost ?? null,
+          actual_cost_usd: actualCostUsd,
+          processing_status: 'completed',
+          completed_at: new Date().toISOString(),
+          metadata: {
+            model_id: aiConfig.model_id,
+            model_name: aiConfig.model_name,
+            credits_used: creditsUsed,
+            ...metadata,
+          },
+        })
+        .eq('id', costLogId);
 
-    if (error) {
-      console.error('Error logging generation cost:', error);
+      if (error) {
+        console.error('Error updating cost log:', error);
+      }
+    } else {
+      // Insert new cost log record (for avatar generation, etc.)
+      const { error } = await supabase
+        .from('api_cost_logs')
+        .insert({
+          user_id: userId,
+          character_profile_id: characterProfileId,
+          ai_config_name: aiConfig.name,
+          provider: aiConfig.provider,
+          operation: aiConfig.purpose,
+          model_used: aiConfig.model_name,
+          total_tokens: Math.ceil(creditsUsed),
+          prompt_tokens: promptTokens ?? null,
+          completion_tokens: completionTokens ?? null,
+          estimated_cost: aiConfig.cost_per_generation,
+          actual_cost: actualCost ?? null,
+          actual_cost_usd: actualCostUsd,
+          processing_status: 'completed',
+          completed_at: new Date().toISOString(),
+          prompt_used: promptUsed || null,
+          metadata: {
+            model_id: aiConfig.model_id,
+            model_name: aiConfig.model_name,
+            credits_used: creditsUsed,
+            ...metadata,
+          },
+        });
+
+      if (error) {
+        console.error('Error logging generation cost:', error);
+      }
     }
   }
 }
