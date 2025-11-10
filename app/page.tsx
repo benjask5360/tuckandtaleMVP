@@ -7,8 +7,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section - Mobile-optimized */}
-      <section className="relative overflow-hidden bg-gradient-bg-warm py-12 md:py-16 lg:py-20 pt-16">
-        <div className="absolute inset-0 gradient-mesh opacity-40"></div>
+      <section className="relative overflow-hidden bg-white py-12 md:py-16 lg:py-20 pt-16">
         <div className="container-narrow section-padding relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="animate-fade-in-up text-center lg:text-left">
@@ -64,7 +63,7 @@ export default function HomePage() {
       </section>
 
       {/* Stories Kids Actually Want Section */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-gradient-bg-primary">
         <div className="container-narrow section-padding">
           <div className="text-center mb-16 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -116,7 +115,7 @@ export default function HomePage() {
       </section>
 
       {/* Parents Love It Section */}
-      <section className="py-12 md:py-16 bg-gradient-bg-primary">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -170,7 +169,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-gradient-bg-primary">
         <div className="container-narrow section-padding">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -216,7 +215,7 @@ export default function HomePage() {
       </section>
 
       {/* Pricing Section - Mobile-optimized */}
-      <section className="py-12 md:py-14 bg-gradient-bg-warm">
+      <section className="py-12 md:py-14 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -369,7 +368,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-white relative overflow-hidden">
+      <section className="py-24 bg-gradient-bg-primary relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh-purple opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">

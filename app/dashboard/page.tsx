@@ -76,7 +76,7 @@ export default async function DashboardPage() {
   const maxStories = userTier?.stories_per_month !== undefined ? userTier.stories_per_month : 3
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
 
         {/* Header - Centered and mobile-optimized */}
@@ -151,10 +151,10 @@ export default async function DashboardPage() {
           {/* Child Profiles */}
           <Link
             href="/dashboard/my-children"
-            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
             {/* Avatar circles */}
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-6">
               {children.slice(0, 3).map((child: any, idx: number) => (
                 <div key={child.id} className="relative">
                   {child.avatar_cache?.image_url ? (
@@ -177,12 +177,14 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Child Profiles</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
-            </p>
+            <div className="flex-grow">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Child Profiles</h2>
+              <p className="text-sm text-gray-500">
+                {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
+              </p>
+            </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
               Manage Profiles
             </button>
           </Link>
@@ -190,10 +192,10 @@ export default async function DashboardPage() {
           {/* Character Profiles */}
           <Link
             href="/dashboard/other-characters"
-            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
             {/* Avatar circles */}
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-6">
               {otherCharacters.slice(0, 3).map((character: any, idx: number) => (
                 <div key={character.id} className="relative">
                   {character.avatar_cache?.image_url ? (
@@ -216,12 +218,14 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Character Profiles</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'} · {maxOtherCharacters === null ? 'Unlimited' : `${maxOtherCharacters} max`}
-            </p>
+            <div className="flex-grow">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Character Profiles</h2>
+              <p className="text-sm text-gray-500">
+                {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'} · {maxOtherCharacters === null ? 'Unlimited' : `${maxOtherCharacters} max`}
+              </p>
+            </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
               Manage Characters
             </button>
           </Link>
@@ -229,10 +233,10 @@ export default async function DashboardPage() {
           {/* Story Library */}
           <Link
             href="/dashboard/story-library"
-            className="bg-white border border-gray-200 rounded-2xl p-6 active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
             {/* Story cover circles */}
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-6">
               {stories && stories.length > 0 ? (
                 <>
                   {stories.slice(0, 3).map((story: any) => (
@@ -255,12 +259,14 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Story Library</h2>
-            <p className="text-sm text-gray-500 mb-4">
-              {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
-            </p>
+            <div className="flex-grow">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Story Library</h2>
+              <p className="text-sm text-gray-500">
+                {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
+              </p>
+            </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
               View Library
             </button>
           </Link>
