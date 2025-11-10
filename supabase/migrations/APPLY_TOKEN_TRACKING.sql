@@ -43,7 +43,9 @@ DELETE FROM api_prices WHERE provider = 'openai';
 INSERT INTO api_prices (provider, model_id, unit_type, input_cost_per_unit, output_cost_per_unit, notes) VALUES
   ('openai', 'gpt-4o', 'token', 0.0000025, 0.0000100, 'GPT-4o: $2.50/1M input, $10.00/1M output'),
   ('openai', 'gpt-4o-mini', 'token', 0.00000015, 0.00000060, 'GPT-4o-mini: $0.150/1M input, $0.600/1M output'),
-  ('openai', 'gpt-4-turbo', 'token', 0.0000100, 0.0000300, 'GPT-4 Turbo: $10.00/1M input, $30.00/1M output');
+  ('openai', 'gpt-4-turbo', 'token', 0.0000100, 0.0000300, 'GPT-4 Turbo: $10.00/1M input, $30.00/1M output'),
+  ('openai', 'gpt-4-turbo-preview', 'token', 0.0000100, 0.0000300, 'GPT-4 Turbo Preview: $10.00/1M input, $30.00/1M output'),
+  ('openai', 'gpt-4', 'token', 0.0000300, 0.0000600, 'GPT-4: $30.00/1M input, $60.00/1M output');
 
 -- Create unique constraint on provider + model_id (after inserts to avoid conflicts)
 CREATE UNIQUE INDEX IF NOT EXISTS api_prices_provider_model_key
