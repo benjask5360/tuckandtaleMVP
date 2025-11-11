@@ -9,7 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export interface AIConfig {
   id: string;
   name: string;
-  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration';
+  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama';
   provider: 'leonardo' | 'openai' | 'stability' | 'midjourney';
   model_id: string;
   model_name: string;
@@ -36,7 +36,7 @@ export class AIConfigService {
    * Get the default AI configuration for a specific purpose
    */
   static async getDefaultConfig(
-    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama'
   ): Promise<AIConfig | null> {
     const supabase = await createClient();
 
