@@ -19,99 +19,74 @@ export interface VignetteStoryParams {
 }
 
 export interface VignetteStoryResponse {
-  title: string;
-  summary: string; // 2-3 sentence overview for Leonardo
-  scenes: string[]; // 9 visual scene descriptions
+  leonardoPrompt: string; // The complete Leonardo.ai prompt as plain text
 }
 
 /**
- * Generate OpenAI prompt for vignette story creation
+ * Generate OpenAI prompt for creating a Leonardo.ai prompt directly
  */
 export function generateVignetteStoryPrompt(params: VignetteStoryParams): string {
-  const { characters, genre, tone, mode, customInstructions, heroAge } = params;
+  const { characters, genre, mode, customInstructions } = params;
 
-  // Build character list with descriptions
-  const characterList = characters
-    .map((char) => `- ${char.name}: ${char.description || 'Character in the story'}`)
-    .join('\n');
+  // Build character descriptions
+  const characterDescriptions = characters
+    .map((char) => `${char.name}: ${char.description || 'Character in the story'}`)
+    .join(', ');
 
-  // Determine story focus based on mode
-  const storyFocus =
-    mode === 'growth'
-      ? 'Focus on emotional growth, learning a valuable lesson, and character development.'
-      : 'Focus on fun, adventure, imagination, and delightful moments.';
+  // Determine story type
+  const storyType = mode === 'growth' ? 'Help my child grow' : 'Just for fun';
 
-  // Build the prompt
-  const prompt = `You will generate 9 brief scene descriptions for a Leonardo.ai panoramic image prompt.
+  // Build growth area/topic if applicable
+  let growthSection = '';
+  if (mode === 'growth' && customInstructions) {
+    growthSection = `Growth Area: Emotional Growth, Topic: ${customInstructions}`;
+  } else if (customInstructions) {
+    growthSection = `Topic: ${customInstructions}`;
+  }
 
-**Story Setup:**
-- Type: ${mode === 'fun' ? 'Fun Adventure' : 'Growth & Learning'}
-- Genre: ${genre} | Tone: ${tone} | Age: ${heroAge}
-${customInstructions ? `- Special: ${customInstructions}` : ''}
+  // Build the prompt with explicit technical requirements for Leonardo
+  const prompt = `Generate ONE SINGLE Leonardo.ai prompt that creates a unified panoramic image showing a 9-panel storyboard grid.
 
-**Characters:**
-${characterList}
+Story Information:
+- Characters: ${characterDescriptions}
+- Story Type: ${storyType}
+${growthSection ? '- ' + growthSection + '\n' : ''}- Genre: ${genre}
 
-**CRITICAL INSTRUCTION:**
-Each scene must be 10-15 words describing what's happening in that moment. Use simple, clear action language.
+CRITICAL REQUIREMENTS FOR THE LEONARDO PROMPT:
+1. This must be ONE continuous panoramic image (NOT 9 separate images)
+2. The image shows 9 connected scenes arranged in exactly 3 rows × 3 columns
+3. The SAME character(s) with IDENTICAL appearance, clothing, hair, and features must appear across all 9 panels
+4. All panels must flow left-to-right, top-to-bottom telling a cohesive story
+5. Seamless composition with no borders, frames, or dividers between panels
+6. Disney Pixar storybook style with consistent warm lighting throughout the entire panoramic image
+7. Each panel shows a different moment in the story progression
 
-**Good Examples:**
-- "Theo waking up early and running into his parents' bedroom, full of excitement."
-- "His parents smiling sleepily as he jumps onto the bed."
-- "They decide to make breakfast together in the kitchen, eggs and pancakes sizzling."
-
-**Bad Examples (too visual/technical):**
-- "Bedroom interior, boy near bed, morning light, excited expression"
-- "Kitchen setting with stove, characters positioned left, warm lighting"
-
-**Return JSON:**
-\`\`\`json
-{
-  "title": "The Story Title",
-  "summary": "Brief description of what the story is about (e.g., 'a young boy named Theo and his loving parents').",
-  "scenes": [
-    "Brief scene 1 description with simple action and emotion.",
-    "Brief scene 2 description.",
-    "Brief scene 3 description.",
-    "Brief scene 4 description.",
-    "Brief scene 5 description.",
-    "Brief scene 6 description.",
-    "Brief scene 7 description.",
-    "Brief scene 8 description.",
-    "Brief scene 9 description with emotional resolution."
-  ]
-}
-\`\`\`
-
-${storyFocus} Each scene should be 10-15 words showing what's happening, not technical framing.`;
+Return ONLY the complete Leonardo.ai prompt as a single string. No JSON, no formatting, no extra commentary.`;
 
   return prompt;
 }
 
 /**
- * Parse OpenAI response into structured format
+ * Parse OpenAI response - now expects plain text Leonardo prompt
  */
 export function parseVignetteStoryResponse(response: string): VignetteStoryResponse {
   try {
-    // Try to extract JSON from code block if present
-    const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/) || response.match(/```\s*([\s\S]*?)\s*```/);
-    const jsonString = jsonMatch ? jsonMatch[1] : response;
+    // Clean up the response - remove any markdown code blocks if present
+    let cleanedPrompt = response.trim();
 
-    const parsed = JSON.parse(jsonString);
-
-    // Validate structure
-    if (!parsed.title || !parsed.summary || !Array.isArray(parsed.scenes)) {
-      throw new Error('Invalid response structure');
+    // Remove code block markers if OpenAI wrapped the response
+    const codeBlockMatch = cleanedPrompt.match(/```(?:text|plaintext)?\s*([\s\S]*?)\s*```/);
+    if (codeBlockMatch) {
+      cleanedPrompt = codeBlockMatch[1].trim();
     }
 
-    if (parsed.scenes.length !== 9) {
-      throw new Error(`Expected 9 scenes, got ${parsed.scenes.length}`);
+    // Validate we have content
+    if (!cleanedPrompt || cleanedPrompt.length === 0) {
+      throw new Error('OpenAI returned empty response');
     }
 
     return {
-      title: parsed.title,
-      summary: parsed.summary,
-      scenes: parsed.scenes,
+      leonardoPrompt: cleanedPrompt,
     };
   } catch (error) {
     console.error('[Vignette Story] Failed to parse OpenAI response:', error);

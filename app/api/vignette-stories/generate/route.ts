@@ -172,9 +172,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         storyId: result.storyId,
-        title: result.title,
-        summary: result.summary,
-        scenes: result.scenes,
+        leonardoPrompt: result.leonardoPrompt,
         panels: result.panels,
         message: `Successfully generated vignette story with ${result.panels.length} panels`,
       },

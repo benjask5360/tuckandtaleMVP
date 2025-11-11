@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Heart, Sparkles, Loader2, Trash2, Target, Film } from 'lucide-react';
+import { ArrowLeft, Heart, Sparkles, Loader2, Trash2, Target, Film, RefreshCw } from 'lucide-react';
 
 interface VignettePanel {
   panel_number: number;
@@ -34,6 +34,7 @@ interface Vignette {
   source_story_id?: string;
   is_favorite: boolean;
   created_at: string;
+  panoramic_image_url?: string;
   prompts?: {
     helper: string;
     leonardo: string;
@@ -47,6 +48,7 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<number | null>(null);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     loadVignette();
@@ -124,6 +126,101 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
     } catch (err: any) {
       console.error('Error deleting vignette:', err);
       alert(err.message);
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!vignette || regenerating) return;
+
+    const confirm = window.confirm(
+      'Regenerate this vignette story? This will create new panels with the same settings.'
+    );
+    if (!confirm) return;
+
+    setRegenerating(true);
+
+    try {
+      // Fetch story parameters to get the IDs needed for regeneration
+      const paramsResponse = await fetch('/api/stories/parameters');
+      const paramsData = await paramsResponse.json();
+
+      if (!paramsResponse.ok) {
+        throw new Error('Failed to fetch story parameters');
+      }
+
+      // Extract parameters from the grouped structure
+      const genres = paramsData.parameters?.genre || [];
+      const tones = paramsData.parameters?.tone || [];
+      const lengths = paramsData.parameters?.length || [];
+
+      console.log('Vignette metadata:', vignette.metadata);
+      console.log('Looking for genre:', vignette.metadata?.genre);
+      console.log('Looking for tone:', vignette.metadata?.tone);
+      console.log('Available genres:', genres.map((g: any) => g.value));
+      console.log('Available tones:', tones.map((t: any) => t.value));
+
+      // Find the matching parameter IDs (handle undefined metadata and values)
+      const genreParam = vignette.metadata?.genre
+        ? genres.find((g: any) => g?.value?.toLowerCase() === vignette.metadata.genre.toLowerCase())
+        : null;
+      const toneParam = vignette.metadata?.tone
+        ? tones.find((t: any) => t?.value?.toLowerCase() === vignette.metadata.tone.toLowerCase())
+        : null;
+      const lengthParam = lengths?.[0]; // Use first length as default
+
+      // If exact match not found, use fallback
+      const finalGenreParam = genreParam || genres[0];
+      const finalToneParam = toneParam || tones[0];
+      const finalLengthParam = lengthParam || lengths[0];
+
+      console.log('Matched parameters:', { finalGenreParam, finalToneParam, finalLengthParam });
+
+      if (!finalGenreParam || !finalToneParam || !finalLengthParam) {
+        console.error('Missing parameters after matching');
+        throw new Error('Could not load story parameters from API');
+      }
+
+      // Get hero character (first character)
+      const heroId = vignette.characters[0]?.id;
+      if (!heroId) {
+        throw new Error('No hero character found');
+      }
+
+      console.log('Using parameters:', {
+        genre: finalGenreParam.value,
+        tone: finalToneParam.value,
+        heroId,
+      });
+
+      // Call the vignette generation API with proper parameters
+      const response = await fetch('/api/vignette-stories/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          heroId,
+          characterIds: vignette.characters.slice(1).map((c) => c.id), // Supporting characters
+          mode: vignette.metadata.mode,
+          genreId: finalGenreParam.id,
+          toneId: finalToneParam.id,
+          lengthId: finalLengthParam.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to regenerate vignette');
+      }
+
+      // Navigate to the new vignette
+      router.push(`/dashboard/vignettes/${data.data.storyId}`);
+    } catch (err: any) {
+      console.error('Full error object:', err);
+      console.error('Error message:', err.message);
+      console.error('Error stack:', err.stack);
+      alert(`Error: ${err.message || 'Unknown error occurred'}`);
+    } finally {
+      setRegenerating(false);
     }
   };
 
@@ -235,6 +332,23 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 mb-6">
             <button
+              onClick={handleRegenerate}
+              disabled={regenerating}
+              className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {regenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4" />
+                  Regenerate
+                </>
+              )}
+            </button>
+            <button
               onClick={handleDelete}
               className="btn-secondary text-red-600 hover:bg-red-50 flex items-center gap-2"
             >
@@ -244,9 +358,31 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
           </div>
         </div>
 
+        {/* Full Panoramic Image */}
+        {vignette.panoramic_image_url && (
+          <div className="card p-6 md:p-8 mb-6">
+            <h2 className="text-xl font-bold mb-4">Original Panoramic Image</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              This is the full 3×3 grid image from Leonardo.ai before slicing into individual panels.
+            </p>
+            <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <Image
+                src={vignette.panoramic_image_url}
+                alt="Full panoramic image"
+                fill
+                className="object-contain"
+                sizes="100vw"
+              />
+            </div>
+          </div>
+        )}
+
         {/* 3x3 Panel Grid */}
         <div className="card p-6 md:p-8 mb-6">
           <h2 className="text-xl font-bold mb-4">Story Panels</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Individual panels sliced from the panoramic image above (cropped and resized to 512×512).
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {vignette.panels.map((panel) => (
               <div
