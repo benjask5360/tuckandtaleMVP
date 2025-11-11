@@ -292,15 +292,20 @@ export class VignetteSplicerService {
     console.log(`\nLength: ${prompt.length} characters`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // Leonardo's actual limit varies by model, but generally 1000-1500 chars
-    // We'll use 2000 as a soft limit and let Leonardo handle it
-    const MAX_LENGTH = 2000;
+    // Leonardo's strict limit is 1500 characters
+    // We'll compress if prompt exceeds 1400 to be safe
+    const MAX_LENGTH = 1400;
 
     if (prompt.length > MAX_LENGTH) {
       console.warn(`[Vignette Story] Prompt exceeds ${MAX_LENGTH} chars (${prompt.length}), compressing...`);
 
-      // Compress by shortening each scene description
-      const maxSceneLength = Math.floor((MAX_LENGTH - 400) / visualScenes.length); // Reserve 400 for boilerplate
+      // Calculate how much space we have for scenes
+      const boilerplateLength = opening.length + characterSection.length + facialInstruction.length + closingSpecs.length + 50; // +50 for " The visual progression shows: " and spaces
+      const availableForScenes = MAX_LENGTH - boilerplateLength;
+      const maxSceneLength = Math.floor(availableForScenes / visualScenes.length);
+
+      console.log(`[Vignette Story] Boilerplate: ${boilerplateLength} chars, Available for scenes: ${availableForScenes} chars, Max per scene: ${maxSceneLength} chars`);
+
       const compressedScenes = visualScenes
         .map((scene, idx) => {
           const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
@@ -315,6 +320,26 @@ export class VignetteSplicerService {
       const compressedPrompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${compressedScenes} ${closingSpecs}`;
 
       console.log(`[Vignette Story] Compressed to ${compressedPrompt.length} characters`);
+
+      // If still too long, do more aggressive compression
+      if (compressedPrompt.length > 1500) {
+        console.warn(`[Vignette Story] Still too long (${compressedPrompt.length}), doing aggressive compression...`);
+
+        // Even more aggressive: cut each scene to fit under 1450 to be safe
+        const aggressiveMax = Math.floor((1450 - boilerplateLength) / visualScenes.length);
+        const aggressiveScenes = visualScenes
+          .map((scene, idx) => {
+            const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
+            const truncated = cleaned.substring(0, aggressiveMax).trim();
+            return `${numberEmojis[idx]} ${truncated}`;
+          })
+          .join(' ');
+
+        const finalPrompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${aggressiveScenes} ${closingSpecs}`;
+        console.log(`[Vignette Story] Aggressively compressed to ${finalPrompt.length} characters`);
+        return finalPrompt;
+      }
+
       return compressedPrompt;
     }
 
