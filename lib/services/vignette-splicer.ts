@@ -91,17 +91,23 @@ export class VignetteSplicerService {
     );
 
     // 5. Slice and store panels
-    const panels = await this.sliceAndStorePanels(
+    const { panels, panoramicStoragePath } = await this.sliceAndStorePanels(
       imageUrl,
       storyId,
       userId,
       generationId
     );
 
+    // Get public URL for panoramic image
+    const supabaseAdmin = createAdminClient();
+    const { data: { publicUrl: panoramicImageUrl } } = supabaseAdmin.storage
+      .from('illustrations')
+      .getPublicUrl(panoramicStoragePath);
+
     return {
       storyId,
       panels,
-      panoramicImageUrl: imageUrl,
+      panoramicImageUrl,
       leonardoGenerationId: generationId,
     };
   }
@@ -117,48 +123,37 @@ export class VignetteSplicerService {
     // 1. Create placeholder content record to get contentId for cost logging
     const storyId = await this.createPlaceholderContent(params, userId);
 
-    // 2. Generate visual scene descriptions using OpenAI (with cost logging)
+    // 2. Generate Leonardo.ai prompt using OpenAI (with cost logging)
     const { vignetteStory, openaiPrompt } = await this.generateVisualScenesWithOpenAI(
       params,
       userId,
       storyId
     );
 
-    console.log('[Vignette Story] Generated:', vignetteStory.title);
-    console.log('[Vignette Story] Scenes:', vignetteStory.scenes.length);
+    console.log('[Vignette Story] Generated Leonardo prompt');
+    console.log('[Vignette Story] Leonardo prompt length:', vignetteStory.leonardoPrompt.length);
 
-    // 3. Build character descriptions
-    const characterDescriptions = params.characters.map((char) => {
-      const desc = char.description || 'Character in the story';
-      // Clean up any duplicate words (e.g., "build build")
-      const cleaned = desc.replace(/\b(\w+)\s+\1\b/gi, '$1');
-      return `${char.name} ${cleaned}`;
-    });
+    // 3. Update content record with prompts
+    await this.updateVignetteContent(storyId, openaiPrompt, vignetteStory.leonardoPrompt);
 
-    // 4. Build Leonardo prompt from visual scenes
-    const leonardoPrompt = this.buildPanoramicPromptFromVisualScenes(
-      vignetteStory.title,
-      vignetteStory.summary,
-      characterDescriptions,
-      vignetteStory.scenes,
-      params.genre,
-      params.tone
-    );
-
-    console.log('[Vignette Story] Leonardo prompt length:', leonardoPrompt.length);
-
-    // 5. Update content record with full data and prompts
-    await this.updateVignetteContent(storyId, vignetteStory, openaiPrompt, leonardoPrompt);
-
-    // 6. Generate panoramic image via Leonardo (with cost logging)
+    // 4. Generate panoramic image via Leonardo (with cost logging)
     const { generationId, imageUrl } = await this.generatePanoramicImage(
-      leonardoPrompt,
+      vignetteStory.leonardoPrompt,
       userId,
       storyId
     );
 
-    // 7. Slice and store panels
-    const panels = await this.sliceAndStorePanels(imageUrl, storyId, userId, generationId);
+    // 5. Slice and store panels
+    const { panels, panoramicStoragePath } = await this.sliceAndStorePanels(imageUrl, storyId, userId, generationId);
+
+    // Get public URL for panoramic image
+    const supabaseAdmin = createAdminClient();
+    const { data: { publicUrl: panoramicImageUrl } } = supabaseAdmin.storage
+      .from('illustrations')
+      .getPublicUrl(panoramicStoragePath);
+
+    // 6. Update content record with panoramic image URL
+    await this.updateVignetteContent(storyId, openaiPrompt, vignetteStory.leonardoPrompt, panoramicImageUrl);
 
     return {
       ...vignetteStory,
@@ -196,14 +191,14 @@ export class VignetteSplicerService {
 
     console.log('[Vignette Story] Calling OpenAI (gpt-4.1)...');
 
-    // Call OpenAI
+    // Call OpenAI to generate Leonardo.ai prompt directly
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1', // High-quality visual scene generation
+      model: 'gpt-4.1', // High-quality prompt generation
       messages: [
         {
           role: 'system',
           content:
-            'You are a visual storytelling expert who creates detailed scene descriptions for panoramic storyboard images.',
+            'You are a Leonardo.ai prompt expert who creates prompts for 9-panel storybook grids with consistent characters and Disney Pixar style.',
         },
         {
           role: 'user',
@@ -211,7 +206,6 @@ export class VignetteSplicerService {
         },
       ],
       temperature: 0.8, // Creative but consistent
-      response_format: { type: 'json_object' },
     });
 
     const response = completion.choices[0]?.message?.content;
@@ -247,104 +241,6 @@ export class VignetteSplicerService {
     };
   }
 
-  /**
-   * Build Leonardo prompt from visual scenes (new approach)
-   * Format matches the proven good example structure
-   */
-  private static buildPanoramicPromptFromVisualScenes(
-    title: string,
-    summary: string,
-    characterDescriptions: string[],
-    visualScenes: string[],
-    genre: string,
-    tone: string
-  ): string {
-    // Opening with style and story overview
-    const opening = `A heartwarming Disney-Pixar style cinematic illustration showing nine connected vignettes flowing left to right in one panoramic image, telling a story about ${summary}`;
-
-    // Character descriptions (join with periods for multiple characters)
-    const characterSection = characterDescriptions.join('. ') + '.';
-
-    // Add facial instruction
-    const facialInstruction =
-      'All faces have natural, well-proportioned eyes and realistic Pixar-style expressions.';
-
-    // Build numbered scene list with emoji numbers
-    const numberEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
-    const sceneList = visualScenes
-      .map((scene, idx) => {
-        const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
-        return `${numberEmojis[idx]} ${cleaned}`;
-      })
-      .join(' ');
-
-    // Closing technical specs
-    const closingSpecs =
-      'Pixar-style 3D realism, cinematic lighting consistency, expressive but anatomically correct faces and eyes, detailed background, warm natural color palette, emotional storytelling, cohesive panoramic composition — no text, no captions';
-
-    // Assemble full prompt
-    const prompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${sceneList} ${closingSpecs}`;
-
-    console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🎨 LEONARDO PROMPT (Panoramic Image Generation)');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log(prompt);
-    console.log(`\nLength: ${prompt.length} characters`);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-
-    // Leonardo's strict limit is 1500 characters
-    // We'll compress if prompt exceeds 1400 to be safe
-    const MAX_LENGTH = 1400;
-
-    if (prompt.length > MAX_LENGTH) {
-      console.warn(`[Vignette Story] Prompt exceeds ${MAX_LENGTH} chars (${prompt.length}), compressing...`);
-
-      // Calculate how much space we have for scenes
-      const boilerplateLength = opening.length + characterSection.length + facialInstruction.length + closingSpecs.length + 50; // +50 for " The visual progression shows: " and spaces
-      const availableForScenes = MAX_LENGTH - boilerplateLength;
-      const maxSceneLength = Math.floor(availableForScenes / visualScenes.length);
-
-      console.log(`[Vignette Story] Boilerplate: ${boilerplateLength} chars, Available for scenes: ${availableForScenes} chars, Max per scene: ${maxSceneLength} chars`);
-
-      const compressedScenes = visualScenes
-        .map((scene, idx) => {
-          const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
-          const truncated = cleaned.length > maxSceneLength
-            ? cleaned.substring(0, maxSceneLength).trim() + '...'
-            : cleaned;
-          return `${numberEmojis[idx]} ${truncated}`;
-        })
-        .join(' ');
-
-      // Rebuild with compressed scenes
-      const compressedPrompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${compressedScenes} ${closingSpecs}`;
-
-      console.log(`[Vignette Story] Compressed to ${compressedPrompt.length} characters`);
-
-      // If still too long, do more aggressive compression
-      if (compressedPrompt.length > 1500) {
-        console.warn(`[Vignette Story] Still too long (${compressedPrompt.length}), doing aggressive compression...`);
-
-        // Even more aggressive: cut each scene to fit under 1450 to be safe
-        const aggressiveMax = Math.floor((1450 - boilerplateLength) / visualScenes.length);
-        const aggressiveScenes = visualScenes
-          .map((scene, idx) => {
-            const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
-            const truncated = cleaned.substring(0, aggressiveMax).trim();
-            return `${numberEmojis[idx]} ${truncated}`;
-          })
-          .join(' ');
-
-        const finalPrompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${aggressiveScenes} ${closingSpecs}`;
-        console.log(`[Vignette Story] Aggressively compressed to ${finalPrompt.length} characters`);
-        return finalPrompt;
-      }
-
-      return compressedPrompt;
-    }
-
-    return prompt;
-  }
 
   /**
    * Create placeholder content record to get contentId for cost logging
@@ -384,83 +280,43 @@ export class VignetteSplicerService {
   }
 
   /**
-   * Update content record with full vignette story data and prompts
+   * Update content record with prompts and panoramic image URL
    */
   private static async updateVignetteContent(
     contentId: string,
-    vignetteStory: VignetteStoryResponse,
     openaiPrompt: string,
-    leonardoPrompt: string
+    leonardoPrompt: string,
+    panoramicImageUrl?: string
   ): Promise<void> {
     const supabase = await createServerClient();
 
+    const updateData: any = {
+      vignette_helper_prompt: openaiPrompt,
+      vignette_prompt: leonardoPrompt,
+      generation_metadata: {
+        ...((await supabase.from('content').select('generation_metadata').eq('id', contentId).single()).data
+          ?.generation_metadata || {}),
+        leonardo_prompt_generated: true,
+      },
+    };
+
+    // Add panoramic image URL if provided
+    if (panoramicImageUrl) {
+      updateData.panoramic_image_url = panoramicImageUrl;
+    }
+
     const { error } = await supabase
       .from('content')
-      .update({
-        title: vignetteStory.title,
-        body: vignetteStory.summary,
-        vignette_helper_prompt: openaiPrompt,
-        vignette_prompt: leonardoPrompt,
-        generation_metadata: {
-          ...((await supabase.from('content').select('generation_metadata').eq('id', contentId).single()).data
-            ?.generation_metadata || {}),
-          scenes: vignetteStory.scenes,
-          summary: vignetteStory.summary,
-        },
-      })
+      .update(updateData)
       .eq('id', contentId);
 
     if (error) {
       throw new Error(`Failed to update vignette content: ${error?.message}`);
     }
 
-    console.log('[Vignette Story] Updated content with full data:', contentId);
+    console.log('[Vignette Story] Updated content with prompts:', contentId);
   }
 
-  /**
-   * Store vignette story in database
-   */
-  private static async storeVignetteStory(
-    vignetteStory: VignetteStoryResponse,
-    params: VignetteStoryParams,
-    userId: string,
-    openaiPrompt: string,
-    leonardoPrompt: string
-  ): Promise<string> {
-    const supabase = await createServerClient();
-
-    const { data, error } = await supabase
-      .from('content')
-      .insert({
-        user_id: userId,
-        content_type: 'vignette_story', // Visual scene descriptions for Leonardo
-        title: vignetteStory.title,
-        body: vignetteStory.summary, // Use summary as body text
-        theme: params.genre,
-        panel_count: 9, // 3×3 grid
-        source_story_id: null, // Not converted from another story
-        vignette_helper_prompt: openaiPrompt, // OpenAI Call #1: Generate scene descriptions
-        vignette_prompt: leonardoPrompt, // Leonardo Call #2: Generate panoramic image
-        generation_metadata: {
-          mode: params.mode,
-          genre: params.genre,
-          tone: params.tone,
-          scenes: vignetteStory.scenes, // 9 visual scene descriptions
-          summary: vignetteStory.summary,
-          characters_used: params.characters.map((c) => c.id).filter(Boolean),
-        },
-      })
-      .select('id')
-      .single();
-
-    if (error || !data) {
-      throw new Error(`Failed to store vignette story: ${error?.message}`);
-    }
-
-    console.log('[Vignette Story] Stored in database:', data.id);
-
-    return data.id;
-  }
 
   /**
    * Fetch story data from database
@@ -796,13 +652,17 @@ Cinematic, detailed, warm palette, no text.`;
 
   /**
    * Slice panoramic image into 9 panels and store in Supabase
+   * Also saves the full panoramic image for preview/comparison
    */
   private static async sliceAndStorePanels(
     imageUrl: string,
     storyId: string,
     userId: string,
     generationId: string
-  ): Promise<VignettePanel[]> {
+  ): Promise<{ panels: VignettePanel[]; panoramicStoragePath: string }> {
+    // Border crop margin - removes residual Leonardo panel lines
+    // Adjustable between 4-6px if needed
+    const CROP_MARGIN = 10;
     // Download panoramic image
     const leonardo = new LeonardoClient();
     const imageBlob = await leonardo.downloadImage(imageUrl);
@@ -820,6 +680,29 @@ Cinematic, detailed, warm palette, no text.`;
     // Use admin client for storage uploads to bypass RLS
     const supabaseAdmin = createAdminClient();
     const supabase = await createServerClient();
+
+    // Save the full panoramic image first
+    const panoramicStoragePath = `vignettes/${storyId}/panoramic.png`;
+
+    // Remove existing panoramic if it exists
+    await supabaseAdmin.storage
+      .from('illustrations')
+      .remove([panoramicStoragePath]);
+
+    // Upload panoramic image
+    const { error: panoramicUploadError } = await supabaseAdmin.storage
+      .from('illustrations')
+      .upload(panoramicStoragePath, imageBuffer, {
+        contentType: 'image/png',
+        upsert: false,
+      });
+
+    if (panoramicUploadError) {
+      console.error('[Vignette Splicer] Failed to upload panoramic image:', panoramicUploadError);
+      throw new Error(`Failed to upload panoramic image: ${panoramicUploadError.message}`);
+    }
+
+    console.log('[Vignette Splicer] Panoramic image saved:', panoramicStoragePath);
 
     // Delete existing panels for this story to allow regeneration
     const { error: deleteError } = await supabase
@@ -840,13 +723,23 @@ Cinematic, detailed, warm palette, no text.`;
       for (let col = 0; col < 3; col++) {
         const panelNumber = row * 3 + col + 1; // 1-9
 
-        // Extract panel from panoramic image
+        // Extract panel from panoramic image, crop borders, and resize to standard dimensions
         const panelBuffer = await sharp(imageBuffer)
           .extract({
             left: col * panelWidth,
             top: row * panelHeight,
             width: panelWidth,
             height: panelHeight,
+          })
+          .extract({
+            left: CROP_MARGIN,
+            top: CROP_MARGIN,
+            width: panelWidth - (CROP_MARGIN * 2),
+            height: panelHeight - (CROP_MARGIN * 2),
+          })
+          .resize(512, 512, {
+            fit: 'fill',
+            kernel: 'lanczos3',
           })
           .png()
           .toBuffer();
@@ -908,6 +801,6 @@ Cinematic, detailed, warm palette, no text.`;
       }
     }
 
-    return panels;
+    return { panels, panoramicStoragePath };
   }
 }
