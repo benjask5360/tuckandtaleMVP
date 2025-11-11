@@ -52,7 +52,8 @@ export abstract class BaseStoryPromptBuilder {
    */
   protected organizeCharacters(characters: StoryCharacter[]): CharacterContext {
     const hero = characters.find(c => c.role === 'hero') || characters[0];
-    const supporting = characters.filter(c => c.id !== hero.id);
+    // Filter by reference instead of id to handle ad-hoc characters with undefined ids
+    const supporting = characters.filter(c => c !== hero);
 
     return { hero, supporting };
   }

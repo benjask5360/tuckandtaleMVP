@@ -137,10 +137,12 @@ export async function POST(request: NextRequest) {
     if (params.adHocCharacters.length > 0) {
       characters.push(
         ...params.adHocCharacters.map((char) => ({
+          id: undefined, // Ad-hoc characters have no database ID
           name: char.name,
           description: `${char.role || 'Character'} in the story`,
           profileType: 'storybook_character' as any,
           attributes: {},
+          role: char.role as any,
         }))
       );
     }
