@@ -7,7 +7,7 @@
 // BASE TYPES
 // =====================================================
 
-export type AttributeType = 'hair' | 'eyes' | 'skin' | 'body' | 'hair_length' | 'glasses' | 'pet_color';
+export type AttributeType = 'hair' | 'eyes' | 'skin' | 'body' | 'hair_length' | 'glasses' | 'pet_color' | 'magical_color';
 export type ProfileType = 'child' | 'storybook_character' | 'pet' | 'magical_creature';
 export type SizeCategory = 'tiny' | 'small' | 'medium' | 'large' | 'giant';
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
@@ -151,9 +151,11 @@ export interface CharacterSelections {
   // Pet-specific
   species?: string;
   breed?: string;
+  primaryColor?: string;  // For pet color (fur, feathers, scales)
 
   // Magical-specific
   creatureType?: string;
+  color?: string;  // For magical creature color
 
   // Additional custom attributes
   [key: string]: any;
@@ -175,6 +177,7 @@ export interface EnhancedDescriptors {
   species?: string;     // For pets
   petColor?: string;    // For pets - e.g., "golden fur", "green scales"
   creature?: string;    // For magical creatures
+  magicalColor?: string; // For magical creatures - e.g., "shimmering gold", "midnight purple"
 
   // Combined prompt-ready string
   fullDescription?: string;
