@@ -593,7 +593,7 @@ Cinematic, detailed, warm palette, no text.`;
   }
 
   /**
-   * Generate panoramic image via Leonardo API
+   * Generate panoramic image via AI provider (Leonardo or Google Gemini)
    */
   private static async generatePanoramicImage(
     prompt: string,
@@ -607,6 +607,27 @@ Cinematic, detailed, warm palette, no text.`;
       throw new Error('No AI config found for story_vignette_panorama');
     }
 
+    console.log(`[Vignette Generation] Using provider: ${aiConfig.provider} (${aiConfig.model_name})`);
+
+    // Route to appropriate provider
+    if (aiConfig.provider === 'google') {
+      return await this.generatePanoramicImageWithGemini(prompt, userId, storyId, aiConfig);
+    } else if (aiConfig.provider === 'leonardo') {
+      return await this.generatePanoramicImageWithLeonardo(prompt, userId, storyId, aiConfig);
+    }
+
+    throw new Error(`Unsupported provider: ${aiConfig.provider}`);
+  }
+
+  /**
+   * Generate panoramic image via Leonardo API
+   */
+  private static async generatePanoramicImageWithLeonardo(
+    prompt: string,
+    userId: string,
+    storyId: string,
+    aiConfig: any
+  ): Promise<{ generationId: string; imageUrl: string }> {
     // Build Leonardo generation config
     const leonardoConfig = AIConfigService.buildLeonardoConfig(aiConfig, prompt);
 
@@ -645,6 +666,73 @@ Cinematic, detailed, warm palette, no text.`;
     );
 
     console.log(`[Vignette Story] Leonardo cost logged: ${actualCreditCost} credits`);
+
+    return { generationId, imageUrl };
+  }
+
+  /**
+   * Generate panoramic image via Google Gemini API
+   */
+  private static async generatePanoramicImageWithGemini(
+    prompt: string,
+    userId: string,
+    storyId: string,
+    aiConfig: any
+  ): Promise<{ generationId: string; imageUrl: string }> {
+    const { GeminiClient } = await import('@/lib/google/client');
+
+    // Build Gemini generation config
+    const geminiConfig = AIConfigService.buildGeminiConfig(aiConfig, prompt);
+
+    // Initialize Gemini client
+    const gemini = new GeminiClient();
+
+    // Generate image (synchronous response)
+    const result = await gemini.generateImage(geminiConfig);
+
+    // Convert base64 to blob
+    const imageBlob = await gemini.downloadImage(result.imageData, result.mimeType);
+
+    // Upload to Supabase Storage for consistent handling
+    const supabaseAdmin = createAdminClient();
+    const tempImagePath = `vignettes/${storyId}/temp_panoramic_${Date.now()}.png`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('illustrations')
+      .upload(tempImagePath, imageBlob, {
+        contentType: result.mimeType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Failed to upload Gemini image to storage: ${uploadError.message}`);
+    }
+
+    // Get public URL
+    const { data: { publicUrl: imageUrl } } = supabaseAdmin.storage
+      .from('illustrations')
+      .getPublicUrl(tempImagePath);
+
+    // Generate a pseudo-ID for consistency
+    const generationId = `gemini_${Date.now()}`;
+
+    // Log cost (fixed 1290 tokens per image)
+    await AIConfigService.logGenerationCost(
+      userId,
+      null,
+      aiConfig,
+      result.tokensUsed, // 1290 tokens
+      {
+        content_id: storyId,
+        prompt_used: prompt,
+        actual_cost: result.tokensUsed,
+        generation_id: generationId,
+        model_id: aiConfig.model_id,
+        model_name: aiConfig.model_name,
+      }
+    );
+
+    console.log(`[Vignette Story] Gemini cost logged: ${result.tokensUsed} tokens (~$${(result.tokensUsed * 0.00003).toFixed(4)})`);
 
     return { generationId, imageUrl };
   }

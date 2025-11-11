@@ -10,7 +10,7 @@ export interface AIConfig {
   id: string;
   name: string;
   purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama';
-  provider: 'leonardo' | 'openai' | 'stability' | 'midjourney';
+  provider: 'leonardo' | 'openai' | 'stability' | 'midjourney' | 'google';
   model_id: string;
   model_name: string;
   model_type?: 'text' | 'audio' | 'image';
@@ -147,6 +147,22 @@ export class AIConfigService {
     if (aiConfig.settings.tiling !== undefined) {
       config.tiling = aiConfig.settings.tiling;
     }
+
+    return config;
+  }
+
+  /**
+   * Build Google Gemini API configuration from our config
+   */
+  static buildGeminiConfig(
+    aiConfig: AIConfig,
+    prompt: string
+  ) {
+    const config: any = {
+      prompt,
+      aspectRatio: aiConfig.settings.aspectRatio || '1:1',
+      responseModalities: aiConfig.settings.responseModalities || ['Image'],
+    };
 
     return config;
   }

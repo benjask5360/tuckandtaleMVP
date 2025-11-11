@@ -12,6 +12,7 @@ export const env = {
   // AI Services
   LEONARDO_API_KEY: process.env.LEONARDO_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  GOOGLE_GEMINI_API_KEY: process.env.GOOGLE_GEMINI_API_KEY || '',
 } as const
 
 // Validation function to ensure required env vars are set
