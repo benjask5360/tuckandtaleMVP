@@ -70,17 +70,17 @@ export function buildCharacterDescription(
 
     case 'pet':
       // Build description for pets
-      if (enhanced.species) {
+      // Start with color (if provided) then species/breed
+      if (enhanced.petColor && enhanced.species) {
+        parts.push(`A ${enhanced.petColor} ${enhanced.species}`);
+      } else if (enhanced.species) {
         parts.push(`A ${enhanced.species}`);
       } else {
         parts.push('A pet');
       }
 
-      // Add any physical attributes if provided
+      // Add any additional physical attributes if provided
       const petAttributes: string[] = [];
-      if (enhanced.hair) {
-        petAttributes.push(`${enhanced.hair} fur`);
-      }
       if (enhanced.eyes) {
         petAttributes.push(`${enhanced.eyes} eyes`);
       }
@@ -93,13 +93,16 @@ export function buildCharacterDescription(
 
     case 'magical_creature':
       // Build description for magical creatures
-      if (enhanced.creature) {
+      // Start with color (if provided) then creature type
+      if (enhanced.magicalColor && enhanced.creature) {
+        parts.push(`A ${enhanced.magicalColor} ${enhanced.creature}`);
+      } else if (enhanced.creature) {
         parts.push(`A ${enhanced.creature}`);
       } else {
         parts.push('A magical creature');
       }
 
-      // Add any physical attributes if provided
+      // Add any additional physical attributes if provided
       const magicalAttributes: string[] = [];
       if (enhanced.hair) {
         magicalAttributes.push(`${enhanced.hair} mane`);

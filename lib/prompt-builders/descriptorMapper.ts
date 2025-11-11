@@ -142,7 +142,16 @@ export async function mapSelectionsToEnhanced(
     });
   }
 
-  // Map magical creature
+  // Map magical creature color
+  if (profileType === 'magical_creature' && selections.color) {
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: selections.color,
+      filters: { attribute_type: 'magical_color' }
+    });
+  }
+
+  // Map magical creature type
   if (profileType === 'magical_creature' && selections.creatureType) {
     fetchMappings.push({
       table: 'descriptors_magical',
@@ -180,6 +189,9 @@ export async function mapSelectionsToEnhanced(
           break;
         case 'pet_color':
           enhanced.petColor = descriptor.rich_description;
+          break;
+        case 'magical_color':
+          enhanced.magicalColor = descriptor.rich_description;
           break;
       }
     } else if (key.startsWith('descriptors_age_')) {
@@ -231,6 +243,12 @@ export async function mapSelectionsToEnhanced(
     const fallbackSpecies = selections.breed || selections.species;
     console.log('Pet species/breed fallback - using raw input:', fallbackSpecies);
     enhanced.species = fallbackSpecies;
+  }
+
+  // For magical creatures: if no color descriptor found, use raw input
+  if (profileType === 'magical_creature' && selections.color && !enhanced.magicalColor) {
+    console.log('Magical color fallback - using raw input:', selections.color);
+    enhanced.magicalColor = selections.color;
   }
 
   // For magical creatures: if no creature descriptor found, use raw input

@@ -22,6 +22,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // 2. Fetch vignette story with panels and characters
+    console.log('[Vignette API] Fetching vignette:', params.id, 'for user:', user.id);
+
     const { data: vignette, error } = await supabase
       .from('content')
       .select(
@@ -45,8 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         content_characters (
           character_profiles (
             id,
-            name,
-            avatar_url
+            name
           )
         )
       `
@@ -57,7 +58,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .single();
 
     if (error || !vignette) {
-      console.error('[Vignette API] Error fetching vignette:', error);
+      console.error('[Vignette API] Error fetching vignette:', {
+        vignetteId: params.id,
+        userId: user.id,
+        error: error,
+        errorCode: error?.code,
+        errorMessage: error?.message,
+      });
       return NextResponse.json({ success: false, error: 'Vignette not found' }, { status: 404 });
     }
 

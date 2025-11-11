@@ -289,13 +289,33 @@ export class VignetteSplicerService {
     console.log('🎨 LEONARDO PROMPT (Panoramic Image Generation)');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log(prompt);
-    console.log(`\nLength: ${prompt.length} / 1500 characters`);
+    console.log(`\nLength: ${prompt.length} characters`);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-    // Safety check
-    if (prompt.length > 1500) {
-      console.warn('[Vignette Story] Prompt exceeds 1500 chars, truncating...');
-      return prompt.substring(0, 1497) + '...';
+    // Leonardo's actual limit varies by model, but generally 1000-1500 chars
+    // We'll use 2000 as a soft limit and let Leonardo handle it
+    const MAX_LENGTH = 2000;
+
+    if (prompt.length > MAX_LENGTH) {
+      console.warn(`[Vignette Story] Prompt exceeds ${MAX_LENGTH} chars (${prompt.length}), compressing...`);
+
+      // Compress by shortening each scene description
+      const maxSceneLength = Math.floor((MAX_LENGTH - 400) / visualScenes.length); // Reserve 400 for boilerplate
+      const compressedScenes = visualScenes
+        .map((scene, idx) => {
+          const cleaned = scene.replace(/^(Scene|Frame) \d+:\s*/i, '');
+          const truncated = cleaned.length > maxSceneLength
+            ? cleaned.substring(0, maxSceneLength).trim() + '...'
+            : cleaned;
+          return `${numberEmojis[idx]} ${truncated}`;
+        })
+        .join(' ');
+
+      // Rebuild with compressed scenes
+      const compressedPrompt = `${opening} ${characterSection} ${facialInstruction} The visual progression shows: ${compressedScenes} ${closingSpecs}`;
+
+      console.log(`[Vignette Story] Compressed to ${compressedPrompt.length} characters`);
+      return compressedPrompt;
     }
 
     return prompt;
