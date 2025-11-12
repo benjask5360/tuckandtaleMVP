@@ -10,6 +10,9 @@ export interface GeminiGenerationConfig {
   prompt: string;
   aspectRatio?: '1:1' | '16:9' | '4:3' | '9:16';
   responseModalities?: ('Text' | 'Image')[];
+  temperature?: number; // Creativity control (0-2, default: 1)
+  topP?: number; // Nucleus sampling for diversity (0-1, default: 0.95)
+  maxOutputTokens?: number; // Maximum tokens in output (default: 32768)
 }
 
 export interface GeminiGenerationResponse {
@@ -48,6 +51,9 @@ export class GeminiClient {
       }],
       generationConfig: {
         responseModalities: config.responseModalities || ['Image'],
+        temperature: config.temperature ?? 1, // Default: 1 (matches Google AI Studio)
+        topP: config.topP ?? 0.95, // Default: 0.95 (matches Google AI Studio)
+        maxOutputTokens: config.maxOutputTokens ?? 32768, // Default: 32768 (matches Google AI Studio)
         imageConfig: {
           aspectRatio: config.aspectRatio || '1:1'
         }
@@ -57,6 +63,9 @@ export class GeminiClient {
     console.log('[Gemini] Generating image with config:', {
       promptLength: config.prompt.length,
       aspectRatio: config.aspectRatio || '1:1',
+      temperature: requestBody.generationConfig.temperature,
+      topP: requestBody.generationConfig.topP,
+      maxOutputTokens: requestBody.generationConfig.maxOutputTokens,
     });
 
     const response = await fetch(

@@ -9,7 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export interface AIConfig {
   id: string;
   name: string;
-  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama';
+  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama' | 'story_vignette_narratives';
   provider: 'leonardo' | 'openai' | 'stability' | 'midjourney' | 'google';
   model_id: string;
   model_name: string;
@@ -36,7 +36,7 @@ export class AIConfigService {
    * Get the default AI configuration for a specific purpose
    */
   static async getDefaultConfig(
-    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama' | 'story_vignette_narratives'
   ): Promise<AIConfig | null> {
     const supabase = await createClient();
 
@@ -164,6 +164,17 @@ export class AIConfigService {
       responseModalities: aiConfig.settings.responseModalities || ['Image'],
     };
 
+    // Add quality parameters if specified in settings
+    if (aiConfig.settings.temperature !== undefined) {
+      config.temperature = aiConfig.settings.temperature;
+    }
+    if (aiConfig.settings.topP !== undefined) {
+      config.topP = aiConfig.settings.topP;
+    }
+    if (aiConfig.settings.maxOutputTokens !== undefined) {
+      config.maxOutputTokens = aiConfig.settings.maxOutputTokens;
+    }
+
     return config;
   }
 
@@ -176,7 +187,8 @@ export class AIConfigService {
     aiConfig: AIConfig,
     creditsUsed: number,
     metadata?: any,
-    costLogId?: string | null
+    costLogId?: string | null,
+    contentId?: string | null
   ) {
     // Use admin client to bypass RLS for cost logging
     const supabase = createAdminClient();
@@ -249,7 +261,7 @@ export class AIConfigService {
       const { error } = await supabase
         .from('api_cost_logs')
         .update({
-          content_id: characterProfileId, // Update content_id with the story/content ID
+          content_id: contentId ?? null, // Update content_id with the story/content ID
           ai_config_name: aiConfig.name,
           total_tokens: Math.ceil(creditsUsed),
           prompt_tokens: promptTokens ?? null,
@@ -278,6 +290,7 @@ export class AIConfigService {
         .insert({
           user_id: userId,
           character_profile_id: characterProfileId,
+          content_id: contentId ?? null,
           ai_config_name: aiConfig.name,
           provider: aiConfig.provider,
           operation: aiConfig.purpose,

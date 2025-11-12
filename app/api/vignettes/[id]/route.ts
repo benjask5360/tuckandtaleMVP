@@ -42,7 +42,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         vignette_panels (
           panel_number,
           image_url,
-          storage_path
+          storage_path,
+          panel_text,
+          panel_order,
+          is_cover
         ),
         content_characters (
           character_profiles (
@@ -78,7 +81,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       (cc: any) => cc.character_profiles
     );
 
-    // 5. Return formatted response
+    // 5. Debug: Log generation_metadata to see what's in it
+    console.log('[Vignette API] generation_metadata keys:', Object.keys(vignette.generation_metadata || {}));
+    console.log('[Vignette API] Has vision prompts?', {
+      hasSystemPrompt: !!vignette.generation_metadata?.vision_system_prompt,
+      hasUserPrompt: !!vignette.generation_metadata?.vision_user_prompt,
+      hasRawResponse: !!vignette.generation_metadata?.vision_raw_response,
+    });
+
+    // 6. Return formatted response
     return NextResponse.json({
       success: true,
       vignette: {
@@ -93,6 +104,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           genre: vignette.generation_metadata?.genre,
           tone: vignette.generation_metadata?.tone,
           hero_age: vignette.generation_metadata?.hero_age,
+          vision_system_prompt: vignette.generation_metadata?.vision_system_prompt,
+          vision_user_prompt: vignette.generation_metadata?.vision_user_prompt,
+          vision_raw_response: vignette.generation_metadata?.vision_raw_response,
         },
         panel_count: vignette.panel_count,
         source_story_id: vignette.source_story_id,

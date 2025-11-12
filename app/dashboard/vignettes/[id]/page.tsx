@@ -11,6 +11,9 @@ interface VignettePanel {
   panel_number: number;
   image_url: string;
   storage_path: string;
+  panel_text?: string | null;
+  panel_order?: number | null;
+  is_cover?: boolean;
 }
 
 interface Vignette {
@@ -29,6 +32,9 @@ interface Vignette {
     genre: string;
     tone: string;
     hero_age?: number;
+    vision_system_prompt?: string;
+    vision_user_prompt?: string;
+    vision_raw_response?: string;
   };
   panel_count: number;
   source_story_id?: string;
@@ -377,6 +383,67 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
           </div>
         )}
 
+        {/* Story Reading Order (Panels with Text) */}
+        {vignette.panels.some((p) => p.panel_text || p.is_cover) && (
+          <div className="card p-6 md:p-8 mb-6">
+            <h2 className="text-xl font-bold mb-4">Story in Reading Order</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Panels arranged in the logical reading order determined by OpenAI Vision API, with narrative text for each scene.
+            </p>
+            <div className="space-y-6">
+              {/* Cover Panel First */}
+              {vignette.panels
+                .filter((p) => p.is_cover)
+                .map((panel) => (
+                  <div key={panel.panel_number} className="border-2 border-blue-500 rounded-lg overflow-hidden bg-blue-50">
+                    <div className="bg-blue-500 text-white px-4 py-2 font-semibold flex items-center justify-between">
+                      <span>Cover Image (Panel {panel.panel_number})</span>
+                      <span className="text-xs bg-blue-600 px-2 py-1 rounded">No Text</span>
+                    </div>
+                    <div className="p-4">
+                      <div className="relative aspect-square rounded-lg overflow-hidden">
+                        <Image
+                          src={panel.image_url}
+                          alt={`Cover - Panel ${panel.panel_number}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 600px"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+              {/* Story Panels in Reading Order */}
+              {vignette.panels
+                .filter((p) => !p.is_cover && p.panel_order != null)
+                .sort((a, b) => (a.panel_order || 0) - (b.panel_order || 0))
+                .map((panel) => (
+                  <div key={panel.panel_number} className="border rounded-lg overflow-hidden bg-white shadow-sm">
+                    <div className="bg-gray-100 px-4 py-2 font-semibold flex items-center justify-between">
+                      <span>Scene {panel.panel_order} (Panel {panel.panel_number})</span>
+                      <span className="text-xs text-gray-600">{panel.panel_text?.length || 0} characters</span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4 p-4">
+                      <div className="relative aspect-square rounded-lg overflow-hidden">
+                        <Image
+                          src={panel.image_url}
+                          alt={`Scene ${panel.panel_order} - Panel ${panel.panel_number}`}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 400px"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <p className="text-gray-700 leading-relaxed">{panel.panel_text}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* 3x3 Panel Grid */}
         <div className="card p-6 md:p-8 mb-6">
           <h2 className="text-xl font-bold mb-4">Story Panels</h2>
@@ -493,6 +560,71 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
                 Character count: {vignette.prompts.leonardo.length}
               </p>
             </div>
+          </div>
+        )}
+
+        {/* Debug: Vision API Prompts Section */}
+        {vignette.metadata?.vision_system_prompt && (
+          <div className="card p-6 md:p-8 bg-purple-50 border-2 border-purple-300 mb-6">
+            <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center gap-2">
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">DEBUG</span>
+              OpenAI Vision API (Narrative Generation)
+            </h3>
+
+            {/* Vision System Prompt */}
+            <div className="mb-6">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">INPUT</span>
+                System Prompt
+                <span className="text-xs text-gray-500 font-normal">(Instructions to GPT-4o)</span>
+              </h4>
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono overflow-x-auto">
+                  {vignette.metadata.vision_system_prompt}
+                </pre>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Character count: {vignette.metadata.vision_system_prompt.length}
+              </p>
+            </div>
+
+            {/* Vision User Prompt */}
+            {vignette.metadata?.vision_user_prompt && (
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">INPUT</span>
+                  User Prompt
+                  <span className="text-xs text-gray-500 font-normal">(Story context + panoramic image)</span>
+                </h4>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono overflow-x-auto">
+                    {vignette.metadata.vision_user_prompt}
+                  </pre>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Character count: {vignette.metadata.vision_user_prompt.length}
+                </p>
+              </div>
+            )}
+
+            {/* Vision Raw Response */}
+            {vignette.metadata?.vision_raw_response && (
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">OUTPUT</span>
+                  Raw JSON Response
+                  <span className="text-xs text-gray-500 font-normal">(From GPT-4o Vision API)</span>
+                </h4>
+                <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono overflow-x-auto">
+                    {JSON.stringify(JSON.parse(vignette.metadata.vision_raw_response), null, 2)}
+                  </pre>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Character count: {vignette.metadata.vision_raw_response.length}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

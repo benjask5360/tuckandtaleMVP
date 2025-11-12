@@ -57,7 +57,10 @@ INSERT INTO public.ai_configs (
     'aspectRatio', '1:1',
     'width', 1024,
     'height', 1024,
-    'responseModalities', jsonb_build_array('Image')
+    'responseModalities', jsonb_build_array('Image'),
+    'temperature', 1,
+    'topP', 0.95,
+    'maxOutputTokens', 32768
   ),
   true,  -- Set as default for vignette panorama
   true   -- Active

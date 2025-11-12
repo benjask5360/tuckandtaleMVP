@@ -20,6 +20,8 @@ import { AIConfigService } from '@/lib/services/ai-config';
 import { buildCharacterDescription } from '@/lib/prompt-builders/descriptionBuilder';
 import { mapSelectionsToEnhanced } from '@/lib/descriptors/prompt-builder';
 import { generateVignetteStoryPrompt, parseVignetteStoryResponse, type VignetteStoryParams, type VignetteStoryResponse } from '@/lib/prompt-builders/vignetteStoryPromptBuilder';
+import { OpenAIVisionClient, type VignetteNarrativeContext } from '@/lib/openai/vision-client';
+import { VignetteNarrativePromptBuilder, type VignetteNarrativeParams } from '@/lib/prompt-builders/vignetteNarrativePromptBuilder';
 import OpenAI from 'openai';
 import sharp from 'sharp';
 
@@ -28,13 +30,17 @@ import sharp from 'sharp';
 // ============================================================================
 
 export interface VignettePanel {
-  panel_number: number;
+  panel_number: number;        // Grid position (1-9)
   image_url: string;
   storage_path: string;
+  panel_text?: string | null;  // Story narrative text (null for cover)
+  panel_order?: number | null; // Reading order 1-8 (null for cover)
+  is_cover?: boolean;          // True if designated as cover panel
 }
 
 export interface VignetteGenerationResult {
   storyId: string;
+  story_title?: string;        // Generated story title from Vision API
   panels: VignettePanel[];
   panoramicImageUrl: string;
   leonardoGenerationId: string;
@@ -119,7 +125,7 @@ export class VignetteSplicerService {
   static async generateVignetteStoryFromScratch(
     params: VignetteStoryParams,
     userId: string
-  ): Promise<VignetteStoryResponse & { storyId: string; panels: VignettePanel[] }> {
+  ): Promise<VignetteStoryResponse & { storyId: string; story_title?: string; panels: VignettePanel[] }> {
     // 1. Create placeholder content record to get contentId for cost logging
     const storyId = await this.createPlaceholderContent(params, userId);
 
@@ -152,24 +158,217 @@ export class VignetteSplicerService {
       .from('illustrations')
       .getPublicUrl(panoramicStoragePath);
 
-    // 6. Update content record with panoramic image URL
-    await this.updateVignetteContent(storyId, openaiPrompt, vignetteStory.leonardoPrompt, panoramicImageUrl);
+    // 6. Generate panel narratives using OpenAI Vision API
+    const { narratives, storyTitle, visionPrompts } = await this.generatePanelNarratives(
+      panoramicImageUrl,
+      params,
+      userId,
+      storyId
+    );
+
+    // 7. Update panels with narratives, order, and cover designation
+    const updatedPanels = await this.updatePanelsWithNarratives(storyId, panels, narratives);
+
+    // 8. Update content record with panoramic image URL, story title, and vision prompts
+    await this.updateVignetteContent(
+      storyId,
+      openaiPrompt,
+      vignetteStory.leonardoPrompt,
+      panoramicImageUrl,
+      storyTitle,
+      visionPrompts
+    );
 
     return {
       ...vignetteStory,
       storyId,
-      panels,
+      story_title: storyTitle,
+      panels: updatedPanels,
     };
   }
 
   /**
+   * Generate simple prompt for Google Gemini (bypasses OpenAI)
+   * Uses proven format: "Create a picture of 9 equal size unique images in a grid of a '[character]' [activity]. [Genre]. Disney pixar style..."
+   */
+  private static async generateSimpleGeminiPrompt(
+    params: VignetteStoryParams
+  ): Promise<{ vignetteStory: VignetteStoryResponse; openaiPrompt: string }> {
+    // Extract physical descriptors from up to 3 characters
+    const characterDescriptions = this.extractPhysicalDescriptors(params.characters.slice(0, 3));
+
+    // Determine activity from context
+    const activity = this.determineActivityFromContext(params.genre, params.tone, params.mode);
+
+    // Build simple Gemini prompt
+    const leonardoPrompt = `Create a picture of 9 equal size unique images in a grid of a "${characterDescriptions}" ${activity}. ${params.genre}. Disney pixar style. Each image progresses from the next. Realistic activities. No text or numbers`;
+
+    console.log('[Vignette Story] Simple Gemini prompt:', leonardoPrompt);
+    console.log('[Vignette Story] Prompt length:', leonardoPrompt.length, 'characters');
+
+    // Return in same format as OpenAI response for consistency
+    return {
+      vignetteStory: {
+        leonardoPrompt,
+      },
+      openaiPrompt: 'Simple prompt (no OpenAI call made)', // Placeholder
+    };
+  }
+
+  /**
+   * Extract physical descriptors from character data
+   * Returns format like: "young girl with blonde hair and blue eyes and a corgi dog"
+   */
+  private static extractPhysicalDescriptors(characters: VignetteStoryParams['characters']): string {
+    const descriptors: string[] = [];
+
+    for (const char of characters) {
+      const parts: string[] = [];
+
+      // Determine character type
+      const characterType = char.profileType || 'child';
+
+      if (characterType === 'child') {
+        // Age descriptor
+        const age = char.attributes?.age;
+        if (age && typeof age === 'number') {
+          if (age <= 5) parts.push('young child');
+          else if (age <= 10) parts.push('child');
+          else if (age <= 13) parts.push('pre-teen');
+          else parts.push('teenager');
+        } else {
+          parts.push('child');
+        }
+
+        // Gender
+        const gender = char.attributes?.gender?.toLowerCase();
+        if (gender === 'male') parts[parts.length - 1] = parts[parts.length - 1].replace('child', 'boy');
+        if (gender === 'female') parts[parts.length - 1] = parts[parts.length - 1].replace('child', 'girl');
+
+        // Hair
+        const hairColor = char.attributes?.hairColor;
+        if (hairColor) parts.push(`${hairColor} hair`);
+
+        // Eyes
+        const eyeColor = char.attributes?.eyeColor;
+        if (eyeColor) parts.push(`${eyeColor} eyes`);
+
+        // Combine with "with"
+        descriptors.push(parts.join(' with '));
+      } else if (characterType === 'pet') {
+        // Pet descriptor - use breed over species for more specificity (pug vs dog)
+        const species = char.attributes?.breed || char.attributes?.species || 'dog';
+        const petColor = char.attributes?.primaryColor || char.attributes?.furColor || char.attributes?.petColor || char.attributes?.color;
+
+        if (petColor) {
+          descriptors.push(`${petColor} ${species}`);
+        } else {
+          descriptors.push(species);
+        }
+      } else {
+        // Other character types (storybook_character, magical_creature, or family roles)
+        // Use role-based description
+        const role = char.role || 'friend';
+        const gender = char.attributes?.gender?.toLowerCase();
+
+        if (role === 'family') {
+          if (gender === 'male') {
+            descriptors.push('father');
+          } else if (gender === 'female') {
+            descriptors.push('mother');
+          } else {
+            descriptors.push('family member');
+          }
+        } else {
+          // For other types, use the character's description or role
+          descriptors.push(char.description || role);
+        }
+      }
+    }
+
+    // Join with "and"
+    if (descriptors.length === 0) {
+      return 'a child';
+    } else if (descriptors.length === 1) {
+      return descriptors[0];
+    } else if (descriptors.length === 2) {
+      return `${descriptors[0]} and a ${descriptors[1]}`;
+    } else {
+      // 3 characters: "A, B, and C"
+      const last = descriptors.pop();
+      return `${descriptors.join(', ')}, and a ${last}`;
+    }
+  }
+
+  /**
+   * Determine activity phrase from genre, tone, and mode
+   * Returns simple activity like "playing together", "going on adventures", etc.
+   */
+  private static determineActivityFromContext(genre: string, tone: string, mode: 'fun' | 'growth'): string {
+    const genreLower = genre.toLowerCase();
+    const toneLower = tone.toLowerCase();
+
+    // Mode-based activities
+    if (mode === 'growth') {
+      if (genreLower.includes('school') || genreLower.includes('learning')) {
+        return 'learning and growing at school';
+      }
+      return 'learning and growing together';
+    }
+
+    // Genre-based activities (for fun mode)
+    if (genreLower.includes('adventure')) {
+      return 'going on an adventure';
+    }
+    if (genreLower.includes('fantasy') || genreLower.includes('magic')) {
+      return 'exploring a magical world';
+    }
+    if (genreLower.includes('mystery')) {
+      return 'solving a mystery';
+    }
+    if (genreLower.includes('science') || genreLower.includes('space')) {
+      return 'exploring science and discovery';
+    }
+    if (genreLower.includes('animal') || genreLower.includes('nature')) {
+      return 'exploring nature with animals';
+    }
+    if (genreLower.includes('sports')) {
+      return 'playing sports together';
+    }
+
+    // Tone-based fallbacks
+    if (toneLower.includes('exciting') || toneLower.includes('action')) {
+      return 'having exciting adventures';
+    }
+    if (toneLower.includes('calm') || toneLower.includes('peaceful')) {
+      return 'spending peaceful time together';
+    }
+
+    // Default
+    return 'playing together';
+  }
+
+  /**
    * Use OpenAI to generate visual scene descriptions
+   * OR use simple prompt builder for Google Gemini
    */
   private static async generateVisualScenesWithOpenAI(
     params: VignetteStoryParams,
     userId: string,
     contentId: string
   ): Promise<{ vignetteStory: VignetteStoryResponse; openaiPrompt: string }> {
+    // Check if we're using Google Gemini for panorama generation
+    const panoramaConfig = await AIConfigService.getDefaultConfig('story_vignette_panorama');
+
+    // If using Google Gemini, use simple prompt builder instead of OpenAI
+    if (panoramaConfig && panoramaConfig.provider === 'google') {
+      console.log('[Vignette Story] Using simple Gemini prompt builder (bypassing OpenAI)');
+      return this.generateSimpleGeminiPrompt(params);
+    }
+
+    // Otherwise, use OpenAI for complex prompt generation (Leonardo flow)
+    console.log('[Vignette Story] Using OpenAI for complex prompt generation (Leonardo flow)');
+
     // Fetch AI config for vignette scene generation
     const aiConfig = await AIConfigService.getDefaultConfig('story_vignette_scenes' as any);
     if (!aiConfig) {
@@ -286,7 +485,13 @@ export class VignetteSplicerService {
     contentId: string,
     openaiPrompt: string,
     leonardoPrompt: string,
-    panoramicImageUrl?: string
+    panoramicImageUrl?: string,
+    storyTitle?: string,
+    visionPrompts?: {
+      systemPrompt: string;
+      userPrompt: string;
+      rawResponse: string;
+    }
   ): Promise<void> {
     const supabase = await createServerClient();
 
@@ -305,12 +510,47 @@ export class VignetteSplicerService {
       updateData.panoramic_image_url = panoramicImageUrl;
     }
 
+    // Add story title to metadata if provided
+    if (storyTitle) {
+      updateData.title = storyTitle;
+      updateData.generation_metadata = {
+        ...updateData.generation_metadata,
+        story_title: storyTitle,
+      };
+    }
+
+    // Add Vision API prompts to metadata if provided
+    if (visionPrompts) {
+      updateData.generation_metadata = {
+        ...updateData.generation_metadata,
+        vision_system_prompt: visionPrompts.systemPrompt,
+        vision_user_prompt: visionPrompts.userPrompt,
+        vision_raw_response: visionPrompts.rawResponse,
+      };
+
+      console.log('[Vignette Story] Adding Vision prompts to metadata:', {
+        hasSystemPrompt: !!visionPrompts.systemPrompt,
+        hasUserPrompt: !!visionPrompts.userPrompt,
+        hasRawResponse: !!visionPrompts.rawResponse,
+        systemPromptLength: visionPrompts.systemPrompt?.length,
+        userPromptLength: visionPrompts.userPrompt?.length,
+        rawResponseLength: visionPrompts.rawResponse?.length,
+      });
+    }
+
+    console.log('[Vignette Story] About to update content with metadata:', {
+      contentId,
+      hasVisionPrompts: !!visionPrompts,
+      metadataKeys: Object.keys(updateData.generation_metadata || {}),
+    });
+
     const { error } = await supabase
       .from('content')
       .update(updateData)
       .eq('id', contentId);
 
     if (error) {
+      console.error('[Vignette Story] Failed to update content:', error);
       throw new Error(`Failed to update vignette content: ${error?.message}`);
     }
 
@@ -748,9 +988,6 @@ Cinematic, detailed, warm palette, no text.`;
     userId: string,
     generationId: string
   ): Promise<{ panels: VignettePanel[]; panoramicStoragePath: string }> {
-    // Border crop margin - removes residual Leonardo panel lines
-    // Adjustable between 4-6px if needed
-    const CROP_MARGIN = 10;
     // Download panoramic image
     const leonardo = new LeonardoClient();
     const imageBlob = await leonardo.downloadImage(imageUrl);
@@ -769,15 +1006,15 @@ Cinematic, detailed, warm palette, no text.`;
     const supabaseAdmin = createAdminClient();
     const supabase = await createServerClient();
 
+    // Create timestamp-based folder for better organization and sorting
+    // Format: vignettes/2025-01-15T14-30-00Z_storyId/
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const folderPath = `vignettes/${timestamp}_${storyId}`;
+
     // Save the full panoramic image first
-    const panoramicStoragePath = `vignettes/${storyId}/panoramic.png`;
+    const panoramicStoragePath = `${folderPath}/panoramic.png`;
 
-    // Remove existing panoramic if it exists
-    await supabaseAdmin.storage
-      .from('illustrations')
-      .remove([panoramicStoragePath]);
-
-    // Upload panoramic image
+    // Upload panoramic image (no need to remove - using timestamped folder)
     const { error: panoramicUploadError } = await supabaseAdmin.storage
       .from('illustrations')
       .upload(panoramicStoragePath, imageBuffer, {
@@ -811,7 +1048,7 @@ Cinematic, detailed, warm palette, no text.`;
       for (let col = 0; col < 3; col++) {
         const panelNumber = row * 3 + col + 1; // 1-9
 
-        // Extract panel from panoramic image, crop borders, and resize to standard dimensions
+        // Extract panel from panoramic image - straight slice, no crop
         const panelBuffer = await sharp(imageBuffer)
           .extract({
             left: col * panelWidth,
@@ -819,33 +1056,22 @@ Cinematic, detailed, warm palette, no text.`;
             width: panelWidth,
             height: panelHeight,
           })
-          .extract({
-            left: CROP_MARGIN,
-            top: CROP_MARGIN,
-            width: panelWidth - (CROP_MARGIN * 2),
-            height: panelHeight - (CROP_MARGIN * 2),
-          })
           .resize(512, 512, {
-            fit: 'fill',
+            fit: 'cover',  // Use 'cover' to maintain aspect ratio
             kernel: 'lanczos3',
           })
           .png()
           .toBuffer();
 
         // Upload to Supabase Storage using admin client (bypasses RLS)
-        const storagePath = `vignettes/${storyId}/panels/panel_${panelNumber}.png`;
+        const storagePath = `${folderPath}/panel_${panelNumber}.png`;
 
-        // First, try to remove existing file if it exists
-        await supabaseAdmin.storage
-          .from('illustrations')
-          .remove([storagePath]);
-
-        // Then upload the new file
+        // Upload the panel (no need to remove - using timestamped folder)
         const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
           .from('illustrations')
           .upload(storagePath, panelBuffer, {
             contentType: 'image/png',
-            upsert: false, // Don't upsert since we just removed it
+            upsert: false,
           });
 
         if (uploadError) {
@@ -890,5 +1116,222 @@ Cinematic, detailed, warm palette, no text.`;
     }
 
     return { panels, panoramicStoragePath };
+  }
+
+  /**
+   * Generate panel narratives using OpenAI Vision API
+   * Analyzes the panoramic image and creates story text for each panel
+   */
+  private static async generatePanelNarratives(
+    panoramicImageUrl: string,
+    params: VignetteStoryParams,
+    userId: string,
+    contentId: string
+  ): Promise<{
+    narratives: Array<{ panelNumber: number; order: number; text: string; is_cover: boolean }>;
+    storyTitle: string;
+    visionPrompts: {
+      systemPrompt: string;
+      userPrompt: string;
+      rawResponse: string;
+    };
+  }> {
+    console.log('[Vignette Narratives] Starting narrative generation');
+
+    // Fetch AI config for vignette narratives
+    const aiConfig = await AIConfigService.getDefaultConfig('story_vignette_narratives');
+    if (!aiConfig) {
+      throw new Error('No AI config found for story_vignette_narratives');
+    }
+
+    // Build narrative context from params
+    const narrativeParams: VignetteNarrativeParams = {
+      mode: params.mode,
+      genre: params.genre,
+      tone: params.tone,
+      writingStyle: params.tone, // Tone serves as writing style
+      storyLength: 'medium', // Default - will be overridden with actual length data
+      wordCountMin: 350,
+      wordCountMax: 550,
+      characterNames: VignetteNarrativePromptBuilder.extractCharacterNames(params.characters),
+      heroAge: VignetteNarrativePromptBuilder.extractHeroAge(
+        params.characters.find((c) => c.role === 'hero') || params.characters[0]
+      ),
+    };
+
+    // Add mode-specific context
+    if (params.mode === 'fun') {
+      // For fun mode, we'd need the moral lesson from the form
+      // For now, use genre as fallback
+      narrativeParams.moralLesson = params.genre;
+    } else {
+      // For growth mode, we'd need growth category and topic from form
+      // These would come from the original form submission
+      narrativeParams.growthTopic = params.genre; // Placeholder
+    }
+
+    const context = VignetteNarrativePromptBuilder.buildContext(narrativeParams);
+
+    // Initialize Vision API client
+    const visionClient = new OpenAIVisionClient();
+
+    // Call Vision API
+    const { response, usage, systemPrompt, userPrompt, rawResponse } = await visionClient.analyzeVignetteGrid(panoramicImageUrl, context);
+
+    console.log('[Vignette Narratives] Vision API response:', {
+      storyTitle: response.storyTitle,
+      coverPanel: response.coverPanel,
+      narrativesCount: response.narratives.length,
+      panelNumbers: response.narratives.map((n) => n.panelNumber).sort((a, b) => a - b),
+    });
+
+    // Handle duplicate panels by keeping only the first occurrence of each panel
+    const coverPanel = response.coverPanel;
+    const seenPanels = new Set<number>();
+    const deduplicatedNarratives = response.narratives.filter((n) => {
+      if (seenPanels.has(n.panelNumber)) {
+        console.warn(`[Vignette Narratives] Removing duplicate panel ${n.panelNumber}`);
+        return false;
+      }
+      seenPanels.add(n.panelNumber);
+      return true;
+    });
+
+    // Log any missing or duplicate panels but don't throw errors
+    const expectedPanels = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter((p) => p !== coverPanel);
+    const receivedPanels = deduplicatedNarratives.map((n) => n.panelNumber).sort((a, b) => a - b);
+    const missingPanels = expectedPanels.filter((p) => !receivedPanels.includes(p));
+
+    if (missingPanels.length > 0 || deduplicatedNarratives.length < response.narratives.length) {
+      console.warn('[Vignette Narratives] Panel issues detected (continuing gracefully):', {
+        coverPanel,
+        expectedPanels,
+        receivedPanels,
+        missingPanels,
+        duplicatesRemoved: response.narratives.length - deduplicatedNarratives.length,
+        continuingWith: `${deduplicatedNarratives.length} valid narratives`,
+      });
+    }
+
+    // Log cost for Vision API
+    await AIConfigService.logGenerationCost(
+      userId,
+      null, // No character_profile_id for vignette narratives
+      aiConfig,
+      usage.total_tokens,
+      {
+        prompt_used: `Vision analysis of panoramic image for narrative generation`,
+        prompt_tokens: usage.prompt_tokens,
+        completion_tokens: usage.completion_tokens,
+      },
+      null, // No costLogId (new insert)
+      contentId // Link to content (vignette story)
+    );
+
+    // Format narratives with cover designation (using deduplicated narratives)
+    const formattedNarratives = deduplicatedNarratives.map((n) => ({
+      panelNumber: n.panelNumber,
+      order: n.order,
+      text: n.text,
+      is_cover: false,
+    }));
+
+    // Add cover panel (no text, no order)
+    formattedNarratives.push({
+      panelNumber: response.coverPanel,
+      order: 0, // Cover has no reading order
+      text: '', // Cover has no narrative text
+      is_cover: true,
+    });
+
+    console.log('[Vignette Narratives] Formatted narratives ready for DB:', {
+      totalCount: formattedNarratives.length,
+      panels: formattedNarratives.map((n) => ({
+        panel: n.panelNumber,
+        order: n.order,
+        isCover: n.is_cover,
+        textLength: n.text.length,
+      })),
+    });
+
+    return {
+      narratives: formattedNarratives,
+      storyTitle: response.storyTitle,
+      visionPrompts: {
+        systemPrompt,
+        userPrompt,
+        rawResponse,
+      },
+    };
+  }
+
+  /**
+   * Update panel records in database with narratives, order, and cover designation
+   */
+  private static async updatePanelsWithNarratives(
+    storyId: string,
+    panels: VignettePanel[],
+    narratives: Array<{ panelNumber: number; order: number; text: string; is_cover: boolean }>
+  ): Promise<VignettePanel[]> {
+    console.log('[Vignette Narratives] Updating panels with narratives');
+
+    // Use admin client to bypass RLS for panel updates
+    const supabase = createAdminClient();
+    const updatedPanels: VignettePanel[] = [];
+
+    for (const panel of panels) {
+      // Find matching narrative
+      const narrative = narratives.find((n) => n.panelNumber === panel.panel_number);
+
+      if (!narrative) {
+        console.warn(
+          `[Vignette Narratives] No narrative found for panel ${panel.panel_number}, skipping`
+        );
+        updatedPanels.push(panel);
+        continue;
+      }
+
+      // Update panel in database
+      const updateData = {
+        panel_text: narrative.text || null,
+        panel_order: narrative.order > 0 ? narrative.order : null,
+        is_cover: narrative.is_cover,
+      };
+
+      console.log(`[Vignette Narratives] Updating panel ${panel.panel_number}:`, {
+        textLength: updateData.panel_text?.length || 0,
+        order: updateData.panel_order,
+        isCover: updateData.is_cover,
+      });
+
+      const { error } = await supabase
+        .from('vignette_panels')
+        .update(updateData)
+        .eq('story_id', storyId)
+        .eq('panel_number', panel.panel_number);
+
+      if (error) {
+        console.error(
+          `[Vignette Narratives] Failed to update panel ${panel.panel_number}:`,
+          error
+        );
+        throw new Error(`Failed to update panel ${panel.panel_number}: ${error.message}`);
+      }
+
+      console.log(
+        `[Vignette Narratives] Panel ${panel.panel_number} updated successfully:`,
+        narrative.is_cover ? 'COVER' : `Order ${narrative.order}, Text length ${updateData.panel_text?.length || 0}`
+      );
+
+      // Add narrative data to panel object
+      updatedPanels.push({
+        ...panel,
+        panel_text: narrative.text || null,
+        panel_order: narrative.order > 0 ? narrative.order : null,
+        is_cover: narrative.is_cover,
+      });
+    }
+
+    return updatedPanels;
   }
 }
