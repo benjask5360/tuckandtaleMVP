@@ -74,7 +74,8 @@
       "Bash(node verify-descriptors.js:*)",
       "Bash(node apply-body-types.js:*)",
       "Bash(node apply-enhanced-genders.js:*)",
-      "Bash(node apply-enhanced-genders-direct.js:*)"
+      "Bash(node apply-enhanced-genders-direct.js:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []
