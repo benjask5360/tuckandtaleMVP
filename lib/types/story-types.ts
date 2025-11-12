@@ -96,6 +96,7 @@ export interface StoryGenerationParams {
 
   // Optional customization
   customInstructions?: string;
+  includeIllustrations?: boolean; // Flag to generate illustration prompt
 }
 
 export interface StoryGenerationRequest {
@@ -107,6 +108,26 @@ export interface StoryGenerationRequest {
   mode: StoryMode;
   customInstructions?: string;
   heroAge: number; // For age-appropriate content
+  includeIllustrations?: boolean; // Whether to generate illustration prompt
+}
+
+// ============================================================================
+// STORY ILLUSTRATION TYPES
+// ============================================================================
+
+export type IllustrationType = 'grid_3x3' | 'scene_0' | 'scene_1' | 'scene_2' | 'scene_3' | 'scene_4' | 'scene_5' | 'scene_6' | 'scene_7' | 'scene_8';
+
+export interface StoryIllustration {
+  type: IllustrationType;
+  url: string;
+  generated_at: string;
+  source?: 'generated' | 'spliced_from_grid';
+  metadata?: {
+    model?: string;
+    tokens_used?: number;
+    aspect_ratio?: string;
+    [key: string]: any;
+  };
 }
 
 // ============================================================================
@@ -117,6 +138,7 @@ export interface ParsedStory {
   title: string;
   paragraphs: string[];
   moral?: string | null;
+  illustration_prompt?: string; // OpenAI-generated prompt for 3x3 grid illustration
 }
 
 export interface Story {
@@ -145,7 +167,13 @@ export interface Story {
     paragraphs: string[];
     characters_used?: string[]; // Character IDs
     ai_config_name?: string;
+    include_illustrations?: boolean; // Whether illustrations were requested
   };
+
+  // Illustration fields
+  include_illustrations?: boolean; // Flag indicating if illustrations were requested
+  story_illustration_prompt?: string; // OpenAI-generated prompt for 3x3 grid
+  story_illustrations?: StoryIllustration[]; // Array of generated illustration objects
 
   // User engagement
   is_favorite: boolean;
@@ -269,6 +297,7 @@ export interface PromptBuildContext {
   mode: StoryMode;
   customInstructions?: string;
   heroAge: number;
+  includeIllustrations?: boolean; // Whether to generate illustration prompt
 }
 
 export interface CharacterContext {

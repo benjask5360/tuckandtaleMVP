@@ -53,6 +53,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [growthTopicId, setGrowthTopicId] = useState<string>('')
   const [moralLessonId, setMoralLessonId] = useState<string>('')
   const [customInstructions, setCustomInstructions] = useState<string>('')
+  const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(false)
 
   // Data state
   const [parameters, setParameters] = useState<GroupedParameters>({})
@@ -118,6 +119,11 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
       if (customInstructions.trim()) {
         requestBody.customInstructions = customInstructions.trim()
+      }
+
+      // Add includeIllustrations flag for text stories
+      if (storyType === 'text') {
+        requestBody.includeIllustrations = includeIllustrations
       }
 
       // Route to correct API based on story type
@@ -483,6 +489,36 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           ))}
         </div>
       </div>
+
+      {/* Include Illustrations Toggle - Only show for text stories */}
+      {storyType === 'text' && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-2">
+            Include Illustrations
+          </label>
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={() => setIncludeIllustrations(!includeIllustrations)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                includeIllustrations ? 'bg-primary-600' : 'bg-gray-200'
+              }`}
+            >
+              <span className="sr-only">Include illustrations</span>
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  includeIllustrations ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className="text-sm text-gray-600">
+              {includeIllustrations
+                ? 'Story will include an illustration prompt for a 3x3 scene grid'
+                : 'Text-only story'}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Custom Instructions */}
       <div>

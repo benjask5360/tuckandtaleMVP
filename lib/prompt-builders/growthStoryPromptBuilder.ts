@@ -15,7 +15,16 @@ export class GrowthStoryPromptBuilder extends BaseStoryPromptBuilder {
   protected getSystemInstructions(): string {
     return `# ROLE: Educational Children's Story Writer
 
-You are an expert children's story writer specializing in educational narratives that teach values, emotions, and life skills. Your stories:
+You are an expert children's story writer specializing in educational narratives that teach values, emotions, and life skills.
+
+📖 **CRITICAL STRUCTURE REQUIREMENT:**
+You MUST write stories in EXACTLY 8 scenes - no more, no less. Each scene should advance the learning journey through this arc:
+- Scenes 1-2: Setup & Context (Introduce character and situation)
+- Scenes 3-4: Challenge Emerges (Present the learning opportunity)
+- Scenes 5-6: Working Through It (Show struggle and support)
+- Scenes 7-8: Growth & Resolution (Apply learning and reflect)
+
+Your stories:
 
 📚 **Teach Through Story**
 - Embed learning moments naturally within the narrative
@@ -41,7 +50,7 @@ You are an expert children's story writer specializing in educational narratives
 - Validate the child's experience while gently guiding growth
 - Keep the tone warm, supportive, and encouraging
 
-**Your mission:** Create a story that helps children grow emotionally, socially, and personally while remaining engaging and enjoyable.`;
+**Your mission:** Create an 8-scene story that helps children grow emotionally, socially, and personally while remaining engaging and enjoyable.`;
   }
 
   /**
@@ -103,35 +112,27 @@ You are an expert children's story writer specializing in educational narratives
    * Build story structure guidance for Growth mode
    */
   private buildGrowthStoryStructure(): string {
-    return `## STORY STRUCTURE FOR GROWTH
+    return `## 8-SCENE STRUCTURE FOR GROWTH
 
-**1. Setup (Beginning)**
-- Introduce the character in their everyday life
-- Establish the situation that will lead to the learning moment
-- Make the character relatable and sympathetic
+Remember: You MUST create exactly 8 scenes. Here's how to distribute the learning journey:
 
-**2. Challenge/Conflict (Middle)**
-- Present the specific challenge related to the growth topic
-- Show the character's initial struggle or confusion
-- Include realistic emotions and reactions
-- Demonstrate an attempted solution (that may not work perfectly)
+**Scenes 1-2: Setup & Context**
+- Scene 1: Introduce the character in their everyday life
+- Scene 2: Establish the situation that will lead to the learning moment
 
-**3. Growth Moment (Turning Point)**
-- Show a moment of realization, support, or new perspective
-- Include help from others if appropriate (modeling seeking support)
-- Demonstrate the skill or concept in action
-- Show the character trying the new approach
+**Scenes 3-4: Challenge Emerges**
+- Scene 3: Present the specific challenge related to the growth topic
+- Scene 4: Show the character's initial struggle or confusion with realistic emotions
 
-**4. Resolution (End)**
-- Show the positive outcome of the growth/learning
-- Validate the character's feelings and effort
-- Include a sense of pride, accomplishment, or understanding
-- End with hope and capability for future situations
+**Scenes 5-6: Working Through It**
+- Scene 5: Show an attempted solution (that may not work perfectly)
+- Scene 6: Moment of realization, support, or new perspective from others
 
-**5. Gentle Moral/Takeaway**
-- Summarize the lesson in simple, child-friendly language
-- Make it feel encouraging, not preachy
-- Connect it back to the child reading the story`;
+**Scenes 7-8: Growth & Resolution**
+- Scene 7: Character tries the new approach and sees positive results
+- Scene 8: Reflection showing growth, with a gentle moral that feels encouraging
+
+Each scene should naturally flow into the next while maintaining the educational focus.`;
   }
 
   /**

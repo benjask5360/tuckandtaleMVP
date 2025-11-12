@@ -25,6 +25,7 @@ export async function GET(
       .from('stories')
       .select(`
         *,
+        story_illustrations,
         content_characters (
           character_profile_id,
           role,

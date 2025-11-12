@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Heart, Sparkles, Loader2, RotateCw, Trash2, BookOpen, Target } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowLeft, Heart, Sparkles, Loader2, Target } from 'lucide-react'
+import type { StoryIllustration } from '@/lib/types/story-types'
 
 interface Story {
   id: string
@@ -12,6 +14,7 @@ interface Story {
   body: string
   created_at: string
   is_favorite: boolean
+  story_illustrations?: StoryIllustration[]
   generation_metadata: {
     mode: 'fun' | 'growth'
     genre_display: string
@@ -35,7 +38,6 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   const supabase = createClient()
   const [story, setStory] = useState<Story | null>(null)
   const [loading, setLoading] = useState(true)
-  const [regenerating, setRegenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -90,63 +92,6 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
     }
   }
 
-  const handleRegenerate = async () => {
-    if (!story) return
-
-    const confirm = window.confirm(
-      'This will create a new version of this story with the same settings. The current version will be archived. Continue?'
-    )
-    if (!confirm) return
-
-    setRegenerating(true)
-
-    try {
-      const response = await fetch(`/api/stories/${params.id}/regenerate`, {
-        method: 'PUT',
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error(`You've reached your story generation limit. ${data.error}`)
-        }
-        throw new Error(data.error || 'Failed to regenerate story')
-      }
-
-      // Redirect to the new story
-      router.push(`/dashboard/stories/${data.story.id}`)
-    } catch (err: any) {
-      console.error('Error regenerating story:', err)
-      alert(err.message)
-      setRegenerating(false)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!story) return
-
-    const confirm = window.confirm(
-      'Are you sure you want to delete this story? This cannot be undone.'
-    )
-    if (!confirm) return
-
-    try {
-      const response = await fetch(`/api/stories/${params.id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete story')
-      }
-
-      router.push('/dashboard/story-library')
-    } catch (err: any) {
-      console.error('Error deleting story:', err)
-      alert(err.message)
-    }
-  }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -174,6 +119,15 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   }
 
   const paragraphs = story.generation_metadata?.paragraphs || story.body.split('\n\n')
+
+  // Helper function to get illustration for a specific scene
+  const getSceneIllustration = (sceneNumber: number): StoryIllustration | undefined => {
+    if (!story.story_illustrations) return undefined
+    return story.story_illustrations.find(ill => ill.type === `scene_${sceneNumber}`)
+  }
+
+  // Get cover illustration (Scene 0)
+  const coverIllustration = getSceneIllustration(0)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -211,9 +165,23 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                     </span>
                   )}
                 </div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 text-center">
                   {story.title}
                 </h1>
+
+                {/* Cover Image (Scene 0) - Same size as other illustrations */}
+                {coverIllustration && (
+                  <div className="mt-6 relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden shadow-md">
+                    <Image
+                      src={coverIllustration.url}
+                      alt="Story Cover"
+                      width={512}
+                      height={512}
+                      className="w-full h-auto object-cover"
+                      priority
+                    />
+                  </div>
+                )}
               </div>
 
               <button
@@ -252,44 +220,38 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
               </div>
             )}
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleRegenerate}
-              disabled={regenerating}
-              className="btn-secondary flex items-center gap-2 min-h-[44px]"
-            >
-              {regenerating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Regenerating...
-                </>
-              ) : (
-                <>
-                  <RotateCw className="w-4 h-4" />
-                  Regenerate
-                </>
-              )}
-            </button>
-            <button
-              onClick={handleDelete}
-              className="btn-secondary text-red-600 hover:bg-red-50 flex items-center gap-2 min-h-[44px]"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
         </div>
 
         {/* Story Content */}
         <div className="card p-6 md:p-8 lg:p-12">
           <div className="prose prose-lg max-w-none">
-            {paragraphs.map((paragraph, index) => (
-              <p key={index} className="text-gray-800 leading-relaxed mb-4 text-base md:text-lg">
-                {paragraph}
-              </p>
-            ))}
+            {paragraphs.map((paragraph, index) => {
+              // Get scene illustration for this paragraph (scenes 1-8 map to paragraphs 0-7)
+              const sceneIllustration = getSceneIllustration(index + 1)
+
+              return (
+                <div key={index}>
+                  {/* Scene Illustration above paragraph */}
+                  {sceneIllustration && (
+                    <div className="mb-6 relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden shadow-md">
+                      <Image
+                        src={sceneIllustration.url}
+                        alt={`Scene ${index + 1}`}
+                        width={512}
+                        height={512}
+                        className="w-full h-auto object-cover"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Paragraph text */}
+                  <p className="text-gray-800 leading-relaxed mb-4 text-base md:text-lg">
+                    {paragraph}
+                  </p>
+                </div>
+              )
+            })}
 
             {/* Moral */}
             {story.generation_metadata?.moral && (

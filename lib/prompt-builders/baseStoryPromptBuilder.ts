@@ -31,7 +31,7 @@ export abstract class BaseStoryPromptBuilder {
     const characterContext = this.organizeCharacters(context.characters);
     const characterDescriptions = await this.buildCharacterContext(characterContext);
     const storyParameters = this.buildStoryParameters(context);
-    const formatInstructions = this.formatResponseInstructions(context.length);
+    const formatInstructions = this.formatResponseInstructions(context.length, context.includeIllustrations);
 
     // Assemble the complete prompt
     let prompt = systemInstructions;
@@ -149,11 +149,12 @@ export abstract class BaseStoryPromptBuilder {
       params += `(${context.tone.description})\n`;
     }
 
-    // Length specifications
+    // Length specifications - Always 8 scenes
     const lengthMeta = context.length.metadata;
     params += `\n**Length:** ${context.length.display_name}\n`;
     params += `- Target: ${lengthMeta.word_count_min}-${lengthMeta.word_count_max} words\n`;
-    params += `- Paragraphs: ${lengthMeta.paragraph_count_min}-${lengthMeta.paragraph_count_max}\n`;
+    params += `- Structure: Exactly 8 scenes/paragraphs\n`;
+    params += `- Scene length varies by story length (${Math.round(lengthMeta.word_count_min/8)}-${Math.round(lengthMeta.word_count_max/8)} words per scene)\n`;
 
     // Age-appropriateness
     params += `\n**Age Appropriateness:** `;
@@ -177,25 +178,67 @@ export abstract class BaseStoryPromptBuilder {
   /**
    * Format response instructions (JSON structure)
    */
-  protected formatResponseInstructions(length: StoryLength): string {
-    const paraCount = length.metadata.paragraph_count_max;
+  protected formatResponseInstructions(length: StoryLength, includeIllustrations?: boolean): string {
+    const wordMin = length.metadata.word_count_min;
+    const wordMax = length.metadata.word_count_max;
+    const wordsPerScene = `${Math.round(wordMin/8)}-${Math.round(wordMax/8)}`;
 
     let instructions = '## OUTPUT FORMAT\n\n';
+    instructions += '**CRITICAL: You MUST create exactly 8 numbered scenes. No more, no less.**\n\n';
+    instructions += 'Follow this exact 8-scene structure:\n';
+    instructions += '1. **Scene 1:** Opening/Introduction - Set the scene and introduce the hero\n';
+    instructions += '2. **Scene 2:** Setup & Context - Establish the world and situation\n';
+    instructions += '3. **Scene 3:** The Catalyst - Something happens that starts the adventure\n';
+    instructions += '4. **Scene 4:** Rising Action - The journey/challenge begins\n';
+    instructions += '5. **Scene 5:** Development - Deepen the conflict or challenge\n';
+    instructions += '6. **Scene 6:** Climax - The peak moment or biggest challenge\n';
+    instructions += '7. **Scene 7:** Resolution - How the challenge is resolved\n';
+    instructions += '8. **Scene 8:** Ending/Reflection - Conclusion and what was learned\n\n';
+
     instructions += 'Please respond with a JSON object in the following format:\n\n';
     instructions += '```json\n';
     instructions += '{\n';
     instructions += '  "title": "The Story Title",\n';
     instructions += `  "paragraphs": [\n`;
-    instructions += '    "First paragraph of the story...",\n';
-    instructions += '    "Second paragraph...",\n';
-    instructions += '    ...\n';
+    instructions += '    "Scene 1: [Opening scene text...]",\n';
+    instructions += '    "Scene 2: [Setup scene text...]",\n';
+    instructions += '    "Scene 3: [Catalyst scene text...]",\n';
+    instructions += '    "Scene 4: [Rising action text...]",\n';
+    instructions += '    "Scene 5: [Development text...]",\n';
+    instructions += '    "Scene 6: [Climax text...]",\n';
+    instructions += '    "Scene 7: [Resolution text...]",\n';
+    instructions += '    "Scene 8: [Ending text...]"\n';
     instructions += '  ],\n';
     instructions += '  "moral": "Optional lesson or moral (if applicable)"\n';
     instructions += '}\n';
     instructions += '```\n\n';
-    instructions += `Ensure the story has ${length.metadata.paragraph_count_min}-${paraCount} paragraphs.\n`;
-    instructions += 'Each paragraph should be complete and engaging.\n';
-    instructions += 'The title should be catchy and appropriate for the story.\n';
+    instructions += '**IMPORTANT REQUIREMENTS:**\n';
+    instructions += '- You MUST include exactly 8 scenes in the paragraphs array\n';
+    instructions += '- Do NOT number the scenes in the actual text (the array position handles numbering)\n';
+    instructions += `- Each scene should be approximately ${wordsPerScene} words\n`;
+    instructions += `- Total story length: ${wordMin}-${wordMax} words\n`;
+    instructions += '- Each scene should flow naturally into the next\n';
+    instructions += '- Keep pacing appropriate - longer stories have more detailed scenes\n';
+
+    // Add illustration prompt instructions if requested
+    if (includeIllustrations) {
+      instructions += '\n\n**ILLUSTRATION PROMPT GENERATION:**\n';
+      instructions += 'Additionally, create an illustration prompt field in the JSON response:\n\n';
+      instructions += '"illustration_prompt": "Create a picture with of a 3x3 grid with each of the following images:\\n';
+      instructions += '• [All main characters with their descriptions, e.g., Character Name (description with appearance details)]\\n';
+      instructions += '• [Brief visual description for scene 1 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 2 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 3 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 4 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 5 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 6 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 7 mentioning character names]\\n';
+      instructions += '• [Brief visual description for scene 8 mentioning character names]\\n';
+      instructions += 'Disney Pixar style. Each image progresses from the next. No text or numbers"\n\n';
+      instructions += '**Important:** The illustration prompt should use bullet points (•) with no scene numbers or brackets.\n';
+      instructions += 'The first bullet MUST list all characters with their appearance descriptions.\n';
+      instructions += 'Each scene description should be concise and visual, mentioning character names.\n';
+    }
 
     return instructions;
   }

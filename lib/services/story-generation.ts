@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { FunStoryPromptBuilder } from '../prompt-builders/funStoryPromptBuilder';
 import { GrowthStoryPromptBuilder } from '../prompt-builders/growthStoryPromptBuilder';
 import { AIConfigService, type AIConfig } from './ai-config';
+import { StoryIllustrationGenerator } from './story-illustration-generator';
 import type {
   StoryGenerationParams,
   StoryGenerationRequest,
@@ -111,7 +112,30 @@ export class StoryGenerationService {
     // 4. Link characters
     await this.linkCharacters(story.id, request.characters);
 
-    // 5. Update cost log with token data and completion status
+    // 5. Generate illustration if prompt exists and illustrations were requested
+    if (parsed.illustration_prompt && request.includeIllustrations) {
+      console.log('Generating story illustration with Gemini...');
+      try {
+        const illustration = await StoryIllustrationGenerator.generateAndSaveIllustration(
+          parsed.illustration_prompt,
+          userId,
+          story.id
+        );
+
+        if (illustration) {
+          console.log('Story illustration generated successfully');
+          // Update the story object with the illustration
+          story.story_illustrations = [illustration];
+        } else {
+          console.warn('Failed to generate story illustration');
+        }
+      } catch (error) {
+        console.error('Error generating story illustration:', error);
+        // Continue without illustration - don't fail the entire story generation
+      }
+    }
+
+    // 6. Update cost log with token data and completion status
     await this.logCosts(userId, aiConfig, response.tokens, {
       content_id: story.id,
       mode: request.mode,
@@ -175,6 +199,7 @@ export class StoryGenerationService {
       mode: params.mode,
       customInstructions: params.customInstructions,
       heroAge,
+      includeIllustrations: params.includeIllustrations,
     };
   }
 
@@ -286,6 +311,7 @@ export class StoryGenerationService {
       mode: request.mode,
       customInstructions: request.customInstructions,
       heroAge: request.heroAge,
+      includeIllustrations: request.includeIllustrations,
     };
 
     const builder = request.mode === 'fun'
@@ -399,6 +425,7 @@ export class StoryGenerationService {
           title: json.title,
           paragraphs: json.paragraphs,
           moral: json.moral || null,
+          illustration_prompt: json.illustration_prompt || null,
         };
       }
     } catch (error) {
@@ -489,7 +516,10 @@ export class StoryGenerationService {
           paragraphs: parsed.paragraphs,
           hero_age: request.heroAge,
           character_count: request.characters.length,
+          include_illustrations: request.includeIllustrations || false,
         },
+        include_illustrations: request.includeIllustrations || false,
+        story_illustration_prompt: parsed.illustration_prompt || null,
       })
       .select()
       .single();
