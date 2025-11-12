@@ -19,7 +19,8 @@
       "Bash(npm run build:check:*)",
       "Bash(cat:*)",
       "Bash(npx supabase db execute:*)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
