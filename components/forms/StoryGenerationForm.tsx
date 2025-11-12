@@ -42,6 +42,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const supabase = createClient()
 
   // Form state
+  const [storyType, setStoryType] = useState<'text' | 'vignette'>('text')
   const [heroId, setHeroId] = useState<string>(childProfiles[0]?.id || '')
   const [additionalCharacterIds, setAdditionalCharacterIds] = useState<string[]>([])
   const [mode, setMode] = useState<'fun' | 'growth'>('fun')
@@ -119,7 +120,12 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         requestBody.customInstructions = customInstructions.trim()
       }
 
-      const response = await fetch('/api/stories/generate', {
+      // Route to correct API based on story type
+      const endpoint = storyType === 'vignette'
+        ? '/api/vignette-stories/generate'
+        : '/api/stories/generate'
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
@@ -134,8 +140,12 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         throw new Error(data.error || 'Failed to generate story')
       }
 
-      // Success! Redirect to the new story
-      router.push(`/dashboard/stories/${data.story.id}`)
+      // Success! Redirect to the appropriate viewer
+      if (storyType === 'vignette') {
+        router.push(`/dashboard/vignettes/${data.data.storyId}`)
+      } else {
+        router.push(`/dashboard/stories/${data.story.id}`)
+      }
     } catch (err: any) {
       console.error('Error generating story:', err)
       setError(err.message)
@@ -154,6 +164,41 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Story Type Selection */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-900 mb-3">
+          Story Type <span className="text-red-500">*</span>
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => setStoryType('text')}
+            className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all ${
+              storyType === 'text'
+                ? 'border-primary-600 bg-primary-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <BookOpen className={`w-8 h-8 mb-2 ${storyType === 'text' ? 'text-primary-600' : 'text-gray-400'}`} />
+            <span className="font-semibold text-gray-900">Text Story</span>
+            <span className="text-xs text-gray-600 mt-1">Classic narrated story</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStoryType('vignette')}
+            className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all ${
+              storyType === 'vignette'
+                ? 'border-primary-600 bg-primary-50'
+                : 'border-gray-200 hover:border-gray-300'
+            }`}
+          >
+            <span className="text-3xl mb-2">🎬</span>
+            <span className="font-semibold text-gray-900">Visual Storybook</span>
+            <span className="text-xs text-gray-600 mt-1">9-panel panoramic image</span>
+          </button>
+        </div>
+      </div>
+
       {/* Hero Selection */}
       <div>
         <label className="block text-sm font-semibold text-gray-900 mb-3">
@@ -478,12 +523,14 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           {generating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Generating your story... (this may take 30-60 seconds)
+              {storyType === 'vignette'
+                ? 'Generating your visual storybook... (this may take 60-90 seconds)'
+                : 'Generating your story... (this may take 30-60 seconds)'}
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              Generate Story
+              {storyType === 'vignette' ? 'Generate Visual Storybook' : 'Generate Story'}
             </>
           )}
         </button>

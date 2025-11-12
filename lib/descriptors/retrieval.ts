@@ -363,6 +363,7 @@ export async function getGroupedAttributeDescriptors(
     hair_length: [],
     glasses: [],
     pet_color: [],
+    magical_color: [],
   };
 
   attributes.forEach((attr) => {

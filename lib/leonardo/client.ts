@@ -175,7 +175,7 @@ export class LeonardoClient {
         // Check status
         if (generation.status === 'COMPLETE') {
           if (onProgress) {
-            onProgress(100, 'Avatar generated successfully!');
+            onProgress(100, 'Image generated successfully!');
           }
           return generation;
         }

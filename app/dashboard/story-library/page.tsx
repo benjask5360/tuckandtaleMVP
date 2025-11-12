@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BookOpen, Calendar, Heart, Sparkles, Target, Filter, SortAsc } from 'lucide-react'
+import { BookOpen, Calendar, Heart, Sparkles, Target, Filter, SortAsc, Film } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface Story {
@@ -12,6 +12,8 @@ interface Story {
   body: string
   created_at: string
   is_favorite: boolean
+  content_type: 'story' | 'vignette_story'
+  panel_count?: number
   generation_metadata: {
     mode: 'fun' | 'growth'
     genre_display: string
@@ -76,13 +78,15 @@ export default function StoryLibraryPage() {
       setMaxStories(tier?.stories_per_month !== undefined ? tier.stories_per_month : 3)
 
       const { data, error } = await supabase
-        .from('stories')
+        .from('content')
         .select(`
           id,
           title,
           body,
           created_at,
           is_favorite,
+          content_type,
+          panel_count,
           generation_metadata,
           content_characters (
             character_profiles (
@@ -95,6 +99,7 @@ export default function StoryLibraryPage() {
           )
         `)
         .eq('user_id', user.id)
+        .in('content_type', ['story', 'vignette_story'])
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -358,9 +363,23 @@ export default function StoryLibraryPage() {
               {filteredStories.map(story => (
                 <div key={story.id} className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
                   <div className="flex flex-col h-full">
-                    {/* Header with Mode Badge and Favorite */}
+                    {/* Header with Mode Badge, Type Badge, and Favorite */}
                     <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Story Type Badge */}
+                        {story.content_type === 'vignette_story' ? (
+                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
+                            <Film className="w-3 h-3" />
+                            Visual
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-800 flex items-center gap-1">
+                            <BookOpen className="w-3 h-3" />
+                            Text
+                          </span>
+                        )}
+
+                        {/* Mode Badge */}
                         {story.generation_metadata?.mode === 'growth' ? (
                           <Target className="w-4 h-4 text-green-600" />
                         ) : (
@@ -432,7 +451,13 @@ export default function StoryLibraryPage() {
                         <Calendar className="w-3 h-3" />
                         <span>{formatDate(story.created_at)}</span>
                       </div>
-                      {story.generation_metadata?.length_display && (
+                      {story.content_type === 'vignette_story' && story.panel_count && (
+                        <div className="flex items-center gap-2">
+                          <Film className="w-3 h-3" />
+                          <span>{story.panel_count} panels</span>
+                        </div>
+                      )}
+                      {story.content_type === 'story' && story.generation_metadata?.length_display && (
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-3 h-3" />
                           <span>{story.generation_metadata.length_display}</span>
@@ -448,11 +473,20 @@ export default function StoryLibraryPage() {
                     {/* Actions */}
                     <div className="flex gap-2">
                       <Link
-                        href={`/dashboard/stories/${story.id}`}
+                        href={story.content_type === 'vignette_story' ? `/dashboard/vignettes/${story.id}` : `/dashboard/stories/${story.id}`}
                         className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-50 text-primary-600 font-semibold rounded-xl active:bg-primary-100 md:hover:bg-primary-100 transition-colors min-h-[44px]"
                       >
-                        <BookOpen className="w-4 h-4" />
-                        Read Story
+                        {story.content_type === 'vignette_story' ? (
+                          <>
+                            <Film className="w-4 h-4" />
+                            View Storybook
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-4 h-4" />
+                            Read Story
+                          </>
+                        )}
                       </Link>
                     </div>
                   </div>
