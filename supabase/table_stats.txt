@@ -1,0 +1,26 @@
+Initialising login role...
+Connecting to remote database...
+
+  
+   Name                         | Table size | Index size | Total size | Estimated row count | Seq scans 
+  ------------------------------|------------|------------|------------|---------------------|-----------
+   public.api_cost_logs         | 496 kB     | 208 kB     | 704 kB     | 229                 | 349       
+   public.content               | 504 kB     | 104 kB     | 608 kB     | 99                  | 222       
+   public.vignette_panels       | 280 kB     | 200 kB     | 480 kB     | 550                 | 52        
+   public.avatar_cache          | 216 kB     | 128 kB     | 344 kB     | 131                 | 81        
+   public.story_parameters      | 88 kB      | 64 kB      | 152 kB     | 87                  | 287       
+   public.descriptors_gender    | 120 kB     | 32 kB      | 152 kB     | 56                  | 405       
+   public.descriptors_pet       | 88 kB      | 48 kB      | 136 kB     | 71                  | 62        
+   public.generation_usage      | 16 kB      | 112 kB     | 128 kB     | 2                   | 22        
+   public.descriptors_attribute | 64 kB      | 64 kB      | 128 kB     | 73                  | 923       
+   public.descriptors_age       | 64 kB      | 48 kB      | 112 kB     | 100                 | 36        
+   public.user_profiles         | 16 kB      | 80 kB      | 96 kB      | 2                   | 54        
+   public.api_prices            | 16 kB      | 64 kB      | 80 kB      | 10                  | 361       
+   public.character_profiles    | 16 kB      | 64 kB      | 80 kB      | 13                  | 11379     
+   public.content_characters    | 16 kB      | 64 kB      | 80 kB      | 50                  | 26        
+   public.ai_configs            | 16 kB      | 64 kB      | 80 kB      | 8                   | 401       
+   public.descriptors_magical   | 16 kB      | 48 kB      | 64 kB      | 25                  | 19        
+   public.descriptor_mappings   | 16 kB      | 48 kB      | 64 kB      | 9                   | 21        
+   public.content_illustrations | 8192 bytes | 40 kB      | 48 kB      | 0                   | 23        
+   public.subscription_tiers    | 16 kB      | 32 kB      | 48 kB      | 4                   | 85        
+
