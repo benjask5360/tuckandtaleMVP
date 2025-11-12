@@ -519,8 +519,12 @@ export class VignetteSplicerService {
       };
     }
 
-    // Add Vision API prompts to metadata if provided
+    // Add Vision API prompts if provided
     if (visionPrompts) {
+      // Combine system and user prompts into a single field
+      const completeVisionPrompt = `SYSTEM PROMPT:\n${visionPrompts.systemPrompt}\n\nUSER PROMPT:\n${visionPrompts.userPrompt}`;
+
+      updateData.vignette_story_prompt = completeVisionPrompt;
       updateData.generation_metadata = {
         ...updateData.generation_metadata,
         vision_system_prompt: visionPrompts.systemPrompt,
@@ -528,13 +532,14 @@ export class VignetteSplicerService {
         vision_raw_response: visionPrompts.rawResponse,
       };
 
-      console.log('[Vignette Story] Adding Vision prompts to metadata:', {
+      console.log('[Vignette Story] Adding Vision prompts to database:', {
         hasSystemPrompt: !!visionPrompts.systemPrompt,
         hasUserPrompt: !!visionPrompts.userPrompt,
         hasRawResponse: !!visionPrompts.rawResponse,
         systemPromptLength: visionPrompts.systemPrompt?.length,
         userPromptLength: visionPrompts.userPrompt?.length,
         rawResponseLength: visionPrompts.rawResponse?.length,
+        completePromptLength: completeVisionPrompt.length,
       });
     }
 
