@@ -45,7 +45,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const MAX_ILLUSTRATED_CHARACTERS = 3
 
   // Form state
-  const [heroId, setHeroId] = useState<string>(childProfiles[0]?.id || '')
+  const [heroId, setHeroId] = useState<string>(childProfiles.find(p => p.character_type === 'child')?.id || '')
   const [additionalCharacterIds, setAdditionalCharacterIds] = useState<string[]>([])
   const [mode, setMode] = useState<'fun' | 'growth'>('fun')
   const [genreId, setGenreId] = useState<string>('')
@@ -212,7 +212,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
                 // Remove the new hero from additional characters if they were selected
                 setAdditionalCharacterIds(prev => prev.filter(id => id !== child.id))
               }}
-              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[120px] ${
+              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[140px] ${
                 heroId === child.id
                   ? 'border-primary-600 bg-primary-50'
                   : 'border-gray-200 hover:border-gray-300'
@@ -222,10 +222,10 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
                 <img
                   src={child.avatar_cache.image_url}
                   alt={child.name}
-                  className="w-16 h-16 rounded-full object-cover mb-2"
+                  className="w-20 h-20 rounded-lg object-cover object-top mb-2"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                <div className="w-20 h-20 rounded-lg bg-gray-200 flex items-center justify-center mb-2">
                   <span className="text-2xl text-gray-400">👤</span>
                 </div>
               )}
@@ -280,7 +280,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
                 !additionalCharacterIds.includes(character.id) &&
                 (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
               }
-              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[120px] ${
+              className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[140px] ${
                 additionalCharacterIds.includes(character.id)
                   ? 'border-primary-600 bg-primary-50'
                   : includeIllustrations && (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
@@ -292,10 +292,10 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
                 <img
                   src={character.avatar_cache.image_url}
                   alt={character.name}
-                  className="w-16 h-16 rounded-full object-cover mb-2"
+                  className="w-20 h-20 rounded-lg object-cover object-top mb-2"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+                <div className="w-20 h-20 rounded-lg bg-gray-200 flex items-center justify-center mb-2">
                   <span className="text-2xl text-gray-400">
                     {character.character_type === 'child' ? '👤' : character.character_type === 'pet' ? '🐾' : '✨'}
                   </span>

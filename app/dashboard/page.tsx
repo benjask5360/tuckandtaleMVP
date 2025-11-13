@@ -165,7 +165,7 @@ export default async function DashboardPage() {
                     <img
                       src={Array.isArray(child.avatar_cache) ? child.avatar_cache[0]?.image_url : child.avatar_cache.image_url}
                       alt={child.name}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                      className="w-12 h-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm"
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-gradient-sky flex items-center justify-center ring-2 ring-white shadow-sm">
@@ -213,7 +213,7 @@ export default async function DashboardPage() {
                     <img
                       src={Array.isArray(character.avatar_cache) ? character.avatar_cache[0]?.image_url : character.avatar_cache.image_url}
                       alt={character.name}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                      className="w-12 h-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm"
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-gradient-purple flex items-center justify-center ring-2 ring-white shadow-sm">
@@ -267,7 +267,7 @@ export default async function DashboardPage() {
                           <img
                             src={coverIllustration.url}
                             alt={story.title}
-                            className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                            className="w-12 h-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm"
                           />
                         ) : (
                           <div className="w-12 h-12 rounded-full bg-gradient-teal flex items-center justify-center ring-2 ring-white shadow-sm">
