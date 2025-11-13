@@ -131,77 +131,90 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
-        <div className="mb-4 md:mb-6">
+        <div className="mb-6 md:mb-8">
           <Link
             href="/dashboard/story-library"
-            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
+            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-6 md:mb-8 min-h-[44px] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Story Library
           </Link>
 
-          {/* Story Metadata */}
-          <div className="card p-6 md:p-8 mb-4">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  {story.generation_metadata?.mode === 'growth' ? (
-                    <Target className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Sparkles className="w-5 h-5 text-purple-600" />
-                  )}
-                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${
-                    story.generation_metadata?.mode === 'growth'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-purple-100 text-purple-800'
-                  }`}>
-                    {story.generation_metadata?.mode === 'growth' ? 'Growth Story' : 'Fun Story'}
-                  </span>
-                  {story.generation_metadata?.genre_display && (
-                    <span className="text-sm text-gray-600">
-                      {story.generation_metadata.genre_display}
-                    </span>
-                  )}
-                </div>
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 text-center">
-                  {story.title}
-                </h1>
-
-                {/* Cover Image (Scene 0) - Same size as other illustrations */}
-                {coverIllustration && (
-                  <div className="mt-6 relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden shadow-md">
-                    <Image
-                      src={coverIllustration.url}
-                      alt="Story Cover"
-                      width={512}
-                      height={512}
-                      className="w-full h-auto object-cover"
-                      priority
-                    />
-                  </div>
-                )}
-              </div>
-
+          {/* Story Metadata Card */}
+          <div className="card p-6 md:p-8">
+            {/* Title and Favorite */}
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center flex-1">
+                {story.title}
+              </h1>
               <button
                 onClick={handleFavorite}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
                 title={story.is_favorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <Heart
-                  className={`w-6 h-6 ${
+                  className={`w-5 h-5 ${
                     story.is_favorite
                       ? 'fill-red-500 text-red-500'
-                      : 'text-gray-400'
+                      : ''
                   }`}
                 />
               </button>
             </div>
 
-            {/* Characters */}
+            {/* Metadata Line: Mode • Character • Date */}
+            <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500 mb-6">
+              <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                {story.generation_metadata?.mode === 'growth' ? (
+                  <>
+                    <Target className="w-3 h-3" />
+                    Growth
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3 h-3" />
+                    Fun
+                  </>
+                )}
+              </span>
+              {story.content_characters && story.content_characters.length > 0 && (
+                <>
+                  <span className="text-gray-400">•</span>
+                  <span className="font-medium text-gray-700">
+                    {story.content_characters[0].character_profiles.name}
+                  </span>
+                </>
+              )}
+              <span className="text-gray-400">•</span>
+              <span>{new Date(story.created_at).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}</span>
+            </div>
+
+            {/* Subtle Divider */}
+            <div className="border-t border-gray-200 mb-6"></div>
+
+            {/* Cover Image (Scene 0) */}
+            {coverIllustration && (
+              <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
+                <Image
+                  src={coverIllustration.url}
+                  alt="Story Cover"
+                  width={512}
+                  height={512}
+                  className="w-full h-auto object-contain"
+                  priority
+                />
+              </div>
+            )}
+
+            {/* Starring Row - Clean Avatar Line */}
             {story.content_characters && story.content_characters.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
                 <span className="text-sm text-gray-600">Starring:</span>
                 {story.content_characters.map((cc, idx) => (
                   <div key={idx} className="flex items-center gap-2">
@@ -209,12 +222,15 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                       <img
                         src={cc.character_profiles.avatar_url}
                         alt={cc.character_profiles.name}
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-6 h-6 rounded-full border border-gray-200"
                       />
                     )}
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-700">
                       {cc.character_profiles.name}
                     </span>
+                    {idx < story.content_characters.length - 1 && (
+                      <span className="text-gray-400">•</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -224,7 +240,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
 
         {/* Story Content */}
         <div className="card p-6 md:p-8 lg:p-12">
-          <div className="prose prose-lg max-w-none">
+          <div className="max-w-none">
             {paragraphs.map((paragraph, index) => {
               // Get scene illustration for this paragraph (scenes 1-8 map to paragraphs 0-7)
               const sceneIllustration = getSceneIllustration(index + 1)
@@ -233,36 +249,36 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                 <div key={index}>
                   {/* Scene Illustration above paragraph */}
                   {sceneIllustration && (
-                    <div className="mb-6 relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden shadow-md">
+                    <div className="mt-8 mb-6 relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
                       <Image
                         src={sceneIllustration.url}
                         alt={`Scene ${index + 1}`}
                         width={512}
                         height={512}
-                        className="w-full h-auto object-cover"
+                        className="w-full h-auto object-contain"
                         loading="lazy"
                       />
                     </div>
                   )}
 
                   {/* Paragraph text */}
-                  <p className="text-gray-800 leading-relaxed mb-4 text-base md:text-lg">
+                  <p className="text-gray-800 leading-relaxed mb-6 text-base md:text-lg" style={{ lineHeight: '1.8' }}>
                     {paragraph}
                   </p>
                 </div>
               )
             })}
 
-            {/* Moral */}
+            {/* What We Learned / Moral Section */}
             {story.generation_metadata?.moral && (
-              <div className="mt-8 p-6 bg-primary-50 rounded-lg border-l-4 border-primary-600">
+              <div className="mt-12 mb-8 p-6 md:p-8 bg-primary-50 rounded-2xl border border-primary-200">
                 <div className="flex items-start gap-3">
                   <Heart className="w-5 h-5 text-primary-600 flex-shrink-0 mt-1" />
                   <div>
-                    <div className="font-semibold text-primary-900 mb-1">
+                    <h3 className="font-bold text-lg text-primary-900 mb-3">
                       {story.generation_metadata.mode === 'growth' ? 'What We Learned' : 'The Moral of the Story'}
-                    </div>
-                    <p className="text-primary-800">
+                    </h3>
+                    <p className="text-primary-800 text-base md:text-lg leading-relaxed">
                       {story.generation_metadata.moral}
                     </p>
                   </div>

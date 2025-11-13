@@ -75,7 +75,13 @@
       "Bash(node scripts/add-illustration-columns.js:*)",
       "Bash(node scripts/apply-story-illustrations-migration.js:*)",
       "Bash(node scripts/verify-story-illustrations-field.js:*)",
-      "Bash(node scripts/update-stories-view.js:*)"
+      "Bash(node scripts/update-stories-view.js:*)",
+      "Bash(nul)",
+      "Bash(node scripts/apply-avatar-migrations.js:*)",
+      "Bash(node scripts/apply-descriptor-updates.js:*)",
+      "Bash(node scripts/check-descriptor-schema.js:*)",
+      "Bash(node scripts/apply-descriptor-fixes.js:*)",
+      "Bash(node scripts/debug-hair-type.js:*)"
     ],
     "deny": [],
     "ask": []

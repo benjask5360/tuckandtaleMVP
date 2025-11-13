@@ -91,7 +91,7 @@ export default function CreateStoryPage() {
   if (error === 'no-children') {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
           <Link
             href="/dashboard/story-library"
             className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
@@ -139,7 +139,7 @@ export default function CreateStoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <Link

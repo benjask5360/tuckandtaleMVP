@@ -70,7 +70,8 @@ export class StoryIllustrationGenerator {
         {
           content_id: contentId,
           prompt_used: prompt,
-          operation: 'story_illustration_grid'
+          operation: 'story_illustration_grid',
+          actual_cost: result.tokensUsed || 1290 // Enable USD cost calculation
         }
       );
 

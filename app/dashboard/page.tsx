@@ -62,10 +62,10 @@ export default async function DashboardPage() {
 
   const primaryCharacter = children.find((c) => c.is_primary) || children[0]
 
-  // Fetch stories
+  // Fetch stories with cover illustrations
   const { data: stories, count: storyCount } = await supabase
     .from('stories')
-    .select('id, title', { count: 'exact' })
+    .select('id, title, story_illustrations', { count: 'exact' })
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(3)
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
 
         {/* Header - Centered and mobile-optimized */}
         <div className="mb-3 md:mb-4 text-center">
@@ -151,40 +151,47 @@ export default async function DashboardPage() {
           {/* Child Profiles */}
           <Link
             href="/dashboard/my-children"
-            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            {/* Avatar circles */}
-            <div className="flex items-center gap-2 mb-6">
+            {/* Avatar circles - Overlapping cascade */}
+            <div className="flex items-center mb-4">
               {children.slice(0, 3).map((child: any, idx: number) => (
-                <div key={child.id} className="relative">
+                <div
+                  key={child.id}
+                  className="relative"
+                  style={{ marginLeft: idx > 0 ? '-8px' : '0', zIndex: idx }}
+                >
                   {child.avatar_cache?.image_url ? (
                     <img
                       src={Array.isArray(child.avatar_cache) ? child.avatar_cache[0]?.image_url : child.avatar_cache.image_url}
                       alt={child.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-sky flex items-center justify-center border-2 border-white shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-gradient-sky flex items-center justify-center ring-2 ring-white shadow-sm">
                       <User className="w-6 h-6 text-white" />
                     </div>
                   )}
                 </div>
               ))}
               {children.length > 3 && (
-                <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                <div
+                  className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center ring-2 ring-white shadow-sm"
+                  style={{ marginLeft: '-8px', zIndex: 3 }}
+                >
                   <span className="text-sm font-semibold text-primary-600">+{children.length - 3}</span>
                 </div>
               )}
             </div>
 
             <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Child Profiles</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Child Profiles</h2>
               <p className="text-sm text-gray-500">
                 {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
               </p>
             </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-2">
               Manage Profiles
             </button>
           </Link>
@@ -192,40 +199,47 @@ export default async function DashboardPage() {
           {/* Character Profiles */}
           <Link
             href="/dashboard/other-characters"
-            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            {/* Avatar circles */}
-            <div className="flex items-center gap-2 mb-6">
+            {/* Avatar circles - Overlapping cascade */}
+            <div className="flex items-center mb-4">
               {otherCharacters.slice(0, 3).map((character: any, idx: number) => (
-                <div key={character.id} className="relative">
+                <div
+                  key={character.id}
+                  className="relative"
+                  style={{ marginLeft: idx > 0 ? '-8px' : '0', zIndex: idx }}
+                >
                   {character.avatar_cache?.image_url ? (
                     <img
                       src={Array.isArray(character.avatar_cache) ? character.avatar_cache[0]?.image_url : character.avatar_cache.image_url}
                       alt={character.name}
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-purple flex items-center justify-center border-2 border-white shadow-sm">
+                    <div className="w-12 h-12 rounded-full bg-gradient-purple flex items-center justify-center ring-2 ring-white shadow-sm">
                       <Users className="w-6 h-6 text-white" />
                     </div>
                   )}
                 </div>
               ))}
               {otherCharacters.length > 3 && (
-                <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                <div
+                  className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center ring-2 ring-white shadow-sm"
+                  style={{ marginLeft: '-8px', zIndex: 3 }}
+                >
                   <span className="text-sm font-semibold text-primary-600">+{otherCharacters.length - 3}</span>
                 </div>
               )}
             </div>
 
             <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Character Profiles</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Character Profiles</h2>
               <p className="text-sm text-gray-500">
                 {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'} · {maxOtherCharacters === null ? 'Unlimited' : `${maxOtherCharacters} max`}
               </p>
             </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-2">
               Manage Characters
             </button>
           </Link>
@@ -233,40 +247,60 @@ export default async function DashboardPage() {
           {/* Story Library */}
           <Link
             href="/dashboard/story-library"
-            className="bg-white border border-gray-200 rounded-2xl p-6 min-h-[280px] flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
+            className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col active:shadow-xl active:scale-[0.98] md:hover:shadow-xl md:hover:scale-[1.02] transition-all duration-300 group"
           >
-            {/* Story cover circles */}
-            <div className="flex items-center gap-2 mb-6">
+            {/* Story cover circles - Overlapping cascade */}
+            <div className="flex items-center mb-4">
               {stories && stories.length > 0 ? (
                 <>
-                  {stories.slice(0, 3).map((story: any) => (
-                    <div key={story.id} className="relative">
-                      <div className="w-12 h-12 rounded-full bg-gradient-teal flex items-center justify-center border-2 border-white shadow-sm">
-                        <Library className="w-6 h-6 text-white" />
+                  {stories.slice(0, 3).map((story: any, idx: number) => {
+                    // Get cover illustration (scene_0)
+                    const coverIllustration = story.story_illustrations?.find((ill: any) => ill.type === 'scene_0')
+
+                    return (
+                      <div
+                        key={story.id}
+                        className="relative"
+                        style={{ marginLeft: idx > 0 ? '-8px' : '0', zIndex: idx }}
+                      >
+                        {coverIllustration?.url ? (
+                          <img
+                            src={coverIllustration.url}
+                            alt={story.title}
+                            className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-full bg-gradient-teal flex items-center justify-center ring-2 ring-white shadow-sm">
+                            <Library className="w-6 h-6 text-white" />
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                   {(storyCount || 0) > 3 && (
-                    <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center border-2 border-white shadow-sm">
+                    <div
+                      className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center ring-2 ring-white shadow-sm"
+                      style={{ marginLeft: '-8px', zIndex: 3 }}
+                    >
                       <span className="text-sm font-semibold text-primary-600">+{(storyCount || 0) - 3}</span>
                     </div>
                   )}
                 </>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center ring-2 ring-white shadow-sm">
                   <Library className="w-6 h-6 text-gray-400" />
                 </div>
               )}
             </div>
 
             <div className="flex-grow">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Story Library</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-1">Story Library</h2>
               <p className="text-sm text-gray-500">
                 {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
               </p>
             </div>
 
-            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-6">
+            <button className="w-full py-2 px-4 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium group-hover:bg-primary-100 transition-colors pointer-events-none mt-2">
               View Library
             </button>
           </Link>
@@ -275,10 +309,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-gray-200 mt-20">
+      <footer className="py-12 bg-white border-t border-gray-200 mt-10 md:mt-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
-            <p className="flex items-center gap-2 text-lg text-gray-700">
+            <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">

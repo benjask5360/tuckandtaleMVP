@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <>
       {/* Hero Section - Mobile-optimized */}
-      <section className="relative overflow-hidden bg-white py-12 md:py-16 lg:py-20 pt-16">
+      <section className="relative overflow-hidden bg-white py-12 md:py-16 lg:py-20 pt-8 md:pt-16">
         <div className="container-narrow section-padding relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="animate-fade-in-up text-center lg:text-left">
@@ -390,7 +390,7 @@ export default function HomePage() {
       <footer className="py-12 bg-white border-t border-gray-200 mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
-            <p className="flex items-center gap-2 text-lg text-gray-700">
+            <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">

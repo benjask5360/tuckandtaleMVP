@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BookOpen, Calendar, Heart, Sparkles, Target, Filter, SortAsc, Film } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import StoryCard from '@/components/StoryCard'
 
 interface Story {
   id: string
@@ -14,6 +15,11 @@ interface Story {
   is_favorite: boolean
   content_type: 'story' | 'vignette_story'
   panel_count?: number
+  story_illustrations?: Array<{
+    type: string
+    url: string
+    generated_at: string
+  }>
   generation_metadata: {
     mode: 'fun' | 'growth'
     genre_display: string
@@ -87,6 +93,7 @@ export default function StoryLibraryPage() {
           is_favorite,
           content_type,
           panel_count,
+          story_illustrations,
           generation_metadata,
           content_characters (
             character_profiles (
@@ -163,6 +170,53 @@ export default function StoryLibraryPage() {
     })
   }
 
+  const handleDelete = async (storyId: string) => {
+    if (!confirm('Delete this story? This action cannot be undone.')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/stories/${storyId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete story')
+      }
+
+      // Remove from local state
+      setStories(prev => prev.filter(s => s.id !== storyId))
+    } catch (error) {
+      console.error('Error deleting story:', error)
+      alert('Failed to delete story. Please try again.')
+    }
+  }
+
+  const handleFavoriteToggle = async (storyId: string) => {
+    const story = stories.find(s => s.id === storyId)
+    if (!story) return
+
+    try {
+      const response = await fetch(`/api/stories/${storyId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_favorite: !story.is_favorite })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update favorite status')
+      }
+
+      // Update local state
+      setStories(prev => prev.map(s =>
+        s.id === storyId ? { ...s, is_favorite: !s.is_favorite } : s
+      ))
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+      alert('Failed to update favorite status. Please try again.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white p-6">
@@ -175,7 +229,7 @@ export default function StoryLibraryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           {/* Navigation - Back button and tabs on same line */}
@@ -359,138 +413,14 @@ export default function StoryLibraryPage() {
             <div className="mb-4 text-sm text-gray-600">
               Showing {filteredStories.length} of {stories.length} {stories.length === 1 ? 'story' : 'stories'}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {filteredStories.map(story => (
-                <div key={story.id} className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">
-                  <div className="flex flex-col h-full">
-                    {/* Header with Mode Badge, Type Badge, and Favorite */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Story Type Badge */}
-                        {story.content_type === 'vignette_story' ? (
-                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
-                            <Film className="w-3 h-3" />
-                            Visual
-                          </span>
-                        ) : (
-                          <span className="text-xs font-semibold px-2 py-1 rounded-full bg-gray-100 text-gray-800 flex items-center gap-1">
-                            <BookOpen className="w-3 h-3" />
-                            Text
-                          </span>
-                        )}
-
-                        {/* Mode Badge */}
-                        {story.generation_metadata?.mode === 'growth' ? (
-                          <Target className="w-4 h-4 text-green-600" />
-                        ) : (
-                          <Sparkles className="w-4 h-4 text-purple-600" />
-                        )}
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                          story.generation_metadata?.mode === 'growth'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-purple-100 text-purple-800'
-                        }`}>
-                          {story.generation_metadata?.mode === 'growth' ? 'Growth' : 'Fun'}
-                        </span>
-                      </div>
-                      {story.is_favorite && (
-                        <Heart className="w-5 h-5 fill-red-500 text-red-500" />
-                      )}
-                    </div>
-
-                    {/* Title */}
-                    <div className="mb-3">
-                      <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-                        {story.title}
-                      </h3>
-                      {story.generation_metadata?.genre_display && (
-                        <span className="inline-block text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                          {story.generation_metadata.genre_display}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Characters */}
-                    {story.content_characters && story.content_characters.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs text-gray-500">Starring:</span>
-                          {story.content_characters.slice(0, 3).map((cc, idx) => (
-                            <div key={idx} className="flex items-center gap-1">
-                              {cc.character_profiles.avatar_cache?.image_url && (
-                                <img
-                                  src={cc.character_profiles.avatar_cache.image_url}
-                                  alt={cc.character_profiles.name}
-                                  className="w-6 h-6 rounded-full object-cover"
-                                />
-                              )}
-                              <span className="text-xs font-medium text-gray-700">
-                                {cc.character_profiles.name}
-                              </span>
-                            </div>
-                          ))}
-                          {story.content_characters.length > 3 && (
-                            <span className="text-xs text-gray-500">
-                              +{story.content_characters.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Story Preview */}
-                    <div className="flex-1 mb-4">
-                      <p className="text-gray-600 text-sm line-clamp-3">
-                        {story.body.substring(0, 150)}...
-                      </p>
-                    </div>
-
-                    {/* Metadata Footer */}
-                    <div className="space-y-2 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-3 h-3" />
-                        <span>{formatDate(story.created_at)}</span>
-                      </div>
-                      {story.content_type === 'vignette_story' && story.panel_count && (
-                        <div className="flex items-center gap-2">
-                          <Film className="w-3 h-3" />
-                          <span>{story.panel_count} panels</span>
-                        </div>
-                      )}
-                      {story.content_type === 'story' && story.generation_metadata?.length_display && (
-                        <div className="flex items-center gap-2">
-                          <BookOpen className="w-3 h-3" />
-                          <span>{story.generation_metadata.length_display}</span>
-                        </div>
-                      )}
-                      {story.generation_metadata?.growth_topic_display && (
-                        <div className="text-green-600 font-medium">
-                          Topic: {story.generation_metadata.growth_topic_display}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Link
-                        href={story.content_type === 'vignette_story' ? `/dashboard/vignettes/${story.id}` : `/dashboard/stories/${story.id}`}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary-50 text-primary-600 font-semibold rounded-xl active:bg-primary-100 md:hover:bg-primary-100 transition-colors min-h-[44px]"
-                      >
-                        {story.content_type === 'vignette_story' ? (
-                          <>
-                            <Film className="w-4 h-4" />
-                            View Storybook
-                          </>
-                        ) : (
-                          <>
-                            <BookOpen className="w-4 h-4" />
-                            Read Story
-                          </>
-                        )}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                <StoryCard
+                  key={story.id}
+                  story={story}
+                  onDelete={handleDelete}
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
               ))}
             </div>
           </div>
@@ -501,7 +431,7 @@ export default function StoryLibraryPage() {
       <footer className="py-12 bg-white border-t border-gray-200 mt-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
-            <p className="flex items-center gap-2 text-lg text-gray-700">
+            <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">

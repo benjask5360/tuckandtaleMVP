@@ -88,6 +88,14 @@ export async function mapSelectionsToEnhanced(
     });
   }
 
+  if (selections.hairType) {
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: selections.hairType,
+      filters: { attribute_type: 'hair_type' }
+    });
+  }
+
   if (selections.hasGlasses !== undefined) {
     // Convert boolean to string for descriptor lookup
     const glassesTerm = selections.hasGlasses ? 'true' : 'false';
@@ -174,6 +182,9 @@ export async function mapSelectionsToEnhanced(
           break;
         case 'hair_length':
           enhanced.hairLength = descriptor.rich_description;
+          break;
+        case 'hair_type':
+          enhanced.hairType = descriptor.rich_description;
           break;
         case 'eyes':
           enhanced.eyes = descriptor.rich_description;

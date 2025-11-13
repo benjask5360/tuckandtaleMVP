@@ -102,16 +102,22 @@ export class GeminiClient {
       throw new Error('No image data returned from Gemini API');
     }
 
+    // Extract ACTUAL usage metadata from API response
+    const usageMetadata = data.usageMetadata || {};
+    const tokensUsed = usageMetadata.totalTokenCount || 1290; // Fallback to 1290 if not provided
+
     console.log('[Gemini] Image generated successfully:', {
       mimeType,
       dataSize: imageData.length,
-      tokensUsed: 1290,
+      tokensUsed,
+      promptTokens: usageMetadata.promptTokenCount,
+      outputTokens: usageMetadata.candidatesTokenCount,
     });
 
     return {
       imageData,
       mimeType,
-      tokensUsed: 1290, // Fixed cost per image
+      tokensUsed, // Now uses REAL value from Google API
     };
   }
 

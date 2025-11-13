@@ -46,20 +46,31 @@ export async function generateAvatarPrompt(
         baseChar = `${enhanced.age} child`;
       }
 
-      prompt = `Disney Pixar style full body avatar of a friendly ${baseChar}`;
+      // Add numeric age if available
+      let ageInfo = '';
+      if (selections.age !== undefined && selections.age !== null) {
+        const ageYears = selections.age === 1 ? '1 year old' : `${selections.age} years old`;
+        ageInfo = ` (${ageYears})`;
+      }
+
+      prompt = `Disney Pixar style full body avatar of a friendly ${baseChar}${ageInfo}`;
 
       // Add physical features
       const features: string[] = [];
 
-      // Special handling for bald - skip hair color
+      // Special handling for bald - skip hair color and type
       if (enhanced.hairLength === 'bald') {
         features.push('bald head');
-      } else if (enhanced.hair && enhanced.hairLength) {
-        features.push(`${enhanced.hairLength} ${enhanced.hair} hair`);
-      } else if (enhanced.hair) {
-        features.push(`${enhanced.hair} hair`);
-      } else if (enhanced.hairLength) {
-        features.push(`${enhanced.hairLength} hair`);
+      } else {
+        // Build hair description with type, length, and color
+        const hairParts: string[] = [];
+        if (enhanced.hairType) hairParts.push(enhanced.hairType);
+        if (enhanced.hairLength) hairParts.push(enhanced.hairLength);
+        if (enhanced.hair) hairParts.push(enhanced.hair);
+
+        if (hairParts.length > 0) {
+          features.push(`${hairParts.join(' ')} hair`);
+        }
       }
 
       if (enhanced.eyes) features.push(`${enhanced.eyes} eyes`);
@@ -73,7 +84,7 @@ export async function generateAvatarPrompt(
         prompt += `, ${features.join(', ')}`;
       }
 
-      prompt += ', wearing age-appropriate clothing, white background, high quality';
+      prompt += ', wearing age-appropriate, modest clothing, white background, high quality';
       break;
 
     case 'pet':

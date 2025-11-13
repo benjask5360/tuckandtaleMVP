@@ -26,7 +26,7 @@ export default function CreateOtherCharacterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <Link

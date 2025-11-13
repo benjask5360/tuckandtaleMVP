@@ -256,7 +256,7 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 md:py-6 pt-18">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <Link

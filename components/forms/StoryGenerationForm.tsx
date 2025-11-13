@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, BookOpen, Target, Heart } from 'lucide-react'
+import { Loader2, Sparkles, Target, Heart } from 'lucide-react'
 
 interface CharacterProfile {
   id: string
@@ -41,8 +41,10 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const router = useRouter()
   const supabase = createClient()
 
+  // Configuration
+  const MAX_ILLUSTRATED_CHARACTERS = 3
+
   // Form state
-  const [storyType, setStoryType] = useState<'text' | 'vignette'>('text')
   const [heroId, setHeroId] = useState<string>(childProfiles[0]?.id || '')
   const [additionalCharacterIds, setAdditionalCharacterIds] = useState<string[]>([])
   const [mode, setMode] = useState<'fun' | 'growth'>('fun')
@@ -54,6 +56,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [moralLessonId, setMoralLessonId] = useState<string>('')
   const [customInstructions, setCustomInstructions] = useState<string>('')
   const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(false)
+  const [characterLimitMessage, setCharacterLimitMessage] = useState<string | null>(null)
 
   // Data state
   const [parameters, setParameters] = useState<GroupedParameters>({})
@@ -121,15 +124,11 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         requestBody.customInstructions = customInstructions.trim()
       }
 
-      // Add includeIllustrations flag for text stories
-      if (storyType === 'text') {
-        requestBody.includeIllustrations = includeIllustrations
-      }
+      // Add includeIllustrations flag
+      requestBody.includeIllustrations = includeIllustrations
 
-      // Route to correct API based on story type
-      const endpoint = storyType === 'vignette'
-        ? '/api/vignette-stories/generate'
-        : '/api/stories/generate'
+      // Use text story generation API endpoint
+      const endpoint = '/api/stories/generate'
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -146,12 +145,8 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         throw new Error(data.error || 'Failed to generate story')
       }
 
-      // Success! Redirect to the appropriate viewer
-      if (storyType === 'vignette') {
-        router.push(`/dashboard/vignettes/${data.data.storyId}`)
-      } else {
-        router.push(`/dashboard/stories/${data.story.id}`)
-      }
+      // Success! Redirect to the story viewer
+      router.push(`/dashboard/stories/${data.story.id}`)
     } catch (err: any) {
       console.error('Error generating story:', err)
       setError(err.message)
@@ -170,38 +165,35 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Story Type Selection */}
+      {/* Include Illustrations Toggle */}
       <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-3">
-          Story Type <span className="text-red-500">*</span>
+        <label className="block text-sm font-semibold text-gray-900 mb-2">
+          Include Illustrations
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center space-x-3">
           <button
             type="button"
-            onClick={() => setStoryType('text')}
-            className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all ${
-              storyType === 'text'
-                ? 'border-primary-600 bg-primary-50'
-                : 'border-gray-200 hover:border-gray-300'
+            onClick={() => {
+              setIncludeIllustrations(!includeIllustrations)
+              // Clear character limit message when toggling
+              setCharacterLimitMessage(null)
+            }}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              includeIllustrations ? 'bg-primary-600' : 'bg-gray-200'
             }`}
           >
-            <BookOpen className={`w-8 h-8 mb-2 ${storyType === 'text' ? 'text-primary-600' : 'text-gray-400'}`} />
-            <span className="font-semibold text-gray-900">Text Story</span>
-            <span className="text-xs text-gray-600 mt-1">Classic narrated story</span>
+            <span className="sr-only">Include illustrations</span>
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                includeIllustrations ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
           </button>
-          <button
-            type="button"
-            onClick={() => setStoryType('vignette')}
-            className={`flex flex-col items-center p-4 rounded-lg border-2 transition-all ${
-              storyType === 'vignette'
-                ? 'border-primary-600 bg-primary-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <span className="text-3xl mb-2">🎬</span>
-            <span className="font-semibold text-gray-900">Visual Storybook</span>
-            <span className="text-xs text-gray-600 mt-1">9-panel panoramic image</span>
-          </button>
+          {includeIllustrations && (
+            <span className="text-sm text-gray-600">
+              Story will include personalized illustrations inspired by each scene.
+            </span>
+          )}
         </div>
       </div>
 
@@ -263,15 +255,36 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
               key={character.id}
               type="button"
               onClick={() => {
-                setAdditionalCharacterIds(prev =>
-                  prev.includes(character.id)
-                    ? prev.filter(id => id !== character.id)
-                    : [...prev, character.id]
-                )
+                const totalCharacters = 1 + additionalCharacterIds.length // 1 for hero
+                const isCharacterSelected = additionalCharacterIds.includes(character.id)
+
+                // If deselecting, always allow
+                if (isCharacterSelected) {
+                  setAdditionalCharacterIds(prev => prev.filter(id => id !== character.id))
+                  setCharacterLimitMessage(null)
+                  return
+                }
+
+                // If selecting and illustrations are on, check limit
+                if (includeIllustrations && totalCharacters >= MAX_ILLUSTRATED_CHARACTERS) {
+                  setCharacterLimitMessage(`Illustrated stories support up to ${MAX_ILLUSTRATED_CHARACTERS} characters.`)
+                  return
+                }
+
+                // Otherwise, add the character
+                setAdditionalCharacterIds(prev => [...prev, character.id])
+                setCharacterLimitMessage(null)
               }}
+              disabled={
+                includeIllustrations &&
+                !additionalCharacterIds.includes(character.id) &&
+                (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
+              }
               className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[120px] ${
                 additionalCharacterIds.includes(character.id)
                   ? 'border-primary-600 bg-primary-50'
+                  : includeIllustrations && (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
+                  ? 'border-gray-200 opacity-50 cursor-not-allowed'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -293,7 +306,27 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
             </button>
           ))}
         </div>
-        {additionalCharacterIds.length === 0 && (
+
+        {/* Character count and helper text when illustrations are enabled */}
+        {includeIllustrations && (
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-gray-600">
+              With illustrations enabled, you can choose up to {MAX_ILLUSTRATED_CHARACTERS} characters for the clearest artwork.
+            </p>
+            <p className="text-sm text-gray-600">
+              {1 + additionalCharacterIds.length} / {MAX_ILLUSTRATED_CHARACTERS} characters selected
+            </p>
+          </div>
+        )}
+
+        {/* Soft inline message when limit is reached */}
+        {characterLimitMessage && (
+          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-gray-700 text-sm">{characterLimitMessage}</p>
+          </div>
+        )}
+
+        {!includeIllustrations && additionalCharacterIds.length === 0 && (
           <p className="text-sm text-gray-500 mt-2">No additional characters selected</p>
         )}
       </div>
@@ -490,36 +523,6 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         </div>
       </div>
 
-      {/* Include Illustrations Toggle - Only show for text stories */}
-      {storyType === 'text' && (
-        <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
-            Include Illustrations
-          </label>
-          <div className="flex items-center space-x-3">
-            <button
-              type="button"
-              onClick={() => setIncludeIllustrations(!includeIllustrations)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                includeIllustrations ? 'bg-primary-600' : 'bg-gray-200'
-              }`}
-            >
-              <span className="sr-only">Include illustrations</span>
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  includeIllustrations ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className="text-sm text-gray-600">
-              {includeIllustrations
-                ? 'Story will include an illustration prompt for a 3x3 scene grid'
-                : 'Text-only story'}
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Custom Instructions */}
       <div>
         <label htmlFor="customInstructions" className="block text-sm font-semibold text-gray-900 mb-2">
@@ -559,14 +562,12 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           {generating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              {storyType === 'vignette'
-                ? 'Generating your visual storybook... (this may take 60-90 seconds)'
-                : 'Generating your story... (this may take 30-60 seconds)'}
+              Generating your story... (this may take 30-60 seconds)
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              {storyType === 'vignette' ? 'Generate Visual Storybook' : 'Generate Story'}
+              Generate Story
             </>
           )}
         </button>

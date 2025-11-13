@@ -98,6 +98,7 @@ export async function POST(
         gender: character.attributes?.gender,
         hairColor: character.attributes?.hairColor,
         hairLength: character.attributes?.hairLength,
+        hairType: character.attributes?.hairType,
         eyeColor: character.attributes?.eyeColor,
         skinTone: character.attributes?.skinTone,
         bodyType: character.attributes?.bodyType,

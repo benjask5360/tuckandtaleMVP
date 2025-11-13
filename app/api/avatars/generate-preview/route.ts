@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
       gender: attributes?.gender,
       hairColor: attributes?.hairColor,
       hairLength: attributes?.hairLength,
+      hairType: attributes?.hairType,
       eyeColor: attributes?.eyeColor,
       skinTone: attributes?.skinTone,
       bodyType: attributes?.bodyType,

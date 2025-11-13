@@ -69,11 +69,25 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Hair Length',
             customOptions: true,
             options: [
+              { value: 'infant_hair', label: 'Baby Hair (very short & soft)' },
               { value: 'short', label: 'Short' },
               { value: 'medium', label: 'Medium' },
               { value: 'long', label: 'Long' },
               { value: 'very_long', label: 'Very Long' },
               { value: 'bald', label: 'Bald' }
+            ]
+          },
+          {
+            id: 'hairType',
+            type: 'buttons',
+            label: 'Hair Type',
+            customOptions: true,
+            options: [
+              { value: 'straight', label: 'Straight' },
+              { value: 'wavy', label: 'Wavy' },
+              { value: 'curly', label: 'Curly' },
+              { value: 'coily', label: 'Coily' },
+              { value: 'kinky', label: 'Kinky' }
             ]
           },
           {
@@ -234,11 +248,25 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Hair Length',
             customOptions: true,
             options: [
+              { value: 'infant_hair', label: 'Baby Hair (very short & soft)' },
               { value: 'short', label: 'Short' },
               { value: 'medium', label: 'Medium' },
               { value: 'long', label: 'Long' },
               { value: 'very_long', label: 'Very Long' },
               { value: 'bald', label: 'Bald' }
+            ]
+          },
+          {
+            id: 'hairType',
+            type: 'buttons',
+            label: 'Hair Type',
+            customOptions: true,
+            options: [
+              { value: 'straight', label: 'Straight' },
+              { value: 'wavy', label: 'Wavy' },
+              { value: 'curly', label: 'Curly' },
+              { value: 'coily', label: 'Coily' },
+              { value: 'kinky', label: 'Kinky' }
             ]
           },
           {
