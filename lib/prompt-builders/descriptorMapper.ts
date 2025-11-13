@@ -249,11 +249,18 @@ export async function mapSelectionsToEnhanced(
     enhanced.petColor = selections.primaryColor;
   }
 
-  // For pets: if breed/species descriptors weren't found, use raw inputs
-  if (profileType === 'pet' && (selections.breed || selections.species) && !enhanced.species) {
-    const fallbackSpecies = selections.breed || selections.species;
-    console.log('Pet species/breed fallback - using raw input:', fallbackSpecies);
-    enhanced.species = fallbackSpecies;
+  // For pets: ALWAYS prioritize user-entered breed over generic species lookup
+  // This ensures custom breeds (like "Golden Retriever") appear in descriptions
+  if (profileType === 'pet') {
+    if (selections.breed) {
+      // Always use the specific breed if provided by user
+      console.log('Pet breed - using user input:', selections.breed);
+      enhanced.species = selections.breed;
+    } else if (selections.species && !enhanced.species) {
+      // Fall back to species only if no breed was specified
+      console.log('Pet species fallback - using raw input:', selections.species);
+      enhanced.species = selections.species;
+    }
   }
 
   // For magical creatures: if no color descriptor found, use raw input
