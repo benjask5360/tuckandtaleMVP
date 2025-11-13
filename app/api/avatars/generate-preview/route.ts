@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
       .from('avatar_cache')
       .insert({
         character_profile_id: null, // No character yet - this is a preview
+        created_by_user_id: user.id, // Track who created this preview
         leonardo_generation_id: generationId,
         ai_config_name: aiConfig.name,
         prompt_used: avatarPrompt,

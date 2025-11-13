@@ -53,7 +53,7 @@ export async function generateAvatarPrompt(
         ageInfo = ` (${ageYears})`;
       }
 
-      prompt = `Disney Pixar style full body avatar of a friendly ${baseChar}${ageInfo}`;
+      prompt = `Disney Pixar style standing avatar of a friendly ${baseChar}${ageInfo}`;
 
       // Add physical features
       const features: string[] = [];
@@ -89,7 +89,7 @@ export async function generateAvatarPrompt(
 
     case 'pet':
       const petType = enhanced.species || 'pet';
-      prompt = `Disney Pixar style full body pet avatar: happy ${petType}`;
+      prompt = `Disney Pixar style standing pet avatar: happy ${petType}`;
 
       const petFeatures: string[] = [];
       if (enhanced.petColor) petFeatures.push(enhanced.petColor);
@@ -104,7 +104,7 @@ export async function generateAvatarPrompt(
 
     case 'magical_creature':
       const creatureType = enhanced.creature || 'creature';
-      prompt = `Disney Pixar style full body magical creature avatar: happy and enchanting ${creatureType}`;
+      prompt = `Disney Pixar style standing magical creature avatar: happy and enchanting ${creatureType}`;
 
       const magicFeatures: string[] = [];
       if (enhanced.hair) magicFeatures.push(`${enhanced.hair} features`);
@@ -119,7 +119,7 @@ export async function generateAvatarPrompt(
 
     default:
       // Fallback for any unknown profile type
-      prompt = 'Disney Pixar style full body friendly character avatar, white background, high quality';
+      prompt = 'Disney Pixar style standing friendly character avatar, white background, high quality';
   }
 
   console.log('Avatar prompt - Final:', prompt);
