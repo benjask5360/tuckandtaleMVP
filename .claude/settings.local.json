@@ -82,7 +82,8 @@
       "Bash(node scripts/check-descriptor-schema.js:*)",
       "Bash(node scripts/apply-descriptor-fixes.js:*)",
       "Bash(node scripts/debug-hair-type.js:*)",
-      "Bash(node scripts/apply-sql-direct.js:*)"
+      "Bash(node scripts/apply-sql-direct.js:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
