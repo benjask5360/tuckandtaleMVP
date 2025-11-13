@@ -267,7 +267,7 @@ export default function SignupPage() {
 
               <p className="text-center text-xs text-gray-500 flex items-center justify-center gap-2">
                 <Check className="w-4 h-4 text-primary-500" />
-                No credit card required • Start with 3 free stories
+                No credit card required
               </p>
             </form>
 

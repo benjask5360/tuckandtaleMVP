@@ -29,7 +29,7 @@ export default function HomePage() {
 
               <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
                 <Check className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                <span>No credit card required • Start with 3 free stories</span>
+                <span>No credit card required</span>
               </p>
 
               {/* Mobile Hero Image */}
