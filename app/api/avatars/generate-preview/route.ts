@@ -17,6 +17,7 @@ interface PreviewGenerationRequest {
     gender?: string;
     hairColor?: string;
     hairLength?: string;
+    hairType?: string;
     eyeColor?: string;
     skinTone?: string;
     bodyType?: string;

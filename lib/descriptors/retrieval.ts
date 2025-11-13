@@ -361,6 +361,7 @@ export async function getGroupedAttributeDescriptors(
     skin: [],
     body: [],
     hair_length: [],
+    hair_type: [],
     glasses: [],
     pet_color: [],
     magical_color: [],
