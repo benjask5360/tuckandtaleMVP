@@ -54,6 +54,21 @@ export default function SignupPage() {
       return
     }
 
+    // Send welcome email (non-blocking)
+    if (data.user) {
+      fetch('/api/send-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          name: `${firstName} ${lastName}`.trim() || firstName
+        })
+      }).catch(error => {
+        // Log error but don't block user flow
+        console.error('Failed to send welcome email:', error)
+      })
+    }
+
     // Redirect to onboarding (auth callback will handle this)
     router.push('/onboarding/character')
   }
