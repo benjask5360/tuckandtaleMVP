@@ -79,6 +79,7 @@ export default function DynamicCharacterForm({
       delete submitData.attributes.name
 
       let finalCharacterId: string | null = characterId
+      let shouldRedirectAfterAvatar = false
 
       if (onSubmit) {
         // Custom onSubmit may return the created character data
@@ -86,6 +87,8 @@ export default function DynamicCharacterForm({
         if (result && result.id) {
           finalCharacterId = result.id
           setCharacterId(result.id)
+          // Check if the custom handler wants us to redirect after avatar linking
+          shouldRedirectAfterAvatar = result.shouldRedirect === true
         }
       } else {
         // Default API call
@@ -138,8 +141,9 @@ export default function DynamicCharacterForm({
       }
 
       // Handle redirects after everything is saved
-      // Note: If using custom onSubmit, that handler is responsible for redirecting
-      if (!onSubmit && !showAvatarGenerator) {
+      // If shouldRedirectAfterAvatar is true, redirect now (onboarding flow)
+      // Otherwise, only redirect if no custom onSubmit was provided
+      if (shouldRedirectAfterAvatar || (!onSubmit && !showAvatarGenerator)) {
         // Use window.location.href for full page reload to ensure avatar updates are visible
         if (characterType.category === 'child') {
           window.location.href = '/dashboard/my-children'
@@ -185,22 +189,32 @@ export default function DynamicCharacterForm({
   }
 
   const linkPreviewAvatar = async (newCharacterId: string, avatarCacheId: string) => {
-    const response = await fetch(`/api/avatars/link-preview`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        characterId: newCharacterId,
-        avatarCacheId: avatarCacheId
+    console.log('linkPreviewAvatar: Sending request to link-preview endpoint')
+    try {
+      const response = await fetch(`/api/avatars/link-preview`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterId: newCharacterId,
+          avatarCacheId: avatarCacheId
+        })
       })
-    })
 
-    if (!response.ok) {
+      console.log('linkPreviewAvatar: Response status:', response.status)
+
+      if (!response.ok) {
+        const data = await response.json()
+        console.error('linkPreviewAvatar: Error response:', data)
+        throw new Error(data.error || 'Failed to link preview avatar')
+      }
+
       const data = await response.json()
-      throw new Error(data.error || 'Failed to link preview avatar')
+      console.log('linkPreviewAvatar: Success response:', data)
+      return data
+    } catch (error) {
+      console.error('linkPreviewAvatar: Caught error:', error)
+      throw error
     }
-
-    const data = await response.json()
-    return data
   }
 
   const handleAvatarGenerated = (newAvatarUrl: string, avatarCacheId?: string) => {

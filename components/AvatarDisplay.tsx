@@ -48,6 +48,30 @@ export function AvatarDisplay({
   const [regenerationStatus, setRegenerationStatus] = useState<RegenerationStatus | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(null);
   const [avatarCacheId, setAvatarCacheId] = useState<string | null>(null);
+
+  /**
+   * Sanitize error messages to be user-friendly
+   */
+  const sanitizeErrorMessage = (error: string): string => {
+    // Check for inappropriate content flags from Leonardo
+    if (error.toLowerCase().includes('inappropriate') ||
+        error.toLowerCase().includes('moderation') ||
+        error.toLowerCase().includes('content policy') ||
+        error.toLowerCase().includes('nsfw') ||
+        error.toLowerCase().includes('adult content') ||
+        error.toLowerCase().includes('violated') ||
+        error.toLowerCase().includes('flagged')) {
+      return 'Avatar generation failed. Please try again with a different character description.';
+    }
+
+    // Check for Leonardo API errors
+    if (error.toLowerCase().includes('leonardo')) {
+      return 'Avatar generation service is temporarily unavailable. Please try again.';
+    }
+
+    // Generic fallback for other errors
+    return 'Something went wrong generating the avatar. Please try again.';
+  };
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Update avatar URL when currentAvatarUrl prop changes
@@ -194,7 +218,7 @@ export function AvatarDisplay({
     } catch (error: any) {
       console.error('Avatar generation error:', error);
       setState('error');
-      setErrorMessage(error.message || 'Failed to generate avatar');
+      setErrorMessage(sanitizeErrorMessage(error.message || 'Failed to generate avatar'));
       setMessage('');
       setProgress(0);
     }
@@ -253,7 +277,7 @@ export function AvatarDisplay({
           // Failed
           clearInterval(interval);
           setState('error');
-          setErrorMessage(data.error || 'Generation failed');
+          setErrorMessage(sanitizeErrorMessage(data.error || 'Generation failed'));
           setMessage('');
           setProgress(0);
         }
@@ -265,7 +289,7 @@ export function AvatarDisplay({
         if (pollCount >= maxPolls) {
           clearInterval(interval);
           setState('error');
-          setErrorMessage('Generation timed out. Please try again.');
+          setErrorMessage(sanitizeErrorMessage('Generation timed out. Please try again.'));
           setMessage('');
           setProgress(0);
         }
@@ -328,7 +352,7 @@ export function AvatarDisplay({
           // Failed
           clearInterval(interval);
           setState('error');
-          setErrorMessage(data.error || 'Generation failed');
+          setErrorMessage(sanitizeErrorMessage(data.error || 'Generation failed'));
           setMessage('');
           setProgress(0);
         }
@@ -340,7 +364,7 @@ export function AvatarDisplay({
         if (pollCount >= maxPolls) {
           clearInterval(interval);
           setState('error');
-          setErrorMessage('Generation timed out. Please try again.');
+          setErrorMessage(sanitizeErrorMessage('Generation timed out. Please try again.'));
           setMessage('');
           setProgress(0);
         }

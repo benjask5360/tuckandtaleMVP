@@ -42,13 +42,10 @@ export default function CharacterOnboarding() {
     const responseData = await response.json()
 
     // Return the response data so DynamicCharacterForm can get the character ID
-    // The form will handle the avatar linking, then redirect
+    // The form will handle the avatar linking
     if (responseData.id) {
-      // Schedule navigation after avatar linking
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 100)
-      return responseData
+      // Return the data and include a redirect instruction
+      return { ...responseData, shouldRedirect: true }
     }
 
     router.push('/dashboard')
