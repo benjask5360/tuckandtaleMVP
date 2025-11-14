@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, Users, Image as ImageIcon, Check } from 'lucide-react'
+import GoogleButton from '@/components/auth/GoogleButton'
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('')
@@ -15,9 +16,28 @@ export default function SignupPage() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
+
+  const handleGoogleSignup = async () => {
+    setError(null)
+    setGoogleLoading(true)
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      setError(error.message)
+      setGoogleLoading(false)
+    }
+    // Note: If successful, user will be redirected to Google, so no need to set loading to false
+  }
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,14 +199,29 @@ export default function SignupPage() {
           <div className="card p-6 md:p-10">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6 md:mb-8 text-center">Create Your Account</h2>
 
-            <form onSubmit={handleSignup} className="space-y-6">
+            <div className="space-y-6">
               {error && (
                 <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl text-sm font-medium">
                   {error}
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Google Signup */}
+              <GoogleButton onClick={handleGoogleSignup} loading={googleLoading} />
+
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500 font-medium">or sign up with email</span>
+                </div>
+              </div>
+
+              {/* Email/Password Form */}
+              <form onSubmit={handleSignup} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="firstName" className="label">
                     First Name
@@ -284,7 +319,8 @@ export default function SignupPage() {
                 <Check className="w-4 h-4 text-primary-500" />
                 No credit card required
               </p>
-            </form>
+              </form>
+            </div>
 
             {/* Back to Home Link */}
             <div className="text-center mt-6">

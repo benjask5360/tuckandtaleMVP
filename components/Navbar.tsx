@@ -71,7 +71,7 @@ export default function Navbar() {
           ) : (
             <Link href="/auth/login">
               <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl">
-                Login
+                Get Started
               </button>
             </Link>
           )}
