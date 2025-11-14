@@ -2,13 +2,18 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Settings } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Shield, FileText, LogOut } from 'lucide-react'
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
   const supabase = createClient()
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
+  const menuItemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -26,8 +31,95 @@ export default function Navbar() {
     return () => subscription.unsubscribe()
   }, [])
 
+  // Handle click outside and Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false)
+        setFocusedIndex(-1)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isMenuOpen) {
+        setIsMenuOpen(false)
+        setFocusedIndex(-1)
+        menuButtonRef.current?.focus()
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isMenuOpen])
+
+  // Focus first item when menu opens
+  useEffect(() => {
+    if (isMenuOpen && menuItemRefs.current[0]) {
+      setFocusedIndex(0)
+      menuItemRefs.current[0]?.focus()
+    }
+  }, [isMenuOpen])
+
+  // Update focus when focusedIndex changes
+  useEffect(() => {
+    if (focusedIndex >= 0 && menuItemRefs.current[focusedIndex]) {
+      menuItemRefs.current[focusedIndex]?.focus()
+    }
+  }, [focusedIndex])
+
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen)
+    setFocusedIndex(-1)
+  }
+
+  const handleKeyDown = (event: React.KeyboardEvent, index: number, totalItems: number) => {
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault()
+        setFocusedIndex((index + 1) % totalItems)
+        break
+      case 'ArrowUp':
+        event.preventDefault()
+        setFocusedIndex((index - 1 + totalItems) % totalItems)
+        break
+      case 'Home':
+        event.preventDefault()
+        setFocusedIndex(0)
+        break
+      case 'End':
+        event.preventDefault()
+        setFocusedIndex(totalItems - 1)
+        break
+    }
+  }
+
+  const closeMenu = () => {
+    setIsMenuOpen(false)
+    setFocusedIndex(-1)
+  }
+
+  // Menu items configuration (excluding Sign Out which needs special form handling)
+  const menuItems = [
+    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+    { icon: HelpCircle, label: 'Help', href: '/help' },
+    { icon: Shield, label: 'Privacy Policy', href: '/privacy' },
+    { icon: FileText, label: 'Terms of Service', href: '/terms' },
+  ]
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-gray-200/60 shadow-soft">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-soft">
       <div className="container-narrow section-padding pr-4 md:pr-6">
         <div className="flex items-center justify-between gap-4 h-20">
           <Link href="/" className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
@@ -51,22 +143,66 @@ export default function Navbar() {
 
           {/* Auth Actions */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/dashboard/settings"
+            <div className="relative">
+              <button
+                ref={menuButtonRef}
+                onClick={handleMenuToggle}
                 className="px-4 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl border-2 border-primary-600 text-primary-600 active:bg-primary-50 transition-all flex items-center justify-center gap-2 font-semibold"
-                aria-label="Settings"
+                aria-label="Open menu"
+                aria-expanded={isMenuOpen}
+                aria-haspopup="true"
               >
-                <Settings className="w-4 h-4 md:w-5 md:h-5" />
-              </Link>
-              <form action="/auth/signout" method="post" className="inline">
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl border-2 border-primary-600 text-primary-600 active:bg-primary-50 transition-all flex items-center justify-center font-semibold whitespace-nowrap"
+                <Menu className="w-5 h-5" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isMenuOpen && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-card border border-gray-200 overflow-hidden transition-all duration-200 ease-smooth opacity-100 scale-100"
+                  role="menu"
+                  aria-orientation="vertical"
                 >
-                  Sign Out
-                </button>
-              </form>
+                  <div className="py-2">
+                    {menuItems.map((item, index) => {
+                      const Icon = item.icon
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          ref={(el) => { menuItemRefs.current[index] = el }}
+                          onClick={closeMenu}
+                          onKeyDown={(e) => handleKeyDown(e, index, menuItems.length + 1)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm md:text-base text-primary-600 hover:bg-primary-50 transition-colors duration-200 focus:bg-primary-50 focus:outline-none"
+                          role="menuitem"
+                          tabIndex={0}
+                        >
+                          <Icon className="w-5 h-5 flex-shrink-0" />
+                          <span className="font-medium">{item.label}</span>
+                        </Link>
+                      )
+                    })}
+
+                    {/* Divider */}
+                    <div className="my-2 border-t border-gray-200" />
+
+                    {/* Sign Out */}
+                    <form action="/auth/signout" method="post">
+                      <button
+                        type="submit"
+                        ref={(el) => { menuItemRefs.current[menuItems.length] = el }}
+                        onKeyDown={(e) => handleKeyDown(e, menuItems.length, menuItems.length + 1)}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm md:text-base text-primary-600 hover:bg-primary-50 transition-colors duration-200 focus:bg-primary-50 focus:outline-none"
+                        role="menuitem"
+                        tabIndex={0}
+                      >
+                        <LogOut className="w-5 h-5 flex-shrink-0" />
+                        <span className="font-medium">Sign Out</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <Link href="/auth/login">
