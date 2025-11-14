@@ -46,21 +46,21 @@ export async function generateAvatarPrompt(
         baseChar = `${enhanced.age} child`;
       }
 
-      // Add numeric age if available
-      let ageInfo = '';
+      // Add numeric age if available - use hyphenated format
+      let ageDescriptor = baseChar;
       if (selections.age !== undefined && selections.age !== null) {
-        const ageYears = selections.age === 1 ? '1 year old' : `${selections.age} years old`;
-        ageInfo = ` (${ageYears})`;
+        const ageNum = selections.age;
+        ageDescriptor = selections.age === 1 ? `one-year-old ${baseChar}` : `${ageNum}-year-old ${baseChar}`;
       }
 
-      prompt = `Disney Pixar style standing avatar of a friendly ${baseChar}${ageInfo}`;
+      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}.`;
 
-      // Add physical features
+      // Add physical features with "She has" / "He has" structure
       const features: string[] = [];
 
       // Special handling for bald - skip hair color and type
       if (enhanced.hairLength === 'bald') {
-        features.push('bald head');
+        features.push('a bald head');
       } else {
         // Build hair description with type, length, and color
         const hairParts: string[] = [];
@@ -76,15 +76,32 @@ export async function generateAvatarPrompt(
       if (enhanced.eyes) features.push(`${enhanced.eyes} eyes`);
       if (enhanced.skin) features.push(`${enhanced.skin} skin`);
       if (enhanced.body) features.push(enhanced.body);  // Descriptor already includes "build"
-      if (enhanced.glasses && enhanced.glasses.trim()) {
-        features.push(enhanced.glasses);  // "wearing glasses"
+
+      // Determine pronoun based on gender descriptor
+      let pronoun = 'They have';
+      if (enhanced.gender) {
+        if (enhanced.gender.includes('boy') || enhanced.gender.includes('man')) {
+          pronoun = 'He has';
+        } else if (enhanced.gender.includes('girl') || enhanced.gender.includes('woman')) {
+          pronoun = 'She has';
+        }
       }
 
       if (features.length > 0) {
-        prompt += `, ${features.join(', ')}`;
+        prompt += ` ${pronoun} ${features.join(', ')}`;
+        if (enhanced.glasses && enhanced.glasses.trim()) {
+          prompt += `, ${enhanced.glasses}`;  // "wearing glasses"
+        }
+        prompt += ', wearing age-appropriate, modest clothing.';
+      } else {
+        if (enhanced.glasses && enhanced.glasses.trim()) {
+          prompt += ` ${pronoun} ${enhanced.glasses}, wearing age-appropriate, modest clothing.`;
+        } else {
+          prompt += ` Wearing age-appropriate, modest clothing.`;
+        }
       }
 
-      prompt += ', wearing age-appropriate, modest clothing, white background, high quality';
+      prompt += ' White background, high quality.';
       break;
 
     case 'pet':
