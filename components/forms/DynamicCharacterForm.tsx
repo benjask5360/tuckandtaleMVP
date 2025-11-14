@@ -143,13 +143,22 @@ export default function DynamicCharacterForm({
       // Handle redirects after everything is saved
       // If shouldRedirectAfterAvatar is true, redirect now (onboarding flow)
       // Otherwise, only redirect if no custom onSubmit was provided
-      if (shouldRedirectAfterAvatar || (!onSubmit && !showAvatarGenerator)) {
-        // Use window.location.href for full page reload to ensure avatar updates are visible
-        if (characterType.category === 'child') {
-          window.location.href = '/dashboard/my-children'
-        } else {
-          window.location.href = '/dashboard/other-characters'
-        }
+      if (shouldRedirectAfterAvatar) {
+        // For onboarding, add a small delay then redirect to main dashboard with full page reload
+        // The delay ensures the database has time to commit the avatar link
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 500)
+      } else if (!onSubmit && !showAvatarGenerator) {
+        // For regular profile creation, redirect to the appropriate section
+        // Add small delay here too to ensure avatar is committed
+        setTimeout(() => {
+          if (characterType.category === 'child') {
+            window.location.href = '/dashboard/my-children'
+          } else {
+            window.location.href = '/dashboard/other-characters'
+          }
+        }, 500)
       }
     } catch (err: any) {
       setError(err.message)
