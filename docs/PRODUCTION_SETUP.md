@@ -2,7 +2,7 @@
 
 ## Your Production Database
 
-**Project URL:** https://iolimejvugpcpnmruqww.supabase.co
+**Project URL:** https://api.tuckandtale.com
 **Dashboard:** https://supabase.com/dashboard/project/iolimejvugpcpnmruqww
 
 ### ✅ Completed Steps
@@ -52,7 +52,7 @@ Go to your Vercel project dashboard → Settings → Environment Variables
 Add these for **Production**:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://iolimejvugpcpnmruqww.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://api.tuckandtale.com
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbGltZWp2dWdwY3BubXJ1cXd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNzQwOTQsImV4cCI6MjA3Nzk1MDA5NH0.imnMAeEpfT3HsCs6bjZi4affIrubNc6ImRWb9HOkvUY
 SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbGltZWp2dWdwY3BubXJ1cXd3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjM3NDA5NCwiZXhwIjoyMDc3OTUwMDk0fQ.ybv7KgWy0fdRTik1UkX3nAjdgLsBEExpLUrvnG2FRMA
 

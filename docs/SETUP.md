@@ -33,7 +33,7 @@ cp .env.example .env.local
 Edit `.env.local` with your remote Supabase credentials:
 ```env
 # Supabase Configuration (Remote)
-NEXT_PUBLIC_SUPABASE_URL=https://iolimejvugpcpnmruqww.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://api.tuckandtale.com
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_KEY=your_service_key_here
 
@@ -65,7 +65,7 @@ The application will be available at `http://localhost:3000`
 ### Supabase Remote Database
 
 **Project Details:**
-- Project URL: `https://iolimejvugpcpnmruqww.supabase.co`
+- Project URL: `https://api.tuckandtale.com`
 - Dashboard: `https://supabase.com/dashboard/project/iolimejvugpcpnmruqww`
 
 ### Database Commands

@@ -106,7 +106,13 @@
       "Bash(node test-dedicated-pooler.js:*)",
       "Bash(node scripts/db-push-dedicated.js:*)",
       "Bash(npm run migrate:*)",
-      "Bash(taskkill /F /FI \"WINDOWTITLE eq npx*\" 2)"
+      "Bash(taskkill /F /FI \"WINDOWTITLE eq npx*\" 2)",
+      "Bash(supabase status:*)",
+      "Bash(supabase/config.toml.new)",
+      "Bash(.env.local)",
+      "Bash(git restore:*)",
+      "Bash(.env.local.tmp)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []

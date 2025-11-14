@@ -18,7 +18,7 @@ This project uses Supabase as its database provider. All database operations, in
 Ensure your `.env.local` file contains the remote database credentials:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://iolimejvugpcpnmruqww.supabase.co
+NEXT_PUBLIC_SUPABASE_URL=https://api.tuckandtale.com
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 SUPABASE_SERVICE_KEY=your_service_key_here
 ```
