@@ -118,7 +118,33 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
     )
   }
 
-  const paragraphs = story.generation_metadata?.paragraphs || story.body.split('\n\n')
+  // Parse paragraphs with defensive handling for raw JSON in body field
+  const getParagraphs = (): string[] => {
+    // First try to use the parsed paragraphs from metadata
+    if (story.generation_metadata?.paragraphs && Array.isArray(story.generation_metadata.paragraphs)) {
+      return story.generation_metadata.paragraphs
+    }
+
+    // Fallback: check if body contains raw JSON and try to parse it
+    const bodyTrimmed = story.body.trim()
+    if (bodyTrimmed.startsWith('{') || bodyTrimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(bodyTrimmed)
+        // Check if it has the expected structure
+        if (parsed.paragraphs && Array.isArray(parsed.paragraphs)) {
+          console.warn('Story body contains raw JSON - using parsed paragraphs')
+          return parsed.paragraphs
+        }
+      } catch (e) {
+        console.error('Failed to parse JSON from story body:', e)
+      }
+    }
+
+    // Final fallback: split body by double newlines
+    return story.body.split('\n\n').filter(p => p.trim())
+  }
+
+  const paragraphs = getParagraphs()
 
   // Helper function to get illustration for a specific scene
   const getSceneIllustration = (sceneNumber: number): StoryIllustration | undefined => {

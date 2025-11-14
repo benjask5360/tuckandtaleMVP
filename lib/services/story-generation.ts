@@ -410,29 +410,46 @@ export class StoryGenerationService {
   private static parseResponse(text: string): ParsedStory {
     // Try JSON first
     try {
-      // Remove markdown code blocks if present
+      // Remove markdown code blocks if present (more aggressive cleaning)
       let cleanText = text.trim();
-      if (cleanText.startsWith('```json')) {
-        cleanText = cleanText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      } else if (cleanText.startsWith('```')) {
-        cleanText = cleanText.replace(/```\n?/g, '');
-      }
+
+      // Remove ```json code blocks
+      cleanText = cleanText.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+
+      // Remove generic ``` code blocks
+      cleanText = cleanText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+
+      // Remove any leading/trailing whitespace again after block removal
+      cleanText = cleanText.trim();
 
       const json = JSON.parse(cleanText);
 
+      // Validate structure more thoroughly
       if (json.title && json.paragraphs && Array.isArray(json.paragraphs)) {
+        // Ensure paragraphs are strings and not empty
+        const validParagraphs = json.paragraphs.filter((p: any) => typeof p === 'string' && p.trim());
+
+        if (validParagraphs.length === 0) {
+          console.warn('JSON parsed but paragraphs array is empty or invalid');
+          throw new Error('No valid paragraphs found in JSON');
+        }
+
         return {
           title: json.title,
-          paragraphs: json.paragraphs,
+          paragraphs: validParagraphs,
           moral: json.moral || null,
           illustration_prompt: json.illustration_prompt || null,
         };
+      } else {
+        console.warn('JSON parsed but missing required fields (title or paragraphs)');
+        throw new Error('JSON missing required structure');
       }
     } catch (error) {
-      console.log('Failed to parse JSON, falling back to text parsing');
+      console.log('Failed to parse JSON, falling back to text parsing:', error);
     }
 
     // Fallback: parse text manually
+    console.log('Using text parser fallback for story response');
     return this.parseTextResponse(text);
   }
 
@@ -490,6 +507,21 @@ export class StoryGenerationService {
     request: StoryGenerationRequest,
     prompt: string
   ): Promise<Story> {
+    // Validate parsed data before saving
+    if (!parsed.title || !Array.isArray(parsed.paragraphs) || parsed.paragraphs.length === 0) {
+      console.error('Invalid parsed story data:', parsed);
+      throw new Error('Story parsing failed: Invalid title or paragraphs');
+    }
+
+    // Create body text from paragraphs
+    const bodyText = parsed.paragraphs.join('\n\n');
+
+    // Safety check: ensure body doesn't look like JSON
+    if (bodyText.trim().startsWith('{') || bodyText.trim().startsWith('[')) {
+      console.error('Body text looks like JSON! Parsed data:', parsed);
+      throw new Error('Story parsing failed: Body text appears to be raw JSON');
+    }
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -498,7 +530,7 @@ export class StoryGenerationService {
         user_id: userId,
         content_type: 'story',
         title: parsed.title,
-        body: parsed.paragraphs.join('\n\n'),
+        body: bodyText,
         theme: request.genre.name,
         age_appropriate_for: [request.heroAge],
         generation_prompt: prompt,

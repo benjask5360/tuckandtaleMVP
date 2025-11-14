@@ -22,6 +22,7 @@ export default function DynamicCharacterForm({
   const [formData, setFormData] = useState<Record<string, any>>(initialValues)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [avatarSaving, setAvatarSaving] = useState(false)
   const [calculatedAge, setCalculatedAge] = useState<number | null>(null)
   const [characterId, setCharacterId] = useState<string | null>(initialValues?.id || null)
   const [showAvatarGenerator, setShowAvatarGenerator] = useState(false)
@@ -77,10 +78,7 @@ export default function DynamicCharacterForm({
       // Remove name from attributes since it's a top-level field
       delete submitData.attributes.name
 
-      // Save avatar FIRST if needed (before calling custom onSubmit or default API)
-      if (isEditing && hasNewAvatar) {
-        await saveMostRecentAvatar()
-      }
+      let finalCharacterId: string | null = characterId
 
       if (onSubmit) {
         await onSubmit(submitData)
@@ -103,15 +101,27 @@ export default function DynamicCharacterForm({
 
         const responseData = await response.json()
 
-        // If creating new character and there's a preview avatar, link it
-        if (!isEditing && responseData.id && pendingAvatarCacheId) {
-          await linkPreviewAvatar(responseData.id, pendingAvatarCacheId)
-        }
-
         // If creating new character, store the ID
         if (!isEditing && responseData.id) {
+          finalCharacterId = responseData.id
           setCharacterId(responseData.id)
         }
+      }
+
+      // Save/link avatar AFTER character is created/updated (for both new and edited profiles)
+      if (hasNewAvatar && pendingAvatarCacheId && finalCharacterId) {
+        setAvatarSaving(true)
+        try {
+          await linkPreviewAvatar(finalCharacterId, pendingAvatarCacheId)
+        } catch (avatarError: any) {
+          // Log the error but don't fail the entire form submission
+          console.error('Failed to save avatar:', avatarError)
+          setError('Profile saved, but avatar failed to save. Please try regenerating the avatar.')
+          setAvatarSaving(false)
+          setLoading(false)
+          return // Don't redirect if avatar save failed
+        }
+        setAvatarSaving(false)
       }
 
       // Handle redirects after everything is saved
@@ -162,24 +172,22 @@ export default function DynamicCharacterForm({
   }
 
   const linkPreviewAvatar = async (newCharacterId: string, avatarCacheId: string) => {
-    try {
-      const response = await fetch(`/api/avatars/link-preview`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          characterId: newCharacterId,
-          avatarCacheId: avatarCacheId
-        })
+    const response = await fetch(`/api/avatars/link-preview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        characterId: newCharacterId,
+        avatarCacheId: avatarCacheId
       })
+    })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to link preview avatar')
-      }
-    } catch (error) {
-      console.error('Error linking preview avatar:', error)
-      // Don't throw - avatar linking is optional
+    if (!response.ok) {
+      const data = await response.json()
+      throw new Error(data.error || 'Failed to link preview avatar')
     }
+
+    const data = await response.json()
+    return data
   }
 
   const handleAvatarGenerated = (newAvatarUrl: string, avatarCacheId?: string) => {
@@ -267,16 +275,16 @@ export default function DynamicCharacterForm({
       <div className="flex gap-4 pt-6">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || avatarSaving}
           className="flex-[3] px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50"
         >
-          {loading ? 'Saving...' : isEditing ? 'Update Profile' : 'Create Profile'}
+          {avatarSaving ? 'Saving avatar...' : loading ? 'Saving profile...' : isEditing ? 'Update Profile' : 'Create Profile'}
         </button>
 
         <button
           type="button"
           onClick={handleCancel}
-          disabled={loading}
+          disabled={loading || avatarSaving}
           className="flex-[1] px-8 py-3 bg-neutral-200 text-neutral-700 font-semibold rounded-xl hover:bg-neutral-300 transition-all duration-300 disabled:opacity-50"
         >
           Cancel
