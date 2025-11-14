@@ -10,7 +10,7 @@ interface DynamicCharacterFormProps {
   characterType: CharacterTypeConfig
   initialValues?: Record<string, any>
   isEditing?: boolean
-  onSubmit?: (data: any) => Promise<void>
+  onSubmit?: (data: any) => Promise<void | any>
 }
 
 export default function DynamicCharacterForm({
