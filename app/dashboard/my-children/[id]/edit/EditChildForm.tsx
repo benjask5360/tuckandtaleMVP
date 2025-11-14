@@ -13,6 +13,7 @@ interface EditChildFormProps {
 export default function EditChildForm({ characterType, childProfile }: EditChildFormProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [pendingAvatarCacheId, setPendingAvatarCacheId] = useState<string | null>(null)
 
   // Prepare initial values from the child profile
   const initialValues = {
@@ -27,6 +28,7 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
 
   const handleSubmit = async (data: any) => {
     try {
+      // First update the character attributes
       const response = await fetch(`/api/characters/${childProfile.id}/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -38,11 +40,36 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
         throw new Error(errorData.error || 'Failed to update profile')
       }
 
-      // Use window.location.href for full page reload to ensure fresh data
-      window.location.href = '/dashboard/my-children'
+      // If there's a pending avatar, link it to the character
+      if (pendingAvatarCacheId) {
+        const avatarResponse = await fetch('/api/avatars/link-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterId: childProfile.id,
+            avatarCacheId: pendingAvatarCacheId
+          })
+        })
+
+        if (!avatarResponse.ok) {
+          console.error('Failed to link avatar, but profile was saved')
+        }
+      }
+
+      // Add a small delay to ensure database commits
+      setTimeout(() => {
+        // Use window.location.href for full page reload to ensure fresh data
+        window.location.href = '/dashboard/my-children'
+      }, 500)
     } catch (err: any) {
       setError(err.message)
       throw err
+    }
+  }
+
+  const handleAvatarGenerated = (newAvatarUrl: string, avatarCacheId?: string) => {
+    if (avatarCacheId) {
+      setPendingAvatarCacheId(avatarCacheId)
     }
   }
 
@@ -59,6 +86,7 @@ export default function EditChildForm({ characterType, childProfile }: EditChild
         initialValues={initialValues}
         isEditing={true}
         onSubmit={handleSubmit}
+        onAvatarGenerated={handleAvatarGenerated}
       />
     </>
   )

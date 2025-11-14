@@ -387,7 +387,7 @@ export function AvatarDisplay({
     <div className="w-full flex flex-col items-center space-y-4">
       {/* Avatar Display Area - Only show if avatar exists or currently generating */}
       {(avatarUrl || state === 'generating' || state === 'polling') && (
-        <div className="relative w-48 h-64 rounded-xl overflow-hidden border-2" style={{
+        <div className="relative w-48 h-72 rounded-xl overflow-hidden border-2" style={{
           borderColor: '#f5f5f4',
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
         }}>
@@ -397,7 +397,7 @@ export function AvatarDisplay({
                 src={avatarUrl}
                 alt="Character avatar"
                 fill
-                className="object-cover"
+                className="object-contain"
                 priority
               />
               {/* Show pending indicator if avatar is newly generated */}

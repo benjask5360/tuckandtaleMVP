@@ -112,7 +112,9 @@
       "Bash(.env.local)",
       "Bash(git restore:*)",
       "Bash(.env.local.tmp)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(npm run dev:*)",
+      "Bash(node test-avatar-prompt.js:*)"
     ],
     "deny": [],
     "ask": []

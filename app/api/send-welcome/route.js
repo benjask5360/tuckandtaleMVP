@@ -134,7 +134,7 @@ export async function POST(request) {
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                               <tr>
                                 <td width="32" valign="top" style="padding-right: 12px;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 50%;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 6px;">
                                     <tr>
                                       <td align="center" valign="middle" style="color: #ffffff; font-size: 14px; font-weight: 600;">
                                         1
@@ -156,7 +156,7 @@ export async function POST(request) {
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                               <tr>
                                 <td width="32" valign="top" style="padding-right: 12px;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 50%;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 6px;">
                                     <tr>
                                       <td align="center" valign="middle" style="color: #ffffff; font-size: 14px; font-weight: 600;">
                                         2
@@ -178,7 +178,7 @@ export async function POST(request) {
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                               <tr>
                                 <td width="32" valign="top" style="padding-right: 12px;">
-                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 50%;">
+                                  <table border="0" cellpadding="0" cellspacing="0" width="28" height="28" style="background-color: #0c8ce9; border-radius: 6px;">
                                     <tr>
                                       <td align="center" valign="middle" style="color: #ffffff; font-size: 14px; font-weight: 600;">
                                         3

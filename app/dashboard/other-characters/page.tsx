@@ -29,6 +29,14 @@ export default function OtherCharactersPage() {
   useEffect(() => {
     loadCharacters()
     loadUserTier()
+
+    // Listen for focus events to refresh data when returning to page
+    const handleFocus = () => {
+      loadCharacters()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
   const loadCharacters = async () => {
@@ -49,7 +57,7 @@ export default function OtherCharactersPage() {
 
       if (error) throw error
 
-      // Manually fetch avatars for each character
+      // Manually fetch avatars for each character with cache busting
       const charactersWithAvatars = await Promise.all(
         (data || []).map(async (character) => {
           if (character.avatar_cache_id) {
@@ -58,6 +66,11 @@ export default function OtherCharactersPage() {
               .select('image_url')
               .eq('id', character.avatar_cache_id)
               .single()
+
+            // Add timestamp to avatar URL to prevent caching issues
+            if (avatar?.image_url) {
+              avatar.image_url = `${avatar.image_url}?t=${Date.now()}`
+            }
 
             return { ...character, avatar_cache: avatar }
           }

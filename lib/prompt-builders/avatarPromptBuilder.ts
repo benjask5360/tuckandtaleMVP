@@ -48,12 +48,24 @@ export async function generateAvatarPrompt(
 
       // Add numeric age if available - use hyphenated format
       let ageDescriptor = baseChar;
+      let numericAge: number | undefined;
       if (selections.age !== undefined && selections.age !== null) {
+        numericAge = selections.age;
         const ageNum = selections.age;
         ageDescriptor = selections.age === 1 ? `one-year-old ${baseChar}` : `${ageNum}-year-old ${baseChar}`;
       }
 
-      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}.`;
+      // Add age-related features for elderly/mature characters
+      let ageFeatures = '';
+      if (numericAge !== undefined && numericAge >= 60) {
+        if (numericAge >= 70) {
+          ageFeatures = ' with gentle wrinkles, soft skin, and warm wise features';
+        } else if (numericAge >= 60) {
+          ageFeatures = ' with subtle laugh lines and mature features';
+        }
+      }
+
+      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures}.`;
 
       // Add physical features with "She has" / "He has" structure
       const features: string[] = [];
@@ -79,11 +91,15 @@ export async function generateAvatarPrompt(
 
       // Determine pronoun based on gender descriptor
       let pronoun = 'They have';
+      let pronounSubject = 'Their';
       if (enhanced.gender) {
-        if (enhanced.gender.includes('boy') || enhanced.gender.includes('man')) {
-          pronoun = 'He has';
-        } else if (enhanced.gender.includes('girl') || enhanced.gender.includes('woman')) {
+        // Check for female descriptors (more comprehensive check)
+        if (enhanced.gender.includes('girl') || enhanced.gender.includes('woman') || enhanced.gender.includes('female')) {
           pronoun = 'She has';
+          pronounSubject = 'Her';
+        } else if (enhanced.gender.includes('boy') || enhanced.gender.includes('man') || enhanced.gender.includes('male')) {
+          pronoun = 'He has';
+          pronounSubject = 'His';
         }
       }
 
@@ -99,6 +115,11 @@ export async function generateAvatarPrompt(
         } else {
           prompt += ` Wearing age-appropriate, modest clothing.`;
         }
+      }
+
+      // Add explicit age appearance reinforcement for better age distinction
+      if (numericAge !== undefined) {
+        prompt += ` ${pronounSubject} physical appearance should clearly be that of a ${numericAge} year old.`;
       }
 
       prompt += ' White background, high quality.';

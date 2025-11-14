@@ -11,13 +11,15 @@ interface DynamicCharacterFormProps {
   initialValues?: Record<string, any>
   isEditing?: boolean
   onSubmit?: (data: any) => Promise<void | any>
+  onAvatarGenerated?: (avatarUrl: string, avatarCacheId?: string) => void
 }
 
 export default function DynamicCharacterForm({
   characterType,
   initialValues = {},
   isEditing = false,
-  onSubmit
+  onSubmit,
+  onAvatarGenerated
 }: DynamicCharacterFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>(initialValues)
   const [loading, setLoading] = useState(false)
@@ -233,6 +235,11 @@ export default function DynamicCharacterForm({
       setPendingAvatarCacheId(avatarCacheId)
     }
     setHasNewAvatar(true) // Mark that a new avatar was generated in this session
+
+    // Call parent's callback if provided
+    if (onAvatarGenerated) {
+      onAvatarGenerated(newAvatarUrl, avatarCacheId)
+    }
   }
 
   const handleCancel = () => {

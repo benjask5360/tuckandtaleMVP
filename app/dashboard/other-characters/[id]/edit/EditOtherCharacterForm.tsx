@@ -13,6 +13,7 @@ interface EditOtherCharacterFormProps {
 export default function EditOtherCharacterForm({ characterType, characterProfile }: EditOtherCharacterFormProps) {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [pendingAvatarCacheId, setPendingAvatarCacheId] = useState<string | null>(null)
 
   // Prepare initial values from the character profile
   const initialValues = {
@@ -35,11 +36,35 @@ export default function EditOtherCharacterForm({ characterType, characterProfile
         throw new Error(errorData.error || 'Failed to update profile')
       }
 
-      router.push('/dashboard/other-characters')
-      router.refresh()
+      // If there's a pending avatar, link it to the character
+      if (pendingAvatarCacheId) {
+        const avatarResponse = await fetch('/api/avatars/link-preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterId: characterProfile.id,
+            avatarCacheId: pendingAvatarCacheId
+          })
+        })
+
+        if (!avatarResponse.ok) {
+          console.error('Failed to link avatar, but profile was saved')
+        }
+      }
+
+      // Use window.location for full page reload to ensure fresh data
+      setTimeout(() => {
+        window.location.href = '/dashboard/other-characters'
+      }, 500)
     } catch (err: any) {
       setError(err.message)
       throw err
+    }
+  }
+
+  const handleAvatarGenerated = (newAvatarUrl: string, avatarCacheId?: string) => {
+    if (avatarCacheId) {
+      setPendingAvatarCacheId(avatarCacheId)
     }
   }
 
@@ -55,6 +80,7 @@ export default function EditOtherCharacterForm({ characterType, characterProfile
         initialValues={initialValues}
         isEditing={true}
         onSubmit={handleSubmit}
+        onAvatarGenerated={handleAvatarGenerated}
       />
     </>
   )

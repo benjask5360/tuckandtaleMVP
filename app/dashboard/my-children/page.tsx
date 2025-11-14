@@ -28,6 +28,14 @@ export default function MyChildrenPage() {
   useEffect(() => {
     loadChildren()
     loadUserTier()
+
+    // Listen for focus events to refresh data when returning to page
+    const handleFocus = () => {
+      loadChildren()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [])
 
   const loadChildren = async () => {
@@ -48,7 +56,7 @@ export default function MyChildrenPage() {
 
       if (error) throw error
 
-      // Manually fetch avatars for each character
+      // Manually fetch avatars for each character with cache busting
       const childrenWithAvatars = await Promise.all(
         (data || []).map(async (child) => {
           if (child.avatar_cache_id) {
@@ -57,6 +65,11 @@ export default function MyChildrenPage() {
               .select('image_url')
               .eq('id', child.avatar_cache_id)
               .single()
+
+            // Add timestamp to avatar URL to prevent caching issues
+            if (avatar?.image_url) {
+              avatar.image_url = `${avatar.image_url}?t=${Date.now()}`
+            }
 
             return { ...child, avatar_cache: avatar }
           }
