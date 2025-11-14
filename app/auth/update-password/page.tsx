@@ -2,34 +2,48 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
-export default function ResetPasswordPage() {
-  const [email, setEmail] = useState('')
+export default function UpdatePasswordPage() {
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
   const supabase = createClient()
 
-  const handleResetPassword = async (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    setMessage(null)
+    setError(null)
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return
+    }
+
     setLoading(true)
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`,
+    const { error } = await supabase.auth.updateUser({
+      password: password
     })
 
     if (error) {
-      setMessage({ type: 'error', text: error.message })
-    } else {
-      setMessage({
-        type: 'success',
-        text: 'Check your email for the password reset link!'
-      })
+      setError(error.message)
+      setLoading(false)
+      return
     }
 
-    setLoading(false)
+    // Success! Redirect to login
+    router.push('/auth/login?message=Password updated successfully')
   }
 
   return (
@@ -57,37 +71,49 @@ export default function ResetPasswordPage() {
 
           {/* Title */}
           <h1 className="text-2xl md:text-3xl font-display font-bold text-center text-gray-900 mb-2">
-            Reset Your Password
+            Set New Password
           </h1>
           <p className="text-center text-base md:text-lg text-gray-600 mb-6 md:mb-8">
-            Enter your email and we'll send you a link to reset your password
+            Enter your new password below
           </p>
 
-          {/* Alert Messages */}
-          {message && (
-            <div className={`px-5 py-4 rounded-2xl mb-6 border-2 font-medium ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : 'bg-red-50 text-red-700 border-red-200'
-            }`}>
-              {message.text}
-            </div>
-          )}
-
           {/* Form */}
-          <form onSubmit={handleResetPassword} className="space-y-6">
+          <form onSubmit={handleUpdatePassword} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl text-sm font-medium">
+                {error}
+              </div>
+            )}
+
             <div>
-              <label htmlFor="email" className="label">
-                Email
+              <label htmlFor="password" className="label">
+                New Password
               </label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 className="input"
-                placeholder="your@email.com"
+                placeholder="••••••••"
+                minLength={6}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="label">
+                Confirm New Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="input"
+                placeholder="••••••••"
+                minLength={6}
               />
             </div>
 
@@ -96,7 +122,7 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="btn-primary btn-lg w-full"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? 'Updating...' : 'Update Password'}
             </button>
           </form>
 
