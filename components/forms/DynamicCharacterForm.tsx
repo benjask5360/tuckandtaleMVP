@@ -109,8 +109,16 @@ export default function DynamicCharacterForm({
       }
 
       // Save/link avatar AFTER character is created/updated (for both new and edited profiles)
+      console.log('Avatar linking check:', {
+        hasNewAvatar,
+        pendingAvatarCacheId,
+        finalCharacterId,
+        willLinkAvatar: hasNewAvatar && pendingAvatarCacheId && finalCharacterId
+      })
+
       if (hasNewAvatar && pendingAvatarCacheId && finalCharacterId) {
         setAvatarSaving(true)
+        console.log('Calling linkPreviewAvatar with:', { finalCharacterId, pendingAvatarCacheId })
         try {
           await linkPreviewAvatar(finalCharacterId, pendingAvatarCacheId)
         } catch (avatarError: any) {

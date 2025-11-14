@@ -83,7 +83,13 @@
       "Bash(node scripts/apply-descriptor-fixes.js:*)",
       "Bash(node scripts/debug-hair-type.js:*)",
       "Bash(node scripts/apply-sql-direct.js:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(node diagnose-avatar-issue.js:*)",
+      "Bash(current_schema_dump.sql)",
+      "Bash(while read file)",
+      "Bash(do basename=\"$file##*/\" timestamp=\"$basename%%_*\" echo \"npx supabase migration repair --status applied $timestamp\" done)",
+      "Bash(node apply-avatar-fix.js:*)",
+      "Bash(Test-NetConnection -ComputerName db.iolimejvugpcpnmruqww.supabase.co -Port 5432)"
     ],
     "deny": [],
     "ask": []
