@@ -8,12 +8,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:push": "supabase db push --password adsdf7897JKH",
-    "db:pull": "supabase db pull --schema public,auth",
-    "db:diff": "supabase db diff",
-    "db:migrate": "node scripts/run-migration.js",
-    "db:status": "supabase migration list --password adsdf7897JKH",
-    "db:new": "supabase migration new"
+    "db:push": "node scripts/db-push-dedicated.js",
+    "db:pull": "npx supabase db pull",
+    "db:status": "npx supabase migration list",
+    "db:new": "npx supabase migration new",
+    "migrate": "node scripts/db-push-dedicated.js",
+    "migrate:new": "npx supabase migration new"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
