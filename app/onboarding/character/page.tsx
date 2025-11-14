@@ -38,6 +38,19 @@ export default function CharacterOnboarding() {
       throw new Error(errorData.error || 'Failed to create character')
     }
 
+    // Return the response data so DynamicCharacterForm can get the character ID
+    const responseData = await response.json()
+
+    // Return the response data so DynamicCharacterForm can get the character ID
+    // The form will handle the avatar linking, then redirect
+    if (responseData.id) {
+      // Schedule navigation after avatar linking
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 100)
+      return responseData
+    }
+
     router.push('/dashboard')
   }
 

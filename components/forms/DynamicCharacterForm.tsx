@@ -81,7 +81,12 @@ export default function DynamicCharacterForm({
       let finalCharacterId: string | null = characterId
 
       if (onSubmit) {
-        await onSubmit(submitData)
+        // Custom onSubmit may return the created character data
+        const result = await onSubmit(submitData)
+        if (result && result.id) {
+          finalCharacterId = result.id
+          setCharacterId(result.id)
+        }
       } else {
         // Default API call
         const endpoint = isEditing
