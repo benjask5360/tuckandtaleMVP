@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { generateAIPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
 import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
+import { SubscriptionTierService } from '@/lib/services/subscription-tier'
 
 function calculateAge(dateOfBirth: string): number | null {
   if (!dateOfBirth) return null
@@ -39,26 +40,30 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check subscription limits before creating
-    const { data: userProfile } = await supabase
-      .from('user_profiles')
-      .select(`
-        subscription_tier_id,
-        subscription_tiers (
-          max_child_profiles,
-          max_other_characters
-        )
-      `)
-      .eq('id', user.id)
-      .single()
+    // Get user's subscription tier - no defaults
+    const tier = await SubscriptionTierService.getUserTier(user.id)
 
-    const tier = userProfile?.subscription_tiers as any
+    // Check pet and magical creature permissions first
+    if (character_type === 'pet' && !tier.allow_pets) {
+      return NextResponse.json(
+        { error: 'Pet characters are not available on your plan' },
+        { status: 403 }
+      )
+    }
 
-    // Check character limit based on type (null means unlimited, so only use defaults if undefined)
+    if (character_type === 'magical' && !tier.allow_magical_creatures) {
+      return NextResponse.json(
+        { error: 'Magical creatures are not available on your plan' },
+        { status: 403 }
+      )
+    }
+
+    // Check character limit based on type (from new schema columns)
     const maxAllowed = character_type === 'child'
-      ? (tier?.max_child_profiles !== undefined ? tier.max_child_profiles : 1)
-      : (tier?.max_other_characters !== undefined ? tier.max_other_characters : 0)
+      ? tier.child_profiles
+      : tier.other_character_profiles
 
+    // Only enforce limit if not unlimited (null would mean unlimited if we supported it)
     if (maxAllowed !== null) {
       // Count existing characters of this type
       const { count } = await supabase

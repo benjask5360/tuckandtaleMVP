@@ -114,7 +114,10 @@
       "Bash(.env.local.tmp)",
       "Bash(git fetch:*)",
       "Bash(npm run dev:*)",
-      "Bash(node test-avatar-prompt.js:*)"
+      "Bash(node test-avatar-prompt.js:*)",
+      "Bash(node verify-subscription-migration.js:*)",
+      "Bash(node verify-promo-pricing.js:*)",
+      "Bash(node test-backend-subscriptions.js:*)"
     ],
     "deny": [],
     "ask": []

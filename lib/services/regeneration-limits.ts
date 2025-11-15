@@ -1,12 +1,14 @@
 /**
  * Regeneration Limits Service
  * Manages monthly avatar regeneration limits based on subscription tiers
+ * All values from database - no hardcoded limits
  *
  * Uses unified generation_usage table for tracking monthly counts
  * Uses api_cost_logs for detailed generation history and AI config tracking
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { SubscriptionTierService } from './subscription-tier';
 
 export interface RegenerationStatus {
   used: number;
@@ -34,22 +36,18 @@ export class RegenerationLimitsService {
 
     if (error) {
       console.error('Error fetching remaining regenerations:', error);
-      // Return default values on error
-      return {
-        used: 0,
-        limit: 1,
-        remaining: 1,
-        resetsInDays: 30,
-      };
+      throw new Error(`Failed to get regeneration status: ${error.message}`);
     }
 
     const result = data?.[0];
     if (!result) {
+      // Get tier to return accurate limit - no defaults
+      const tier = await SubscriptionTierService.getUserTier(userId);
       return {
         used: 0,
-        limit: 1,
-        remaining: 1,
-        resetsInDays: 30,
+        limit: tier.avatar_regenerations_month,
+        remaining: tier.avatar_regenerations_month,
+        resetsInDays: this.getDaysUntilReset(),
       };
     }
 
@@ -66,9 +64,9 @@ export class RegenerationLimitsService {
 
     return {
       used: result.used || 0,
-      limit: result.limit_count || 1,
+      limit: result.limit_count || 0,
       remaining: result.remaining || 0,
-      resetsInDays: result.resets_in_days || 30,
+      resetsInDays: result.resets_in_days || this.getDaysUntilReset(),
       lastConfigUsed: costLog?.ai_config_name,
     };
   }
@@ -158,28 +156,11 @@ export class RegenerationLimitsService {
 
   /**
    * Get user's subscription tier regeneration limit
+   * All values from database - no hardcoded defaults
    */
   static async getTierLimit(userId: string): Promise<number> {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select(`
-        subscription_tiers (
-          avatar_regenerations_per_month
-        )
-      `)
-      .eq('id', userId)
-      .single();
-
-    if (error || !data) {
-      console.error('Error fetching tier limit:', error);
-      return 1; // Default to free tier limit
-    }
-
-    // Supabase returns related records as an object, not an array
-    const subscriptionTiers = data.subscription_tiers as any;
-    return subscriptionTiers?.avatar_regenerations_per_month || 1;
+    const tier = await SubscriptionTierService.getUserTier(userId);
+    return tier.avatar_regenerations_month;
   }
 
   /**
@@ -199,17 +180,5 @@ export class RegenerationLimitsService {
     return `You can regenerate ${status.remaining} more times this month`;
   }
 
-  /**
-   * Get regeneration limit by tier name
-   */
-  static getTierLimitByName(tierName: string): number {
-    const limits: Record<string, number> = {
-      free: 1,
-      moonlight: 5,
-      starlight: 10,
-      supernova: 999, // Effectively unlimited
-    };
-
-    return limits[tierName] || 1;
-  }
+  // REMOVED: getTierLimitByName() method - all limits must come from database
 }

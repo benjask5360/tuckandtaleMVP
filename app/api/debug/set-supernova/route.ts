@@ -15,15 +15,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated - please sign up/login first' }, { status: 401 })
     }
 
-    // Get the supernova tier ID
+    // Get the tier_plus (formerly supernova) tier
     const { data: supernovaTier, error: tierError } = await supabase
       .from('subscription_tiers')
-      .select('id, tier_name, max_child_profiles, max_other_characters')
-      .eq('tier_name', 'supernova')
+      .select('id, name, child_profiles, other_character_profiles')
+      .eq('id', 'tier_plus')
       .single()
 
     if (tierError || !supernovaTier) {
-      return NextResponse.json({ error: 'Supernova tier not found' }, { status: 500 })
+      return NextResponse.json({ error: 'tier_plus (Supernova) tier not found' }, { status: 500 })
     }
 
     // Update user's subscription tier to supernova
@@ -50,10 +50,11 @@ export async function GET() {
       },
       profile: updatedProfile,
       tier: {
-        name: supernovaTier.tier_name,
-        max_child_profiles: supernovaTier.max_child_profiles,
-        max_other_characters: supernovaTier.max_other_characters,
-        unlimited: supernovaTier.max_child_profiles === null && supernovaTier.max_other_characters === null
+        id: supernovaTier.id,
+        name: supernovaTier.name,
+        child_profiles: supernovaTier.child_profiles,
+        other_character_profiles: supernovaTier.other_character_profiles,
+        unlimited: false // No unlimited in new schema
       }
     })
   } catch (error: any) {

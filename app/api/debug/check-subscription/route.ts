@@ -15,21 +15,30 @@ export async function GET() {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
-    // Get user profile with subscription tier details
+    // Get user profile with subscription tier details (new schema)
     const { data: userProfile, error: profileError } = await supabase
       .from('user_profiles')
       .select(`
         subscription_tier_id,
         subscription_tiers (
           id,
-          tier_name,
-          display_name,
-          max_child_profiles,
-          max_other_characters,
-          features
+          name,
+          child_profiles,
+          other_character_profiles,
+          illustrated_limit_month,
+          illustrated_limit_total,
+          text_limit_month,
+          avatar_regenerations_month,
+          allow_pets,
+          allow_magical_creatures,
+          allow_fun_stories,
+          allow_growth_stories,
+          allow_genres,
+          allow_writing_styles,
+          allow_story_length
         )
       `)
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single()
 
     if (profileError) {
@@ -40,7 +49,7 @@ export async function GET() {
     const { data: allTiers } = await supabase
       .from('subscription_tiers')
       .select('*')
-      .order('tier_name')
+      .order('display_order')
 
     // Count user's characters
     const { count: childCount } = await supabase
@@ -71,12 +80,22 @@ export async function GET() {
         others: otherCount || 0,
       },
       available_tiers: allTiers,
-      debug_info: {
-        tier_has_new_columns: {
-          max_child_profiles: (userProfile?.subscription_tiers as any)?.max_child_profiles,
-          max_other_characters: (userProfile?.subscription_tiers as any)?.max_other_characters,
-        },
-        tier_has_old_features: (userProfile?.subscription_tiers as any)?.features,
+      limits: {
+        child_profiles: (userProfile?.subscription_tiers as any)?.child_profiles,
+        other_character_profiles: (userProfile?.subscription_tiers as any)?.other_character_profiles,
+        illustrated_monthly: (userProfile?.subscription_tiers as any)?.illustrated_limit_month,
+        illustrated_lifetime: (userProfile?.subscription_tiers as any)?.illustrated_limit_total,
+        text_monthly: (userProfile?.subscription_tiers as any)?.text_limit_month,
+        avatar_regenerations: (userProfile?.subscription_tiers as any)?.avatar_regenerations_month,
+      },
+      features: {
+        allow_pets: (userProfile?.subscription_tiers as any)?.allow_pets,
+        allow_magical_creatures: (userProfile?.subscription_tiers as any)?.allow_magical_creatures,
+        allow_fun_stories: (userProfile?.subscription_tiers as any)?.allow_fun_stories,
+        allow_growth_stories: (userProfile?.subscription_tiers as any)?.allow_growth_stories,
+        allow_genres: (userProfile?.subscription_tiers as any)?.allow_genres,
+        allow_writing_styles: (userProfile?.subscription_tiers as any)?.allow_writing_styles,
+        allow_story_length: (userProfile?.subscription_tiers as any)?.allow_story_length,
       }
     })
   } catch (error: any) {
