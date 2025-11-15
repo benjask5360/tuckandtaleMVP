@@ -17,7 +17,7 @@ export class SubscriptionTierService {
    * Throws error if user or tier not found - no defaults
    */
   static async getUserTier(userId: string): Promise<SubscriptionTier> {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get user's tier ID
     const { data: userProfile, error: userError } = await supabase
@@ -49,7 +49,7 @@ export class SubscriptionTierService {
    * Throws error if not found - no defaults
    */
   static async getTierById(tierId: string): Promise<SubscriptionTier> {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: tier, error } = await supabase
       .from('subscription_tiers')
@@ -153,7 +153,7 @@ export class SubscriptionTierService {
    * Get all active tiers (for pricing page, etc.)
    */
   static async getActiveTiers(): Promise<SubscriptionTier[]> {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: tiers, error } = await supabase
       .from('subscription_tiers')

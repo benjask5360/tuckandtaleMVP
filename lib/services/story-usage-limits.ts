@@ -309,7 +309,7 @@ export class StoryUsageLimitsService {
       return newUsage!;
     }
 
-    throw new Error(`Failed to get usage record: ${error.message}`);
+    throw new Error(`Failed to get usage record: ${error?.message || 'Unknown error'}`);
   }
 
   /**

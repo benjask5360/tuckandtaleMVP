@@ -57,10 +57,10 @@ export async function POST(request: Request) {
         );
       }
 
-      // Check if growth areas are enabled for this tier
-      if (params.growthAreaId && !tier.allow_growth_areas) {
+      // Check if growth topics are enabled for this tier
+      if (!tier.allow_growth_areas) {
         return NextResponse.json(
-          { error: 'Growth area selection is not available on your plan' },
+          { error: 'Growth stories are not available on your plan' },
           { status: 403 }
         );
       }
@@ -74,23 +74,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (params.writingStyleId && !tier.allow_writing_styles) {
+    if (params.toneId && !tier.allow_writing_styles) {
       return NextResponse.json(
-        { error: 'Writing style selection is not available on your plan' },
+        { error: 'Tone/writing style selection is not available on your plan' },
         { status: 403 }
       );
     }
 
-    if (params.moralLessonId && !tier.allow_moral_lessons) {
+    if (params.customInstructions && !tier.allow_special_requests) {
       return NextResponse.json(
-        { error: 'Moral lesson selection is not available on your plan' },
-        { status: 403 }
-      );
-    }
-
-    if (params.specialRequest && !tier.allow_special_requests) {
-      return NextResponse.json(
-        { error: 'Special requests are not available on your plan' },
+        { error: 'Custom instructions are not available on your plan' },
         { status: 403 }
       );
     }
