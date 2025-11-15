@@ -117,7 +117,9 @@
       "Bash(node test-avatar-prompt.js:*)",
       "Bash(node verify-subscription-migration.js:*)",
       "Bash(node verify-promo-pricing.js:*)",
-      "Bash(node test-backend-subscriptions.js:*)"
+      "Bash(node test-backend-subscriptions.js:*)",
+      "Bash(node scripts/fix-signup-function.js:*)",
+      "Bash(node scripts/apply-signup-fix.js:*)"
     ],
     "deny": [],
     "ask": []
