@@ -57,6 +57,12 @@ export interface SubscriptionTier {
   early_access: boolean;
   support_level: 'standard' | 'priority' | 'premium';
 
+  // Stripe Price IDs
+  stripe_price_monthly: string | null;
+  stripe_price_monthly_promo: string | null;
+  stripe_price_yearly: string | null;
+  stripe_price_yearly_promo: string | null;
+
   // Timestamps
   created_at: string;
   updated_at: string;
@@ -96,7 +102,7 @@ export interface TierFeatures {
 export interface UserProfile {
   id: string;
   subscription_tier_id: string; // References subscription_tiers.id
-  subscription_status: string;
+  subscription_status: 'active' | 'inactive' | 'trialing' | 'past_due' | 'canceled';
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   subscription_starts_at: string | null;
@@ -104,3 +110,6 @@ export interface UserProfile {
   created_at: string;
   updated_at: string;
 }
+
+// Billing period for subscription
+export type BillingPeriod = 'monthly' | 'yearly';
