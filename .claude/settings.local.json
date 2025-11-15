@@ -119,7 +119,8 @@
       "Bash(node verify-promo-pricing.js:*)",
       "Bash(node test-backend-subscriptions.js:*)",
       "Bash(node scripts/fix-signup-function.js:*)",
-      "Bash(node scripts/apply-signup-fix.js:*)"
+      "Bash(node scripts/apply-signup-fix.js:*)",
+      "Bash(node scripts/verify-signup-fix.js:*)"
     ],
     "deny": [],
     "ask": []
