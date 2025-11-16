@@ -219,14 +219,14 @@ export default function HomePage() {
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Choose Your Plan
+              Find Your Perfect Storytelling Plan
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 px-4">
-              Select the perfect plan for your family's storytelling adventures
+              Every family's bedtime routine is unique. Choose the plan that fits your storytelling adventures.
             </p>
 
             <div className="inline-flex items-center gap-2 badge-primary mt-6 px-5 py-2.5 text-sm md:text-base">
-              <span>Save 30%</span>
+              <span>Save 30% with annual billing</span>
             </div>
           </div>
 
@@ -237,27 +237,36 @@ export default function HomePage() {
               <p className="text-sm md:text-base text-gray-600 mb-6">Perfect for trying out bedtime stories</p>
               <div className="mb-6 md:mb-8">
                 <span className="text-4xl md:text-5xl font-bold text-gray-900">Free</span>
+                <span className="text-gray-600 text-base md:text-lg block mt-1">Forever</span>
               </div>
               <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-700">3 stories per month</span>
+                  <span className="text-sm md:text-base text-gray-700">3 illustrated stories to treasure forever</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-700">1 child profile</span>
+                  <span className="text-sm md:text-base text-gray-700">5 new text-only stories every month</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-700">Basic story customization</span>
+                  <span className="text-sm md:text-base text-gray-700">Create 1 child profile</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-700">Save one album</span>
+                  <span className="text-sm md:text-base text-gray-700">Add 1 storybook character</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-sm md:text-base text-gray-700">Standard illustrations</span>
+                  <span className="text-sm md:text-base text-gray-700">Include your family pet</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Access to fun, imaginative tales</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Standard support</span>
                 </li>
               </ul>
               <button className="btn-secondary btn-md w-full">
@@ -281,7 +290,11 @@ export default function HomePage() {
               <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">30 stories per month</span>
+                  <span className="text-gray-700">20 illustrated stories every month</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-gray-700">50 text-only stories monthly</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
@@ -289,19 +302,27 @@ export default function HomePage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Advanced customization</span>
+                  <span className="text-gray-700">5 storybook characters to bring to life</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Include pets & characters</span>
+                  <span className="text-gray-700">Multiple pets & magical creatures</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Multiple story lengths</span>
+                  <span className="text-gray-700">Growth stories for emotional learning</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Story library & favorites</span>
+                  <span className="text-gray-700">Explore genres & writing styles</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-gray-700">Save favorites in your story library</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-gray-700">Advanced customization options</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
@@ -314,45 +335,57 @@ export default function HomePage() {
             </div>
 
             {/* Supernova Plan */}
-            <div className="card p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all">
-              <h3 className="text-2xl font-bold mb-2 text-gray-900">Supernova</h3>
-              <p className="text-gray-600 mb-6">For families who love daily story time</p>
-              <div className="mb-8">
-                <span className="text-5xl font-bold text-gray-900">$24.99</span>
-                <span className="text-gray-600 text-lg">/month</span>
+            <div className="card p-6 md:p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all">
+              <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Supernova</h3>
+              <p className="text-sm md:text-base text-gray-600 mb-6">For families who love daily story time</p>
+              <div className="mb-6 md:mb-8">
+                <span className="text-4xl md:text-5xl font-bold text-gray-900">$24.99</span>
+                <span className="text-gray-600 text-base md:text-lg">/month</span>
               </div>
-              <ul className="space-y-4 mb-10">
+              <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited stories</span>
+                  <span className="text-sm md:text-base text-gray-700">40 illustrated stories each month</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Unlimited child profiles</span>
+                  <span className="text-sm md:text-base text-gray-700">100 text-only stories monthly</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Advanced customization</span>
+                  <span className="text-sm md:text-base text-gray-700">Up to 10 child profiles</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Include pets & characters</span>
+                  <span className="text-sm md:text-base text-gray-700">20 unique storybook characters</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Custom themes and story arcs</span>
+                  <span className="text-sm md:text-base text-gray-700">Unlimited pets & magical creatures</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Story library & favorites</span>
+                  <span className="text-sm md:text-base text-gray-700">Growth stories with emotional lessons</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Premium support</span>
+                  <span className="text-sm md:text-base text-gray-700">All genres & custom writing styles</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
-                  <span className="text-gray-700">Early access to new features</span>
+                  <span className="text-sm md:text-base text-gray-700">Your complete story library & favorites</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Advanced customization & themes</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Early access to new features</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary-500 mt-1 flex-shrink-0" />
+                  <span className="text-sm md:text-base text-gray-700">Premium support</span>
                 </li>
               </ul>
               <button className="btn-secondary btn-md w-full">
