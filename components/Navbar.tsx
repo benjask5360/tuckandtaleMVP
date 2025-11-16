@@ -171,7 +171,7 @@ export default function Navbar() {
                   {tier && (
                     <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
                       <div className="flex items-center justify-between">
-                        <TierBadge tier={tier} showQuota={false} />
+                        <TierBadge showQuota={false} />
                         {tier.id === 'tier_free' && (
                           <Link
                             href="/pricing"

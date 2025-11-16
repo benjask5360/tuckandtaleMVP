@@ -121,7 +121,7 @@ export default function BillingPage() {
             <div>
               <h2 className="text-xl font-semibold text-gray-900 mb-2">Current Plan</h2>
               <div className="flex items-center gap-3">
-                <TierBadge tier={tier} />
+                <TierBadge />
                 {subscriptionStatus && (
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     subscriptionStatus === 'active'
