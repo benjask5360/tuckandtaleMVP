@@ -230,7 +230,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <Lock className="w-5 h-5 text-gray-400" />
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900">Password</h3>
+                  <h3 className="text-base font-medium text-gray-900">Password</h3>
                   <p className="text-sm text-gray-500">Change your account password</p>
                 </div>
               </div>
@@ -259,7 +259,7 @@ export default function SettingsPage() {
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">Marketing & Promotions</h3>
+                  <h3 className="text-base font-medium text-gray-900">Marketing & Promotions</h3>
                   <p className="text-sm text-gray-500">
                     Receive special offers, product updates, and promotional content
                   </p>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">Product Updates</h3>
+                  <h3 className="text-base font-medium text-gray-900">Product Updates</h3>
                   <p className="text-sm text-gray-500">
                     Get notified about new features and improvements
                   </p>
@@ -303,7 +303,7 @@ export default function SettingsPage() {
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="text-sm font-medium text-gray-900">Account & Billing</h3>
+                  <h3 className="text-base font-medium text-gray-900">Account & Billing</h3>
                   <p className="text-sm text-gray-500">
                     Important updates about your account, subscription, and billing
                   </p>
@@ -334,7 +334,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3">
               <div>
-                <h3 className="text-sm font-medium text-gray-900">Delete Account</h3>
+                <h3 className="text-base font-medium text-gray-900">Delete Account</h3>
                 <p className="text-sm text-gray-500">
                   Permanently delete your account and all associated data
                 </p>
