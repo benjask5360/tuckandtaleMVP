@@ -130,7 +130,8 @@
       "Bash(npx next dev:*)",
       "Bash(node scripts/apply-contact-migration.js:*)",
       "Bash(node scripts/verify-contact-table.js:*)",
-      "Bash(node scripts/check-resend-key.js:*)"
+      "Bash(node scripts/check-resend-key.js:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

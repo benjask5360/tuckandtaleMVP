@@ -84,9 +84,9 @@ export default function PricingCard({
 
   return (
     <div
-      className={`relative flex flex-col p-6 rounded-2xl border-2 transition-all ${
+      className={`relative flex flex-col p-4 md:p-6 rounded-2xl border-2 transition-all ${
         isPopular
-          ? 'border-primary-500 shadow-2xl scale-105 bg-gradient-to-br from-sky-50 to-primary-50'
+          ? 'border-primary-500 shadow-2xl md:scale-105 bg-gradient-to-br from-sky-50 to-primary-50'
           : isCurrentPlan
           ? 'border-primary-500 bg-primary-50'
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
@@ -110,26 +110,26 @@ export default function PricingCard({
       )}
 
       <div className="flex-grow">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
+        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
 
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           {isFree ? (
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-bold text-gray-900">Free</span>
+              <span className="text-3xl md:text-4xl font-bold text-gray-900">Free</span>
             </div>
           ) : (
             <>
-              <div className="flex items-baseline gap-2 mb-2">
+              <div className="flex flex-wrap items-baseline gap-2 mb-2">
                 {originalPrice && (
-                  <span className="text-2xl text-gray-400 line-through">
+                  <span className="text-xl md:text-2xl text-gray-400 line-through">
                     ${originalPrice}
                   </span>
                 )}
-                <span className="text-4xl font-bold text-gray-900">${price}</span>
-                <span className="text-gray-600">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+                <span className="text-3xl md:text-4xl font-bold text-gray-900">${price}</span>
+                <span className="text-sm md:text-base text-gray-600">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
               </div>
               {billingPeriod === 'yearly' && monthlyEquivalent && (
-                <p className="text-sm text-gray-500">
+                <p className="text-xs md:text-sm text-gray-500">
                   (${monthlyEquivalent}/month)
                 </p>
               )}
@@ -137,11 +137,11 @@ export default function PricingCard({
           )}
         </div>
 
-        <ul className="space-y-3 mb-6">
+        <ul className="space-y-2 md:space-y-3 mb-4 md:mb-6">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-              <span className="text-gray-700 text-sm">{feature}</span>
+            <li key={index} className="flex items-start gap-2 md:gap-3">
+              <Check className="w-4 h-4 md:w-5 md:h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <span className="text-gray-700 text-xs md:text-sm">{feature}</span>
             </li>
           ))}
         </ul>
@@ -150,7 +150,7 @@ export default function PricingCard({
       <button
         onClick={() => onSelectPlan(tier.id, billingPeriod)}
         disabled={isCurrentPlan || isFree}
-        className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
+        className={`w-full px-4 md:px-6 py-2.5 md:py-3 rounded-xl font-semibold text-xs md:text-sm transition-all ${
           isCurrentPlan
             ? 'bg-primary-100 text-primary-600 cursor-default'
             : isFree

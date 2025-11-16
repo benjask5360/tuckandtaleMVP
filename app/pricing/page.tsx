@@ -179,14 +179,14 @@ export default function PricingPage() {
       )}
 
       {/* Pricing Cards Section */}
-      <section className="section-padding py-16">
-        <div className="container-narrow">
+      <section className="section-padding py-8 md:py-16">
+        <div className="container-narrow px-4 md:px-6">
           {/* Billing Period Toggle */}
-          <div className="flex flex-col items-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-gray-100 rounded-xl p-1.5 shadow-sm">
+          <div className="flex flex-col items-center mb-8 md:mb-12">
+            <div className="inline-flex items-center gap-1 md:gap-2 bg-gray-100 rounded-xl p-1 md:p-1.5 shadow-sm">
               <button
                 onClick={() => setBillingPeriod('monthly')}
-                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
                   billingPeriod === 'monthly'
                     ? 'bg-white text-gray-900 shadow-md'
                     : 'text-gray-600 hover:text-gray-900'
@@ -196,7 +196,7 @@ export default function PricingPage() {
               </button>
               <button
                 onClick={() => setBillingPeriod('yearly')}
-                className={`px-6 py-3 rounded-lg text-sm font-semibold transition-all ${
+                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
                   billingPeriod === 'yearly'
                     ? 'bg-white text-gray-900 shadow-md'
                     : 'text-gray-600 hover:text-gray-900'
