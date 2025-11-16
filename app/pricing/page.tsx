@@ -271,16 +271,22 @@ export default function PricingPage() {
                     <td className="p-4 text-center text-gray-900">10</td>
                   </tr>
                   <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Storybook characters</td>
+                    <td className="p-4 text-gray-700 pl-8 italic">Storybook Character (human)</td>
                     <td className="p-4 text-center text-gray-900">1</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">5</td>
-                    <td className="p-4 text-center text-gray-900">20</td>
+                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">Multiple</td>
+                    <td className="p-4 text-center text-gray-900">Multiple</td>
                   </tr>
                   <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Pets & magical creatures</td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
+                    <td className="p-4 text-gray-700 pl-8 italic">Pets</td>
+                    <td className="p-4 text-center text-gray-900">1</td>
+                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">Multiple</td>
+                    <td className="p-4 text-center text-gray-900">Multiple</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="p-4 text-gray-700 pl-8 italic">Magical Creatures</td>
+                    <td className="p-4 text-center text-gray-400">—</td>
                     <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center text-gray-900">Unlimited</td>
+                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
                   </tr>
                   <tr className="hover:bg-gray-50">
                     <td className="p-4 text-gray-700">Growth stories</td>
@@ -345,8 +351,20 @@ export default function PricingPage() {
                       <span className="text-sm font-semibold text-gray-900">{tier.child_profiles}</span>
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Characters</span>
-                      <span className="text-sm font-semibold text-gray-900">{tier.other_character_profiles}</span>
+                      <span className="text-sm text-gray-600 italic pl-3">Human characters</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {tier.id === 'tier_free' ? '1' : 'Multiple'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-sm text-gray-600 italic pl-3">Pets</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {tier.id === 'tier_free' ? '1' : 'Multiple'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-sm text-gray-600 italic pl-3">Magical creatures</span>
+                      {tier.allow_magical_creatures ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
                     </div>
                     <div className="flex justify-between items-center py-2 border-b border-gray-100">
                       <span className="text-sm text-gray-600">Growth stories</span>
@@ -398,7 +416,7 @@ export default function PricingPage() {
                   What happens if I go over my story limit?
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  If you reach your illustrated story limit, you can still create unlimited text-only stories. You can also upgrade your plan to get more illustrated stories.
+                  If you reach your illustrated story limit, you can still create text-only stories. You can also upgrade your plan to get more illustrated stories.
                 </p>
               </div>
 
