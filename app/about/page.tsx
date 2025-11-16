@@ -217,11 +217,11 @@ export default function AboutPage() {
               <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Contact Us</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">FAQ</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Founder Parents</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a>
+                <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
+                <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
+                <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>
+                <a href="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
+                <a href="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</a>
               </nav>
             </div>
           </div>
