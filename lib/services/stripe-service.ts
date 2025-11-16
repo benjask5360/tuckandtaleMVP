@@ -9,10 +9,20 @@ import { SubscriptionTierService } from './subscription-tier';
 import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId } from '@/lib/stripe/price-mapping';
 import type { BillingPeriod, SubscriptionTier } from '@/lib/types/subscription-types';
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
-});
+// Lazy initialization of Stripe client to avoid build-time errors
+let stripeInstance: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not configured');
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-10-29.clover',
+    });
+  }
+  return stripeInstance;
+}
 
 export class StripeService {
   /**
@@ -57,7 +67,7 @@ export class StripeService {
       // Create or retrieve Stripe customer
       let customerId = userProfile.stripe_customer_id;
       if (!customerId) {
-        const customer = await stripe.customers.create({
+        const customer = await getStripe().customers.create({
           email: userProfile.email,
           metadata: {
             supabase_user_id: userId,
@@ -73,7 +83,7 @@ export class StripeService {
       }
 
       // Create checkout session
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         customer: customerId,
         mode: 'subscription',
         payment_method_types: ['card'],
@@ -134,7 +144,7 @@ export class StripeService {
       }
 
       // Create portal session
-      const session = await stripe.billingPortal.sessions.create({
+      const session = await getStripe().billingPortal.sessions.create({
         customer: userProfile.stripe_customer_id,
         return_url: returnUrl,
       });
@@ -157,7 +167,7 @@ export class StripeService {
   ): Promise<{ received: boolean }> {
     try {
       // Verify webhook signature
-      const event = stripe.webhooks.constructEvent(
+      const event = getStripe().webhooks.constructEvent(
         rawBody,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET!
@@ -222,7 +232,7 @@ export class StripeService {
     }
 
     // Get subscription details
-    const subscription = await stripe.subscriptions.retrieve(
+    const subscription = await getStripe().subscriptions.retrieve(
       session.subscription as string
     );
 
@@ -349,7 +359,7 @@ export class StripeService {
     if (!subscriptionId || typeof subscriptionId !== 'string') return;
 
     // Get subscription to find user
-    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
     const userId = subscription.metadata?.user_id;
     if (!userId) return;
@@ -402,7 +412,7 @@ export class StripeService {
       }
 
       // Cancel subscription at period end
-      await stripe.subscriptions.update(userProfile.stripe_subscription_id, {
+      await getStripe().subscriptions.update(userProfile.stripe_subscription_id, {
         cancel_at_period_end: true,
       });
 
@@ -440,7 +450,7 @@ export class StripeService {
       }
 
       // Resume subscription
-      await stripe.subscriptions.update(userProfile.stripe_subscription_id, {
+      await getStripe().subscriptions.update(userProfile.stripe_subscription_id, {
         cancel_at_period_end: false,
       });
 
