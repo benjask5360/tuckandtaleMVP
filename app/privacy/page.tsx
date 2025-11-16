@@ -137,18 +137,6 @@ export default function PrivacyPage() {
               <p className="text-gray-700 leading-relaxed mb-4">
                 Any retained information is limited to what is strictly necessary and will not be used for personalization, marketing, or story generation.
               </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                To make a data request, please use our contact form to get in touch.
-              </p>
-              <div className="mt-6 mb-8">
-                <Link
-                  href="/contact"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
-                >
-                  Contact Us
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </div>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">8. Cookies & Tracking Technologies</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
