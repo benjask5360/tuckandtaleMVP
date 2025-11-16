@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { Check, Sparkles } from 'lucide-react';
 import type { SubscriptionTier } from '@/lib/types/subscription-types';
 
 interface PricingCardProps {
   tier: SubscriptionTier;
+  billingPeriod: 'monthly' | 'yearly';
   isCurrentPlan?: boolean;
   isPopular?: boolean;
   onSelectPlan: (tierId: string, billingPeriod: 'monthly' | 'yearly') => void;
@@ -13,11 +13,11 @@ interface PricingCardProps {
 
 export default function PricingCard({
   tier,
+  billingPeriod,
   isCurrentPlan = false,
   isPopular = false,
   onSelectPlan
 }: PricingCardProps) {
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
   const getPrice = () => {
     if (tier.id === 'tier_free') return 0;
@@ -110,44 +110,16 @@ export default function PricingCard({
                   </span>
                 )}
                 <span className="text-4xl font-bold text-gray-900">${price}</span>
-                <span className="text-gray-600">/{billingPeriod === 'monthly' ? 'mo' : 'yr'}</span>
+                <span className="text-gray-600">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
               </div>
-              {monthlyEquivalent && (
-                <p className="text-sm text-gray-600">
-                  ${monthlyEquivalent}/month billed annually
+              {billingPeriod === 'yearly' && monthlyEquivalent && (
+                <p className="text-sm text-gray-500">
+                  (${monthlyEquivalent}/month)
                 </p>
               )}
             </>
           )}
         </div>
-
-        {!isFree && tier.price_yearly && (
-          <div className="flex gap-2 mb-6 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setBillingPeriod('monthly')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                billingPeriod === 'monthly'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingPeriod('yearly')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                billingPeriod === 'yearly'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Annual
-              {tier.promo_active && tier.price_yearly && tier.price_yearly_promo && (
-                <span className="ml-1 text-xs text-green-600">Save ${(tier.price_yearly - tier.price_yearly_promo).toFixed(0)}</span>
-              )}
-            </button>
-          </div>
-        )}
 
         <ul className="space-y-3 mb-6">
           {features.map((feature, index) => (
