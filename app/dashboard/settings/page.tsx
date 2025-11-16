@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 import type { UserProfileData } from '@/lib/types/subscription-types';
 import {
   User,
@@ -106,6 +107,10 @@ export default function SettingsPage() {
       if (!response.ok) {
         throw new Error('Failed to delete account');
       }
+
+      // Sign out the user on the client side to clear the session
+      const supabase = createClient();
+      await supabase.auth.signOut();
 
       // Redirect to home page after successful deletion
       window.location.href = '/';
