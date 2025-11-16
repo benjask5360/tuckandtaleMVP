@@ -18,7 +18,7 @@ export default function FeatureGate({
   fallback,
   showLock = true
 }: FeatureGateProps) {
-  const { tier, canUseFeature, loading } = useSubscription();
+  const { canUseFeature, loading } = useSubscription();
 
   if (loading) {
     return (
@@ -30,6 +30,7 @@ export default function FeatureGate({
   }
 
   // Check if user has access to this feature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasAccess = canUseFeature(feature as any);
 
   if (hasAccess) {

@@ -221,16 +221,8 @@ export default function BillingPage() {
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3">Usage This Month</h3>
               <div className="space-y-4">
-                <UsageMeter
-                  used={usage?.illustrated.used || 0}
-                  limit={usage?.illustrated.limit || 0}
-                  type="illustrated"
-                />
-                <UsageMeter
-                  used={usage?.text.used || 0}
-                  limit={usage?.text.limit || 0}
-                  type="text"
-                />
+                <UsageMeter type="illustrated" />
+                <UsageMeter type="text" />
               </div>
             </div>
           </div>

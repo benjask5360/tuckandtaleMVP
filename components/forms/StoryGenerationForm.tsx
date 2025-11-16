@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Target, Heart } from 'lucide-react'
+import { Loader2, Sparkles, Target } from 'lucide-react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import FeatureGate from '@/components/subscription/FeatureGate'
 import UsageMeter from '@/components/subscription/UsageMeter'
@@ -42,8 +41,7 @@ interface GroupedParameters {
 
 export default function StoryGenerationForm({ childProfiles }: StoryGenerationFormProps) {
   const router = useRouter()
-  const supabase = createClient()
-  const { tier, usage, canUseFeature, isAtLimit } = useSubscription()
+  const { usage } = useSubscription()
 
   // Configuration
   const MAX_ILLUSTRATED_CHARACTERS = 3
@@ -170,21 +168,11 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Usage Meters */}
-      {usage && (
-        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Your Story Quota</h3>
-          <UsageMeter
-            used={usage.illustrated.used}
-            limit={usage.illustrated.limit}
-            type="illustrated"
-          />
-          <UsageMeter
-            used={usage.text.used}
-            limit={usage.text.limit}
-            type="text"
-          />
-        </div>
-      )}
+      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-gray-900">Your Story Quota</h3>
+        <UsageMeter type="illustrated" />
+        <UsageMeter type="text" />
+      </div>
 
       {/* Include Illustrations Toggle */}
       <div>
