@@ -61,7 +61,14 @@ export default function PricingCard({
   if (tier.allow_growth_stories) features.push('Growth & learning stories');
   if (tier.allow_genres) features.push('Genre selection');
   if (tier.allow_story_length) features.push('Custom story length');
-  if (tier.allow_library) features.push('Story library & favorites');
+
+  // Library and favorites - show appropriate text based on what's allowed
+  if (tier.allow_library && tier.allow_favorites) {
+    features.push('Story library & favorites');
+  } else if (tier.allow_library) {
+    features.push('Story library');
+  }
+
   if (tier.early_access) features.push('Early access to new features');
 
   const isFree = tier.id === 'tier_free';
