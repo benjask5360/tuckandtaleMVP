@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Target } from 'lucide-react'
-import { useSubscription } from '@/contexts/SubscriptionContext'
 import FeatureGate from '@/components/subscription/FeatureGate'
 import UsageMeter from '@/components/subscription/UsageMeter'
 
@@ -41,7 +40,6 @@ interface GroupedParameters {
 
 export default function StoryGenerationForm({ childProfiles }: StoryGenerationFormProps) {
   const router = useRouter()
-  const { usage } = useSubscription()
 
   // Configuration
   const MAX_ILLUSTRATED_CHARACTERS = 3

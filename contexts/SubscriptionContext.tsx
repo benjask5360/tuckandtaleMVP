@@ -87,7 +87,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
       if (tierError) throw tierError;
 
-      setTier(userProfile?.subscription_tiers as SubscriptionTier || null);
+      // Handle subscription_tiers being an array from the join
+      const tierData = Array.isArray(userProfile?.subscription_tiers)
+        ? userProfile.subscription_tiers[0]
+        : userProfile?.subscription_tiers;
+
+      setTier(tierData as SubscriptionTier || null);
 
       // Fetch usage stats
       const response = await fetch('/api/subscription/usage');

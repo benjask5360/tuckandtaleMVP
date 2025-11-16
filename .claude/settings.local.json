@@ -125,7 +125,9 @@
       "Bash(curl:*)",
       "Bash(stripe --version:*)",
       "Bash(node scripts/verify-webhook.js:*)",
-      "Bash(node scripts/test-stripe-integration.js:*)"
+      "Bash(node scripts/test-stripe-integration.js:*)",
+      "Bash(set PORT=3001)",
+      "Bash(npx next dev:*)"
     ],
     "deny": [],
     "ask": []

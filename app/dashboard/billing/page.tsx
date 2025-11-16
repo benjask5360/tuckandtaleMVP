@@ -18,7 +18,7 @@ import {
 export default function BillingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { tier, usage, loading: subscriptionLoading } = useSubscription();
+  const { tier, loading: subscriptionLoading } = useSubscription();
 
   const [billingInfo, setBillingInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
