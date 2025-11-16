@@ -86,8 +86,7 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'straight', label: 'Straight' },
               { value: 'wavy', label: 'Wavy' },
               { value: 'curly', label: 'Curly' },
-              { value: 'coily', label: 'Coily' },
-              { value: 'kinky', label: 'Kinky' }
+              { value: 'coily', label: 'Coily' }
             ]
           },
           {
@@ -265,8 +264,7 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'straight', label: 'Straight' },
               { value: 'wavy', label: 'Wavy' },
               { value: 'curly', label: 'Curly' },
-              { value: 'coily', label: 'Coily' },
-              { value: 'kinky', label: 'Kinky' }
+              { value: 'coily', label: 'Coily' }
             ]
           },
           {
