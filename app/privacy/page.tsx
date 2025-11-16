@@ -34,85 +34,138 @@ export default function PrivacyPage() {
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">1. Introduction</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Welcome to Tuck and Tale ("we," "our," or "us"). We are committed to protecting your privacy and the privacy of your children. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our service.
+                Welcome to Tuck and Tale ("we," "our," or "us"). Your family's trust means everything to us. This Privacy Policy explains what information we collect, how we use it to create personalized stories, and the choices you have. We designed this policy to be clear, parent-friendly, and protective of your rights.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                By using Tuck and Tale, you agree to the practices described below.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">2. Information We Collect</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We collect information that you provide directly to us, including:
+                We collect only the information needed to provide and improve your storytelling experience.
               </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Information you provide</p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>Account information (name, email address, password)</li>
-                <li>Child profile information (name, age, interests, physical characteristics for story personalization)</li>
-                <li>Payment information (processed securely through Stripe)</li>
-                <li>Stories you create and save</li>
-                <li>Communications with our support team</li>
+                <li>Account details: name, email address, and password</li>
+                <li>Child profile details: name, age, interests, and optional physical characteristics (used only to personalize stories)</li>
+                <li>Stories and content: the stories you create, save, or share</li>
+                <li>Payment details: handled securely through Stripe (we never see or store your full payment information)</li>
+                <li>Support messages: when you contact us for help</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Information collected automatically</p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                We may collect limited technical information (like device type, browser, and usage patterns) to keep Tuck and Tale running smoothly and securely.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">3. How We Use Your Information</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We use the information we collect to:
+                We use your information to:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>Provide, maintain, and improve our services</li>
-                <li>Create personalized stories for your children</li>
-                <li>Process your payments and manage your subscription</li>
-                <li>Send you updates, newsletters, and marketing communications (with your consent)</li>
-                <li>Respond to your comments, questions, and requests</li>
-                <li>Monitor and analyze usage patterns to improve user experience</li>
-                <li>Detect, prevent, and address technical issues or fraudulent activity</li>
+                <li>Create personalized stories for your child</li>
+                <li>Operate, maintain, and improve our service</li>
+                <li>Manage your subscription and process payments</li>
+                <li>Send service updates, product announcements, and optional marketing (only with your consent)</li>
+                <li>Provide customer support</li>
+                <li>Monitor for misuse or technical issues</li>
+                <li>Improve our storytelling models and platform features</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-4 font-semibold">
+                We do not use your child's information for advertising, profiling, or sharing with data brokers. Ever.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">4. Children's Privacy</h2>
+              <p className="text-gray-700 leading-relaxed mb-4 font-semibold">
+                Tuck and Tale is for parents and guardians, not children.
+              </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We take children's privacy seriously. Our service is designed for parents and guardians to create stories for their children. We do not knowingly collect personal information directly from children under 13 without parental consent. The child profile information you provide is used solely to personalize stories and is never shared with third parties for marketing purposes.
+                We do not knowingly allow children under 13 to create accounts or submit personal information.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Child profile information entered by a parent/guardian is used only to personalize stories and is never shared with advertisers or sold.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                If you believe a child has provided information to us directly, please contact us and we will delete it.
               </p>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. Information Sharing and Disclosure</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. How We Share Information</h2>
+              <p className="text-gray-700 leading-relaxed mb-4 font-semibold">
+                We do not sell, rent, or trade your personal information.
+              </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:
+                We may share limited information only in the following cases:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>With service providers who help us operate our business (e.g., payment processing, hosting)</li>
-                <li>To comply with legal obligations or respond to lawful requests</li>
-                <li>To protect our rights, privacy, safety, or property, and that of our users</li>
-                <li>In connection with a merger, sale, or acquisition of our business</li>
+                <li><span className="font-semibold">Service Providers:</span> Trusted partners who help operate Tuck and Tale (e.g., Stripe for payments, hosting providers, email services). They only use the data to perform services for us.</li>
+                <li><span className="font-semibold">Legal Requirements:</span> If required to comply with laws, court orders, or government requests.</li>
+                <li><span className="font-semibold">Protection & Safety:</span> To protect the rights, property, or safety of Tuck and Tale, our users, or the public.</li>
+                <li><span className="font-semibold">Business Transitions:</span> In the event of a merger, acquisition, or sale, your information may be transferred to the new entity—but your privacy protections will remain.</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                We do not allow third parties to use your data for their own marketing purposes.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">6. Data Security</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We implement appropriate technical and organizational measures to protect your information against unauthorized access, alteration, disclosure, or destruction. However, no internet transmission is completely secure, and we cannot guarantee absolute security.
+                We use industry-standard security measures—including encryption, access controls, and secure data storage—to protect your information.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                However, no online service is completely immune to risks. We work continuously to keep your data safe and will notify you promptly if a significant issue arises.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">7. Your Rights and Choices</h2>
+              <p className="text-gray-700 leading-relaxed mb-4 font-semibold">
+                You have full control over your information.
+              </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                You have the right to:
+                You can:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>Access, update, or delete your account information</li>
-                <li>Request a copy of the data we hold about you</li>
-                <li>Opt-out of marketing communications</li>
-                <li>Delete your account and associated data</li>
-                <li>Object to certain processing of your information</li>
+                <li>Access and update your account anytime</li>
+                <li>Request deletion of your account and associated data</li>
+                <li>Export a copy of your data</li>
+                <li>Opt out of marketing emails</li>
+                <li>Manage cookie preferences through your browser</li>
               </ul>
-
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">8. Cookies and Tracking</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We use cookies and similar tracking technologies to improve your experience, analyze usage, and deliver personalized content. You can control cookies through your browser settings.
+                To make a request, simply contact us at <a href="mailto:privacy@tuckandtale.com" className="text-primary-600 hover:text-primary-700 font-semibold">privacy@tuckandtale.com</a>.
+              </p>
+
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">8. Cookies & Tracking Technologies</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                We use cookies and similar tools to:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>Keep you logged in</li>
+                <li>Personalize your experience</li>
+                <li>Understand how families use our service</li>
+                <li>Improve performance and reliability</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You can manage or disable cookies in your browser settings, though parts of the app may not work as expected without them.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">9. Changes to This Policy</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the "Last Updated" date.
+                We may update this policy occasionally to reflect new features or legal requirements. If changes are significant, we'll notify you clearly in the app or by email.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                The "Last Updated" date reflects the latest version.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">10. Contact Us</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                If you have questions about this Privacy Policy or our privacy practices, please contact us at:
+                If you have any questions about this Privacy Policy or our privacy practices, please use our contact form to get in touch.
               </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                Email: <a href="mailto:privacy@tuckandtale.com" className="text-primary-600 hover:text-primary-700 font-semibold">privacy@tuckandtale.com</a>
-              </p>
+              <div className="mt-6">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Contact Us
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
