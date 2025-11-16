@@ -34,100 +34,170 @@ export default function TermsPage() {
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                By accessing or using Tuck and Tale ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our Service.
+                By accessing or using Tuck and Tale ("Tuck and Tale," "we," "our," or "us"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Service.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                These Terms apply to all users, including parents and guardians who create accounts to generate stories for their children.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">2. Description of Service</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Tuck and Tale is a personalized storytelling platform that uses AI technology to create custom stories and illustrations featuring your children. The Service is provided on a subscription basis with different tier options.
+                Tuck and Tale is a personalized storytelling platform that uses artificial intelligence to create custom stories and illustrations. The Service includes free and paid subscription options with varying features, limits, and access levels.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                We may update or modify the Service over time to improve functionality, security, or content.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">3. User Accounts</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                To use certain features of our Service, you must create an account. You agree to:
+                To access certain features, you must create an account. You agree to:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>Provide accurate, current, and complete information</li>
-                <li>Maintain and update your information to keep it accurate</li>
-                <li>Maintain the security of your password and account</li>
-                <li>Accept responsibility for all activities that occur under your account</li>
-                <li>Notify us immediately of any unauthorized use of your account</li>
+                <li>Provide accurate and up-to-date registration information</li>
+                <li>Maintain the confidentiality of your password</li>
+                <li>Accept full responsibility for all activity under your account</li>
+                <li>Notify us immediately of any unauthorized access, security breach, or suspicious activity</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Tuck and Tale is intended for parents and guardians. Children under 13 may not create accounts or submit personal information.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">4. Subscription and Payment</h2>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Subscription Plans</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Subscription Tiers:</strong> We offer multiple subscription tiers with varying features and limits. Subscription fees are billed in advance on a monthly or annual basis.
+                We offer multiple subscription tiers with different benefits and usage limits.
               </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Billing</p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>Fees are billed in advance on a monthly or annual basis.</li>
+                <li>You authorize us to charge your selected payment method for all applicable fees.</li>
+                <li>All payments are processed securely via Stripe.</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Cancellation</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Payment:</strong> You authorize us to charge your payment method for all fees incurred. All payments are processed securely through Stripe.
+                You may cancel at any time. Your subscription will remain active until the end of your current billing period. We do not offer refunds for partial billing periods.
               </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Price Changes</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Cancellation:</strong> You may cancel your subscription at any time. Cancellation will be effective at the end of your current billing period. No refunds will be provided for partial billing periods.
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Price Changes:</strong> We reserve the right to modify subscription pricing with at least 30 days notice. Continued use of the Service after a price change constitutes acceptance of the new price.
+                We may update pricing with at least 30 days' notice via email or within the platform. Continued use after the change constitutes acceptance.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. Acceptable Use</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                You agree not to:
+                You agree not to use the Service to:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
-                <li>Use the Service for any illegal purpose or in violation of any laws</li>
-                <li>Violate the intellectual property rights of others</li>
-                <li>Upload or transmit viruses or malicious code</li>
-                <li>Attempt to gain unauthorized access to any part of the Service</li>
-                <li>Interfere with or disrupt the Service or servers</li>
-                <li>Use the Service to create inappropriate or harmful content</li>
-                <li>Share your account credentials with others</li>
-                <li>Resell or redistribute content created by the Service</li>
+                <li>Break any laws or regulations</li>
+                <li>Upload harmful, inappropriate, or abusive content</li>
+                <li>Impersonate another person or misrepresent your identity</li>
+                <li>Violate copyrights, trademarks, or intellectual property rights</li>
+                <li>Interfere with or disrupt servers, networks, or security systems</li>
+                <li>Attempt to reverse-engineer the Service or its models</li>
+                <li>Share account access, resell features, or misuse generated content</li>
+                <li>Use the Service to create harmful, unsafe, or adult content</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                We reserve the right to remove content or suspend accounts that violate these rules.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">6. Intellectual Property</h2>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Our Content</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Our Content:</strong> The Service, including all content, features, and functionality, is owned by Tuck and Tale and is protected by copyright, trademark, and other intellectual property laws.
+                The Service—including software, models, illustrations, design, and branding—is owned by Tuck and Tale and protected by copyright, trademark, and other laws.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Your Content</p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You retain ownership of the information you provide (e.g., names, descriptions, preferences).
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                <strong>Your Content:</strong> You retain ownership of the information you provide to create stories. Stories and illustrations generated by our Service are licensed to you for personal, non-commercial use. You may not sell, redistribute, or commercially exploit the generated content.
+                By using the Service, you grant us a license to use this data solely to operate, personalize, and improve the Service.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Generated Stories & Illustrations</p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You receive a personal, non-exclusive, non-transferable license to use the stories and illustrations generated for personal, non-commercial purposes (e.g., sharing with family, printing at home).
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You may not sell, publish commercially, or redistribute generated content in a way that competes with our Service.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">7. AI-Generated Content</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Our Service uses artificial intelligence to generate stories and illustrations. While we strive for quality and appropriateness, AI-generated content may occasionally produce unexpected results. We are not responsible for the specific content generated, though we continuously work to improve our systems and filters.
+                Our platform uses artificial intelligence. While we strive for high quality, you acknowledge that:
               </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>AI outputs may occasionally be imperfect, repetitive, biased, or unexpected</li>
+                <li>You are responsible for reviewing content before sharing it with your child</li>
+                <li>We are not liable for specific content generated by the AI</li>
+                <li>We regularly train and refine our systems to improve quality and safety</li>
+              </ul>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">8. Disclaimer of Warranties</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, SECURE, OR ERROR-FREE.
+                The Service is provided "as is" and "as available."
+                We make no warranties—express or implied—regarding:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>uninterrupted operation</li>
+                <li>error-free content</li>
+                <li>guaranteed accuracy or reliability</li>
+                <li>suitability for a particular purpose</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You use the Service at your own discretion and risk.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">9. Limitation of Liability</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, TUCK AND TALE SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY.
+                To the fullest extent permitted by law:
               </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>Tuck and Tale is not liable for any indirect, incidental, consequential, or special damages.</li>
+                <li>Our total liability for any claim shall not exceed the amount paid by you in the last 12 months (or $0 if you use the free tier).</li>
+                <li>This includes—but is not limited to—loss of data, loss of profits, service interruptions, or content issues.</li>
+              </ul>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">10. Termination</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We reserve the right to suspend or terminate your account and access to the Service at our discretion, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, or third parties, or for any other reason.
+                We may suspend or terminate your account—without refund—if:
+              </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>You violate these Terms</li>
+                <li>Your behavior poses risk to others or to the platform</li>
+                <li>We suspect fraudulent or abusive activity</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You may also delete your account at any time.
               </p>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">11. Changes to Terms</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">11. Changes to These Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                We reserve the right to modify these Terms at any time. We will notify you of material changes by posting the updated Terms on this page. Your continued use of the Service after changes become effective constitutes acceptance of the modified Terms.
+                We may update these Terms periodically. When we do:
               </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>The "Last Updated" date will change</li>
+                <li>Material updates will be communicated through in-app notifications or email</li>
+                <li>By continuing to use the Service after changes take effect, you agree to the updated Terms.</li>
+              </ul>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">12. Governing Law</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to conflict of law provisions.
+                These Terms are governed by the laws of the United States.
+                If a dispute arises, it will be handled in the state or federal courts located in the United States, unless otherwise required by local law.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">13. Contact Information</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                If you have questions about these Terms, please contact us at:
+                If you have any questions about these Terms, please use our contact form to get in touch.
               </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                Email: <a href="mailto:legal@tuckandtale.com" className="text-primary-600 hover:text-primary-700 font-semibold">legal@tuckandtale.com</a>
-              </p>
+              <div className="mt-6">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Contact Us
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
