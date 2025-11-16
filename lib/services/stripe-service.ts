@@ -226,8 +226,9 @@ export class StripeService {
       session.subscription as string
     );
 
-    // Get the price ID from the subscription
-    const priceId = subscription.items.data[0]?.price.id;
+    // Get the price ID and billing period from the subscription item
+    const subscriptionItem = subscription.items.data[0];
+    const priceId = subscriptionItem?.price.id;
     if (!priceId || !isValidPriceId(priceId)) {
       console.error('Invalid price ID:', priceId);
       return;
@@ -248,8 +249,8 @@ export class StripeService {
         stripe_customer_id: session.customer as string,
         stripe_subscription_id: subscription.id,
         subscription_status: 'active',
-        subscription_starts_at: new Date(subscription.current_period_start * 1000).toISOString(),
-        subscription_ends_at: new Date(subscription.current_period_end * 1000).toISOString(),
+        subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+        subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
       .eq('id', userId);
 
@@ -269,8 +270,9 @@ export class StripeService {
       return;
     }
 
-    // Get the price ID from the subscription
-    const priceId = subscription.items.data[0]?.price.id;
+    // Get the price ID and billing period from the subscription item
+    const subscriptionItem = subscription.items.data[0];
+    const priceId = subscriptionItem?.price.id;
     if (!priceId || !isValidPriceId(priceId)) {
       console.error('Invalid price ID:', priceId);
       return;
@@ -301,8 +303,8 @@ export class StripeService {
         subscription_tier_id: tierId,
         stripe_subscription_id: subscription.id,
         subscription_status: status,
-        subscription_starts_at: new Date(subscription.current_period_start * 1000).toISOString(),
-        subscription_ends_at: new Date(subscription.current_period_end * 1000).toISOString(),
+        subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+        subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
       .eq('id', userId);
 
@@ -342,12 +344,12 @@ export class StripeService {
     invoice: Stripe.Invoice,
     supabase: any
   ) {
-    if (!invoice.subscription) return;
+    // In the new API, subscription is nested under parent.subscription_details
+    const subscriptionId = invoice.parent?.subscription_details?.subscription;
+    if (!subscriptionId || typeof subscriptionId !== 'string') return;
 
     // Get subscription to find user
-    const subscription = await stripe.subscriptions.retrieve(
-      invoice.subscription as string
-    );
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
     const userId = subscription.metadata?.user_id;
     if (!userId) return;
