@@ -113,3 +113,26 @@ export interface UserProfile {
 
 // Billing period for subscription
 export type BillingPeriod = 'monthly' | 'yearly';
+
+// User preferences for email notifications and settings
+export interface UserPreferences {
+  id: string; // References auth.users.id
+  email_marketing: boolean;
+  email_product_updates: boolean;
+  email_account_notifications: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Extended user profile data with preferences
+export interface UserProfileData {
+  email: string;
+  full_name: string;
+  created_at: string;
+  email_verified: boolean;
+  preferences: {
+    email_marketing: boolean;
+    email_product_updates: boolean;
+    email_account_notifications: boolean;
+  };
+}
