@@ -98,7 +98,7 @@ export interface TierFeatures {
   allow_favorites: boolean;
 }
 
-// User profile with subscription tier
+// User profile with subscription tier and email preferences (consolidated for MVP)
 export interface UserProfile {
   id: string;
   subscription_tier_id: string; // References subscription_tiers.id
@@ -107,6 +107,12 @@ export interface UserProfile {
   stripe_subscription_id: string | null;
   subscription_starts_at: string | null;
   subscription_ends_at: string | null;
+
+  // Email preferences (consolidated into user_profiles for MVP simplicity)
+  email_marketing: boolean;
+  email_product_updates: boolean;
+  email_account_notifications: boolean;
+
   created_at: string;
   updated_at: string;
 }
@@ -114,17 +120,7 @@ export interface UserProfile {
 // Billing period for subscription
 export type BillingPeriod = 'monthly' | 'yearly';
 
-// User preferences for email notifications and settings
-export interface UserPreferences {
-  id: string; // References auth.users.id
-  email_marketing: boolean;
-  email_product_updates: boolean;
-  email_account_notifications: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-// Extended user profile data with preferences
+// Extended user profile data with preferences for API responses
 export interface UserProfileData {
   email: string;
   full_name: string;

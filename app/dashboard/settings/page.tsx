@@ -26,6 +26,8 @@ export default function SettingsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // Form state
   const [fullName, setFullName] = useState('');
@@ -90,6 +92,27 @@ export default function SettingsPage() {
       setSaveError(error.message || 'Failed to save settings. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setDeleting(true);
+
+      const response = await fetch('/api/user/delete-account', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+
+      // Redirect to home page after successful deletion
+      window.location.href = '/';
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      alert('Failed to delete account. Please try again or contact support.');
+      setDeleting(false);
     }
   };
 
@@ -430,25 +453,58 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold text-gray-900">Delete Account</h3>
               </div>
 
-              <p className="text-gray-600 mb-6">
-                To request account deletion, please contact our support team. We'll process your request
-                and permanently delete your account and all associated data within 30 days.
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                <p className="text-sm text-red-800 font-semibold mb-2">
+                  ⚠️ This action cannot be undone
+                </p>
+                <p className="text-sm text-red-700">
+                  This will permanently delete:
+                </p>
+                <ul className="text-sm text-red-700 list-disc ml-5 mt-2 space-y-1">
+                  <li>Your account and profile</li>
+                  <li>All child profiles</li>
+                  <li>All saved stories and favorites</li>
+                  <li>Your subscription (if active)</li>
+                </ul>
+              </div>
+
+              <p className="text-gray-600 mb-4">
+                To confirm deletion, please type <span className="font-bold text-gray-900">DELETE</span> below:
               </p>
+
+              <input
+                type="text"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                placeholder="Type DELETE to confirm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              />
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setDeleteConfirmation('');
+                  }}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
-                <Link
-                  href="/contact"
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium text-center"
-                  onClick={() => setShowDeleteModal(false)}
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleteConfirmation !== 'DELETE' || deleting}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Contact Support
-                </Link>
+                  {deleting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete Account'
+                  )}
+                </button>
               </div>
             </div>
           </div>
