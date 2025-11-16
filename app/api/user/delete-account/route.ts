@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -20,11 +21,13 @@ export async function DELETE() {
       );
     }
 
+    const userId = user.id;
+
     // Get user profile to check for active subscription
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('stripe_customer_id, stripe_subscription_id, subscription_status')
-      .eq('id', user.id)
+      .eq('id', userId)
       .single();
 
     if (profileError) {
@@ -47,12 +50,14 @@ export async function DELETE() {
       }
     }
 
-    // Delete user profile data
+    // Delete user profile data using admin client
     // This will cascade to related data (child_profiles, stories, etc.) based on FK constraints
-    const { error: deleteProfileError } = await supabase
+    const adminClient = createAdminClient();
+
+    const { error: deleteProfileError } = await adminClient
       .from('user_profiles')
       .delete()
-      .eq('id', user.id);
+      .eq('id', userId);
 
     if (deleteProfileError) {
       console.error('Error deleting profile:', deleteProfileError);
@@ -62,9 +67,9 @@ export async function DELETE() {
       );
     }
 
-    // Delete the auth user (this is the final step)
-    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
-      user.id
+    // Delete the auth user (this is the final step) - must use admin client
+    const { error: deleteAuthError } = await adminClient.auth.admin.deleteUser(
+      userId
     );
 
     if (deleteAuthError) {

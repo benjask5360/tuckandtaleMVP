@@ -388,7 +388,7 @@ export default function StoryLibraryPage() {
             <p className="text-base md:text-lg text-gray-500 mb-6 md:mb-8">Start creating magical bedtime stories for your children</p>
             <Link
               href="/dashboard/stories/create"
-              className="btn-primary inline-flex items-center gap-2"
+              className="btn-primary btn-md inline-flex items-center gap-2"
             >
               <Sparkles className="w-5 h-5" />
               Create Your First Story
