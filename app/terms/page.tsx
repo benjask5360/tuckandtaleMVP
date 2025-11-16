@@ -164,6 +164,7 @@ export default function TermsPage() {
               <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
+                <a href="/pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
                 <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
                 <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
                 <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>
