@@ -11,51 +11,47 @@ export default function FAQPage() {
   const faqs = [
     {
       question: 'What is Tuck and Tale?',
-      answer: 'Tuck and Tale is a personalized AI-powered storytelling platform that creates magical, illustrated stories featuring your child as the main character. Each story is tailored to your child\'s interests, age, and developmental stage.'
+      answer: 'Tuck and Tale is a personalized, AI-powered storytelling platform that brings your child into the heart of their own magical adventures. Each story is crafted around your child\'s name, interests, age, and personality—making every tale feel like it was written just for them.'
     },
     {
       question: 'How does it work?',
-      answer: 'Simply create a profile for your child with their name, age, interests, and appearance. Then choose story themes, length, and whether you want illustrations. Our AI creates a unique, personalized story just for them!'
+      answer: 'Create a quick profile for your child, choose the type of story you want, and our AI builds a fully customized tale—complete with optional illustrations. Every story is unique, heartfelt, and designed to spark imagination.'
     },
     {
-      question: 'What age range is Tuck and Tale designed for?',
-      answer: 'Tuck and Tale is perfect for children ages 2-12. Our stories adapt to your child\'s age and reading level, ensuring they\'re both engaging and age-appropriate.'
+      question: 'What ages is Tuck and Tale for?',
+      answer: 'Our stories are designed for kids ages 2–12. Story tone, vocabulary, and themes automatically adapt to your child\'s age and reading level.'
     },
     {
       question: 'How many stories can I create?',
-      answer: 'It depends on your subscription tier! Free accounts get a limited number of stories per month, while premium tiers offer more stories and additional features like unlimited illustrated stories.'
+      answer: 'It depends on your subscription tier! The Free plan includes a small number of stories each month. Premium plans unlock more stories, more illustrations, and richer personalization options.'
     },
     {
-      question: 'Can I include multiple children in a story?',
-      answer: 'Yes! With our premium tiers, you can create stories featuring siblings, friends, and even pets. This makes storytelling even more personal and fun for your family.'
+      question: 'Can I include more than one child in a story?',
+      answer: 'Absolutely. Premium tiers let you create stories featuring siblings, friends, and pets—perfect for bedtime, birthdays, or special family moments.'
     },
     {
-      question: 'Are the illustrations safe for children?',
-      answer: 'Absolutely! All our AI-generated illustrations are carefully designed to be child-friendly, age-appropriate, and wholesome. We take child safety very seriously.'
+      question: 'Are the illustrations safe and appropriate?',
+      answer: 'Yes! All illustrations are generated with strict child-friendly guidelines in place. We ensure art stays wholesome, gentle, and age-appropriate.'
     },
     {
-      question: 'Can I save and share stories?',
-      answer: 'Yes! All your created stories are saved in your library. You can revisit them anytime, and we\'re working on features to help you share favorite stories with family and friends.'
+      question: 'Can I save or share stories?',
+      answer: 'Yes. Every story you create stays in your personal library. You can reread them anytime, and we\'re working on simple ways to share special stories with loved ones.'
     },
     {
       question: 'What makes Tuck and Tale different from other story apps?',
-      answer: 'Tuck and Tale combines personalization, beautiful AI-generated illustrations, and educational value. Every story is unique and created just for your child, featuring them as the hero of their own adventure.'
+      answer: 'We combine deeply personalized storytelling, beautiful AI-generated illustrations, and emotional learning. Your child becomes the hero—not just a character in a generic template. No two stories are ever the same.'
     },
     {
-      question: 'Do you offer a free trial?',
-      answer: 'Yes! Our free tier lets you try Tuck and Tale with a limited number of stories each month. You can upgrade anytime to unlock more features and unlimited stories.'
+      question: 'Is there a free trial?',
+      answer: 'Yes! Our Free plan gives you a taste of personalized storytelling with a limited number of stories each month. You can upgrade anytime to unlock more features and unlimited magical adventures.'
     },
     {
-      question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes, you can cancel your subscription at any time from your account settings. You\'ll continue to have access to your current plan until the end of your billing period.'
+      question: 'Can I cancel my subscription?',
+      answer: 'Of course. You can cancel anytime from your account settings, and you\'ll keep access to your plan until the end of your billing cycle.'
     },
     {
       question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards through our secure payment processor, Stripe. Your payment information is never stored on our servers.'
-    },
-    {
-      question: 'How do I contact support?',
-      answer: 'You can reach our support team at support@tuckandtale.com. We typically respond within 24 hours on business days.'
+      answer: 'We securely accept all major credit and debit cards through Stripe. Your payment information is never stored on our servers.'
     }
   ];
 
