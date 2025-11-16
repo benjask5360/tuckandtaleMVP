@@ -96,9 +96,11 @@ export default function OtherCharactersPage() {
         .select(`
           subscription_tier_id,
           subscription_tiers (
-            tier_name,
-            display_name,
-            max_other_characters
+            id,
+            name,
+            other_character_profiles,
+            allow_pets,
+            allow_magical_creatures
           )
         `)
         .eq('id', user.id)
@@ -143,7 +145,7 @@ export default function OtherCharactersPage() {
     return config?.displayName || type
   }
 
-  const maxCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
+  const maxCharacters = userTier?.other_character_profiles !== undefined ? userTier.other_character_profiles : 0
   const canAddMore = maxCharacters === null || characters.length < maxCharacters
 
   if (loading) {
@@ -250,7 +252,7 @@ export default function OtherCharactersPage() {
                 Add Your First Character
               </Link>
             )}
-            {!canAddMore && userTier?.tier_name === 'free' && (
+            {!canAddMore && userTier?.id === 'tier_free' && (
               <div className="mt-6 md:mt-8 p-4 md:p-6 bg-yellow-50 rounded-2xl border-2 border-yellow-200">
                 <p className="text-yellow-800 text-sm md:text-base font-medium">
                   Upgrade to add magical characters to your stories!
@@ -309,7 +311,7 @@ export default function OtherCharactersPage() {
         {!canAddMore && userTier && (
           <div className="mt-6 md:mt-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 md:p-8 text-center">
             <p className="text-base md:text-lg text-gray-700 font-medium mb-4 md:mb-6">
-              You've reached the character limit for your {userTier.display_name} plan.
+              You've reached the character limit for your {userTier.name} plan.
             </p>
             <Link
               href="/pricing"

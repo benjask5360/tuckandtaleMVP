@@ -74,14 +74,15 @@ export default function StoryLibraryPage() {
         .from('user_profiles')
         .select(`
           subscription_tiers (
-            stories_per_month
+            illustrated_limit_month,
+            text_limit_month
           )
         `)
         .eq('id', user.id)
         .single()
 
       const tier = (userProfile?.subscription_tiers as any)
-      setMaxStories(tier?.stories_per_month !== undefined ? tier.stories_per_month : 3)
+      setMaxStories(tier?.illustrated_limit_month !== undefined ? tier.illustrated_limit_month : 3)
 
       const { data, error } = await supabase
         .from('content')

@@ -22,22 +22,30 @@ export default async function DashboardPage() {
       full_name,
       subscription_tier_id,
       subscription_tiers (
-        tier_name,
-        display_name,
-        max_child_profiles,
-        max_other_characters,
-        stories_per_month
+        id,
+        name,
+        child_profiles,
+        other_character_profiles,
+        illustrated_limit_month,
+        illustrated_limit_total,
+        text_limit_month,
+        allow_pets,
+        allow_magical_creatures
       )
     `)
     .eq('id', user.id)
     .single()
 
   const userTier = (userProfile?.subscription_tiers as any) || {
-    tier_name: 'free',
-    display_name: 'Free',
-    max_child_profiles: 1,
-    max_other_characters: 0,
-    stories_per_month: 3
+    id: 'tier_free',
+    name: 'Moonlight (Free)',
+    child_profiles: 1,
+    other_character_profiles: 0,
+    illustrated_limit_month: 3,
+    illustrated_limit_total: 10,
+    text_limit_month: 10,
+    allow_pets: false,
+    allow_magical_creatures: false
   }
 
   // Get first name from full_name
@@ -71,9 +79,10 @@ export default async function DashboardPage() {
     .limit(3)
 
   // Calculate limits (null means unlimited, so only use defaults if undefined)
-  const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
-  const maxOtherCharacters = userTier?.max_other_characters !== undefined ? userTier.max_other_characters : 0
-  const maxStories = userTier?.stories_per_month !== undefined ? userTier.stories_per_month : 3
+  const maxChildren = userTier?.child_profiles !== undefined ? userTier.child_profiles : 1
+  const maxOtherCharacters = userTier?.other_character_profiles !== undefined ? userTier.other_character_profiles : 0
+  const maxIllustratedStories = userTier?.illustrated_limit_month !== undefined ? userTier.illustrated_limit_month : 3
+  const maxTextStories = userTier?.text_limit_month !== undefined ? userTier.text_limit_month : 10
 
   return (
     <div className="min-h-screen bg-white">
@@ -90,10 +99,10 @@ export default async function DashboardPage() {
         {/* Subscription Plan Badge - Centered and mobile-optimized */}
         <div className="mb-4 md:mb-6 flex justify-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
-            <span className="font-semibold">{userTier.display_name} Plan</span>
+            <span className="font-semibold">{userTier.name}</span>
             <span className="hidden sm:inline">•</span>
             <span className="text-xs sm:text-sm md:text-base">
-              0 stories this month ({maxChildren === null ? 'Unlimited' : '3 remaining'})
+              {maxIllustratedStories === null ? 'Unlimited' : maxIllustratedStories} illustrated stories/month
             </span>
           </div>
         </div>
@@ -296,7 +305,7 @@ export default async function DashboardPage() {
             <div className="flex-grow">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Story Library</h2>
               <p className="text-sm text-gray-500">
-                {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
+                {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxIllustratedStories === null ? 'Unlimited' : `${maxIllustratedStories} illustrated/month`}
               </p>
             </div>
 

@@ -95,9 +95,9 @@ export default function MyChildrenPage() {
         .select(`
           subscription_tier_id,
           subscription_tiers (
-            tier_name,
-            display_name,
-            max_child_profiles
+            id,
+            name,
+            child_profiles
           )
         `)
         .eq('id', user.id)
@@ -137,7 +137,7 @@ export default function MyChildrenPage() {
     return age
   }
 
-  const maxChildren = userTier?.max_child_profiles !== undefined ? userTier.max_child_profiles : 1
+  const maxChildren = userTier?.child_profiles !== undefined ? userTier.child_profiles : 1
   const canAddMore = maxChildren === null || children.length < maxChildren
 
   if (loading) {
@@ -296,7 +296,7 @@ export default function MyChildrenPage() {
         {!canAddMore && userTier && (
           <div className="mt-6 md:mt-8 bg-gradient-to-r from-purple-50 to-primary-50 rounded-2xl p-6 md:p-8 text-center">
             <p className="text-base md:text-lg text-gray-700 font-medium mb-4 md:mb-6">
-              You've reached the limit for your {userTier.display_name} plan.
+              You've reached the limit for your {userTier.name} plan.
             </p>
             <Link
               href="/pricing"
