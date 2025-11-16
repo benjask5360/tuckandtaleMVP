@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import PricingCard from '@/components/subscription/PricingCard';
 import type { SubscriptionTier } from '@/lib/types/subscription-types';
-import { Sparkles, Shield, Zap, ArrowRight, Heart, Check } from 'lucide-react';
+import { Sparkles, Shield, Zap, ArrowRight, Heart, Check, ChevronDown } from 'lucide-react';
 
 export default function PricingPage() {
   const router = useRouter();
@@ -401,60 +401,66 @@ export default function PricingPage() {
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-8 text-center">
               Frequently Asked Questions
             </h2>
-            <div className="space-y-6">
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  Can I change plans later?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+            <div className="space-y-4">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Can I change plans later?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately for upgrades, and at the end of your billing period for downgrades.
-                </p>
-              </div>
+                </div>
+              </details>
 
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  What happens if I go over my story limit?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What happens if I go over my story limit?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   If you reach your illustrated story limit, you can still create text-only stories. You can also upgrade your plan to get more illustrated stories.
-                </p>
-              </div>
+                </div>
+              </details>
 
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  Is there a free trial?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Is there a free trial?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   Our Moonlight (Free) plan is always free! You can create up to 3 illustrated stories total and 5 text stories every month to try out the platform.
-                </p>
-              </div>
+                </div>
+              </details>
 
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  How much do I save with annual billing?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">How much do I save with annual billing?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   Annual plans save you the equivalent of 2 months free! Plus, you get all the same features with the convenience of one simple yearly payment.
-                </p>
-              </div>
+                </div>
+              </details>
 
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  What payment methods do you accept?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What payment methods do you accept?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   We accept all major credit and debit cards through our secure payment processor, Stripe. Your payment information is never stored on our servers.
-                </p>
-              </div>
+                </div>
+              </details>
 
-              <div className="bg-gray-50 rounded-2xl p-6 md:p-8">
-                <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                  Can I cancel my subscription?
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Can I cancel my subscription?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   Yes, you can cancel your subscription at any time from your account settings. You'll continue to have access until the end of your billing period.
-                </p>
-              </div>
+                </div>
+              </details>
             </div>
           </div>
         </div>
