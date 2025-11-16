@@ -124,7 +124,8 @@
       "Bash(node scripts/test-stripe-setup.js:*)",
       "Bash(curl:*)",
       "Bash(stripe --version:*)",
-      "Bash(node scripts/verify-webhook.js:*)"
+      "Bash(node scripts/verify-webhook.js:*)",
+      "Bash(node scripts/test-stripe-integration.js:*)"
     ],
     "deny": [],
     "ask": []
