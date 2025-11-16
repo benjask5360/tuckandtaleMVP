@@ -127,7 +127,7 @@ export default function FounderParentsPage() {
                   The Founder Parents program is currently available to our early subscribers. If you're already a paid subscriber, you may already be eligible!
                 </p>
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  To learn more or check your eligibility, please contact us at <a href="mailto:founders@tuckandtale.com" className="text-primary-600 hover:text-primary-700 font-semibold">founders@tuckandtale.com</a>.
+                  To learn more or check your eligibility, please use the contact form below to get in touch with our team.
                 </p>
               </div>
               <div className="text-center">
