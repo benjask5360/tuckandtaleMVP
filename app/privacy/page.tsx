@@ -115,21 +115,40 @@ export default function PrivacyPage() {
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">7. Your Rights and Choices</h2>
               <p className="text-gray-700 leading-relaxed mb-4 font-semibold">
-                You have full control over your information.
-              </p>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                You can:
+                You have full control over your information and can:
               </p>
               <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
                 <li>Access and update your account anytime</li>
-                <li>Request deletion of your account and associated data</li>
-                <li>Export a copy of your data</li>
+                <li>Request deletion of your account and associated personal data</li>
+                <li>Request a copy of the data we hold about you</li>
                 <li>Opt out of marketing emails</li>
                 <li>Manage cookie preferences through your browser</li>
               </ul>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Data Deletion & Retention</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                To make a request, simply contact us at <a href="mailto:privacy@tuckandtale.com" className="text-primary-600 hover:text-primary-700 font-semibold">privacy@tuckandtale.com</a>.
+                When you request account deletion, we will delete or anonymize most of your personal information. However, we may retain certain data when necessary for:
               </p>
+              <ul className="list-disc pl-6 text-gray-700 mb-4 space-y-2">
+                <li>Legal, tax, or accounting obligations (e.g., transaction records)</li>
+                <li>Fraud prevention, security, and abuse monitoring</li>
+                <li>Maintaining system integrity, including data stored in automated backups that are securely retained for a limited time</li>
+                <li>Meeting our contractual obligations</li>
+              </ul>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                Any retained information is limited to what is strictly necessary and will not be used for personalization, marketing, or story generation.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                To make a data request, please use our contact form to get in touch.
+              </p>
+              <div className="mt-6 mb-8">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Contact Us
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </div>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">8. Cookies & Tracking Technologies</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
