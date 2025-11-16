@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
 import ScrollToTop from '@/components/ScrollToTop'
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 
 const inter = Inter({ subsets: ['latin'] })
 const playfair = Playfair_Display({
@@ -24,9 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} ${playfair.variable}`}>
-        <ScrollToTop />
-        <Navbar />
-        <main className="pt-16 md:pt-20">{children}</main>
+        <SubscriptionProvider>
+          <ScrollToTop />
+          <Navbar />
+          <main className="pt-16 md:pt-20">{children}</main>
+        </SubscriptionProvider>
       </body>
     </html>
   )

@@ -4,13 +4,16 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Menu, Settings, HelpCircle, Shield, FileText, LogOut } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles } from 'lucide-react'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import TierBadge from '@/components/subscription/TierBadge'
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const supabase = createClient()
+  const { tier } = useSubscription()
   const dropdownRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([])
@@ -112,6 +115,7 @@ export default function Navbar() {
 
   // Menu items configuration (excluding Sign Out which needs special form handling)
   const menuItems = [
+    { icon: CreditCard, label: 'Billing & Subscription', href: '/dashboard/billing' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     { icon: HelpCircle, label: 'Help', href: '/help' },
     { icon: Shield, label: 'Privacy Policy', href: '/privacy' },
@@ -159,10 +163,29 @@ export default function Navbar() {
               {isMenuOpen && (
                 <div
                   ref={dropdownRef}
-                  className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-card border border-gray-200 overflow-hidden transition-all duration-200 ease-smooth opacity-100 scale-100"
+                  className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-card border border-gray-200 overflow-hidden transition-all duration-200 ease-smooth opacity-100 scale-100"
                   role="menu"
                   aria-orientation="vertical"
                 >
+                  {/* Tier Badge Header */}
+                  {tier && (
+                    <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <TierBadge tier={tier} showQuota={false} />
+                        {tier.id === 'tier_free' && (
+                          <Link
+                            href="/pricing"
+                            onClick={closeMenu}
+                            className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            Upgrade
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="py-2">
                     {menuItems.map((item, index) => {
                       const Icon = item.icon

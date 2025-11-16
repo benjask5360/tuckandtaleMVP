@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Target, Heart } from 'lucide-react'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import FeatureGate from '@/components/subscription/FeatureGate'
+import UsageMeter from '@/components/subscription/UsageMeter'
 
 interface CharacterProfile {
   id: string
@@ -40,6 +43,7 @@ interface GroupedParameters {
 export default function StoryGenerationForm({ childProfiles }: StoryGenerationFormProps) {
   const router = useRouter()
   const supabase = createClient()
+  const { tier, usage, canUseFeature, isAtLimit } = useSubscription()
 
   // Configuration
   const MAX_ILLUSTRATED_CHARACTERS = 3
@@ -165,6 +169,23 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Usage Meters */}
+      {usage && (
+        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-gray-900">Your Story Quota</h3>
+          <UsageMeter
+            used={usage.illustrated.used}
+            limit={usage.illustrated.limit}
+            type="illustrated"
+          />
+          <UsageMeter
+            used={usage.text.used}
+            limit={usage.text.limit}
+            type="text"
+          />
+        </div>
+      )}
+
       {/* Include Illustrations Toggle */}
       <div>
         <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -355,23 +376,25 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
             </div>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setMode('growth')}
-            className={`p-4 rounded-lg border-2 transition-all text-left min-h-[44px] ${
-              mode === 'growth'
-                ? 'border-primary-600 bg-primary-50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <Target className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'growth' ? 'text-primary-600' : 'text-gray-400'}`} />
-              <div>
-                <div className="font-semibold text-gray-900">Help My Child Grow</div>
-                <div className="text-sm text-gray-600">Stories that teach life skills</div>
+          <FeatureGate feature="allow_growth_stories">
+            <button
+              type="button"
+              onClick={() => setMode('growth')}
+              className={`p-4 rounded-lg border-2 transition-all text-left min-h-[44px] ${
+                mode === 'growth'
+                  ? 'border-primary-600 bg-primary-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <Target className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'growth' ? 'text-primary-600' : 'text-gray-400'}`} />
+                <div>
+                  <div className="font-semibold text-gray-900">Help My Child Grow</div>
+                  <div className="text-sm text-gray-600">Stories that teach life skills</div>
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          </FeatureGate>
         </div>
       </div>
 
@@ -458,24 +481,26 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       )}
 
       {/* Genre */}
-      <div>
-        <label htmlFor="genre" className="block text-sm font-semibold text-gray-900 mb-2">
-          What genre? <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="genre"
-          value={genreId}
-          onChange={(e) => setGenreId(e.target.value)}
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        >
-          {parameters.genre?.map(genre => (
-            <option key={genre.id} value={genre.id}>
-              {genre.display_name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <FeatureGate feature="allow_genres">
+        <div>
+          <label htmlFor="genre" className="block text-sm font-semibold text-gray-900 mb-2">
+            What genre? <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="genre"
+            value={genreId}
+            onChange={(e) => setGenreId(e.target.value)}
+            required
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            {parameters.genre?.map(genre => (
+              <option key={genre.id} value={genre.id}>
+                {genre.display_name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </FeatureGate>
 
       {/* Tone */}
       <div>
@@ -498,30 +523,32 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       </div>
 
       {/* Length */}
-      <div>
-        <label htmlFor="length" className="block text-sm font-semibold text-gray-900 mb-2">
-          How long? <span className="text-red-500">*</span>
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {parameters.length?.map(length => (
-            <button
-              key={length.id}
-              type="button"
-              onClick={() => setLengthId(length.id)}
-              className={`p-4 rounded-lg border-2 transition-all text-center min-h-[44px] ${
-                lengthId === length.id
-                  ? 'border-primary-600 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="font-semibold text-gray-900">{length.display_name}</div>
-              {length.description && (
-                <div className="text-sm text-gray-600 mt-1">{length.description}</div>
-              )}
-            </button>
-          ))}
+      <FeatureGate feature="allow_story_length">
+        <div>
+          <label htmlFor="length" className="block text-sm font-semibold text-gray-900 mb-2">
+            How long? <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {parameters.length?.map(length => (
+              <button
+                key={length.id}
+                type="button"
+                onClick={() => setLengthId(length.id)}
+                className={`p-4 rounded-lg border-2 transition-all text-center min-h-[44px] ${
+                  lengthId === length.id
+                    ? 'border-primary-600 bg-primary-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="font-semibold text-gray-900">{length.display_name}</div>
+                {length.description && (
+                  <div className="text-sm text-gray-600 mt-1">{length.description}</div>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </FeatureGate>
 
       {/* Custom Instructions */}
       <div>
