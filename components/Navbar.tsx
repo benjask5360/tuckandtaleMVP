@@ -118,7 +118,7 @@ export default function Navbar() {
     { icon: Info, label: 'About', href: '/about' },
     { icon: CreditCard, label: 'Billing & Subscription', href: '/dashboard/billing' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
-    { icon: HelpCircle, label: 'Help', href: '/help' },
+    { icon: HelpCircle, label: 'Help', href: '/faq' },
     { icon: Shield, label: 'Privacy Policy', href: '/privacy' },
     { icon: FileText, label: 'Terms of Service', href: '/terms' },
   ]
