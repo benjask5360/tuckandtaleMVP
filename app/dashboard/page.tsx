@@ -325,7 +325,7 @@ export default async function DashboardPage() {
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
-              <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="#" className="hover:text-primary-600 transition-colors">About</a>
                 <a href="#" className="hover:text-primary-600 transition-colors">Contact Us</a>

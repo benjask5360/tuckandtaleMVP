@@ -45,10 +45,19 @@ export default function PricingCard({
   const originalPrice = getOriginalPrice();
   const monthlyEquivalent = billingPeriod === 'yearly' && price ? (price / 12).toFixed(2) : null;
 
+  // Build illustrated stories text based on tier type
+  let illustratedText = '';
+  if (tier.illustrated_limit_month === null) {
+    illustratedText = 'Unlimited illustrated stories';
+  } else if (tier.id === 'tier_free' && tier.illustrated_limit_total) {
+    // For free tier, show total limit instead of monthly
+    illustratedText = `${tier.illustrated_limit_total} illustrated stories total`;
+  } else {
+    illustratedText = `${tier.illustrated_limit_month} illustrated stories/month`;
+  }
+
   const features = [
-    tier.illustrated_limit_month === null
-      ? 'Unlimited illustrated stories'
-      : `${tier.illustrated_limit_month} illustrated stories/month`,
+    illustratedText,
     tier.text_limit_month === null
       ? 'Unlimited text stories'
       : `${tier.text_limit_month} text stories/month`,

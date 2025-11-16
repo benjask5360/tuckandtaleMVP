@@ -217,16 +217,25 @@ export default function HomePage() {
       {/* Pricing Section - Mobile-optimized */}
       <section className="py-12 md:py-14 bg-white">
         <div className="container-narrow section-padding">
+          {/* Holiday Promotional Banner */}
+          <div className="mb-8 md:mb-10">
+            <div className="bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
+              <p className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-600 to-amber-600">
+                🎁 Limited-Time Holiday Offer — Save 50% on Starlight & Supernova
+              </p>
+            </div>
+          </div>
+
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Find Your Perfect Storytelling Plan
+              Give Your Family a Magical Holiday Season
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 px-4">
-              Every family's bedtime routine is unique. Choose the plan that fits your storytelling adventures.
+              Enjoy our best pricing of the year — cozy stories, heartfelt moments, and endless imagination.
             </p>
 
-            <div className="inline-flex items-center gap-2 badge-primary mt-6 px-5 py-2.5 text-sm md:text-base">
-              <span>Save 30% with annual billing</span>
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white mt-6 px-5 py-2.5 rounded-full text-sm md:text-base font-semibold shadow-md">
+              <span>Save even more with annual plans — Limited Holiday Rates</span>
             </div>
           </div>
 
@@ -284,8 +293,14 @@ export default function HomePage() {
               <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Starlight</h3>
               <p className="text-sm md:text-base text-gray-600 mb-6">Ideal for regular bedtime storytelling</p>
               <div className="mb-6 md:mb-8">
-                <span className="text-4xl md:text-5xl font-bold gradient-text">$9.99</span>
-                <span className="text-gray-600 text-base md:text-lg">/month</span>
+                <div className="flex items-center justify-center gap-3 mb-1">
+                  <span className="text-2xl md:text-3xl font-semibold text-gray-400 line-through">$19.95</span>
+                  <span className="text-4xl md:text-5xl font-bold gradient-text">$9.95</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-gray-600 text-base md:text-lg">/month</span>
+                  <span className="block text-xs md:text-sm text-orange-600 font-semibold mt-1">Holiday Pricing</span>
+                </div>
               </div>
               <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
@@ -339,8 +354,14 @@ export default function HomePage() {
               <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Supernova</h3>
               <p className="text-sm md:text-base text-gray-600 mb-6">For families who love daily story time</p>
               <div className="mb-6 md:mb-8">
-                <span className="text-4xl md:text-5xl font-bold text-gray-900">$24.99</span>
-                <span className="text-gray-600 text-base md:text-lg">/month</span>
+                <div className="flex items-center justify-center gap-3 mb-1">
+                  <span className="text-2xl md:text-3xl font-semibold text-gray-400 line-through">$29.95</span>
+                  <span className="text-4xl md:text-5xl font-bold text-gray-900">$14.95</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-gray-600 text-base md:text-lg">/month</span>
+                  <span className="block text-xs md:text-sm text-orange-600 font-semibold mt-1">Holiday Pricing</span>
+                </div>
               </div>
               <ul className="space-y-3 md:space-y-4 mb-8 md:mb-10">
                 <li className="flex items-start gap-3">
@@ -427,7 +448,7 @@ export default function HomePage() {
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
-              <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
                 <a href="/pricing" className="hover:text-primary-600 transition-colors">Pricing</a>

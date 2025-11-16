@@ -434,7 +434,7 @@ export default function PricingPage() {
                   How much do I save with annual billing?
                 </h3>
                 <p className="text-gray-600 leading-relaxed">
-                  Annual plans save you the equivalent of 2 months free! With our current holiday promotion, Starlight annual is $99.99/year (just $8.33/month) instead of $119.88 billed monthly. Supernova annual is $149.99/year ($12.50/month) instead of $179.88 monthly. Plus, you get all the same features with the convenience of one simple yearly payment.
+                  Annual plans save you the equivalent of 2 months free! Plus, you get all the same features with the convenience of one simple yearly payment.
                 </p>
               </div>
 
@@ -488,7 +488,7 @@ export default function PricingPage() {
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
-              <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
+              <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
                 <a href="/pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
