@@ -276,13 +276,13 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
                   {vignette.metadata?.mode === 'growth' ? (
                     <Target className="w-5 h-5 text-green-600" />
                   ) : (
-                    <Sparkles className="w-5 h-5 text-purple-600" />
+                    <Sparkles className="w-5 h-5 text-primary-600" />
                   )}
                   <span
                     className={`text-sm font-semibold px-3 py-1 rounded-full ${
                       vignette.metadata?.mode === 'growth'
                         ? 'bg-green-100 text-green-800'
-                        : 'bg-purple-100 text-purple-800'
+                        : 'bg-primary-100 text-primary-800'
                     }`}
                   >
                     {vignette.metadata?.mode === 'growth'
@@ -565,9 +565,9 @@ export default function VignetteViewerPage({ params }: { params: { id: string } 
 
         {/* Debug: Vision API Prompts Section */}
         {vignette.metadata?.vision_system_prompt && (
-          <div className="card p-6 md:p-8 bg-purple-50 border-2 border-purple-300 mb-6">
+          <div className="card p-6 md:p-8 bg-sky-50 border-2 border-primary-300 mb-6">
             <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4 flex items-center gap-2">
-              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">DEBUG</span>
+              <span className="bg-primary-100 text-primary-800 px-2 py-1 rounded text-xs">DEBUG</span>
               OpenAI Vision API (Narrative Generation)
             </h3>
 

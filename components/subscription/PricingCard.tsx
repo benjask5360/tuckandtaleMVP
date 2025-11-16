@@ -70,15 +70,15 @@ export default function PricingCard({
     <div
       className={`relative flex flex-col p-6 rounded-2xl border-2 transition-all ${
         isPopular
-          ? 'border-purple-500 shadow-2xl scale-105 bg-gradient-to-br from-purple-50 to-pink-50'
+          ? 'border-primary-500 shadow-2xl scale-105 bg-gradient-to-br from-sky-50 to-primary-50'
           : isCurrentPlan
-          ? 'border-blue-500 bg-blue-50'
+          ? 'border-primary-500 bg-primary-50'
           : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
       }`}
     >
       {isPopular && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-lg">
+          <div className="bg-gradient-primary text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-lg">
             <Sparkles className="w-4 h-4" />
             Most Popular
           </div>
@@ -87,7 +87,7 @@ export default function PricingCard({
 
       {isCurrentPlan && (
         <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <div className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
+          <div className="bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
             Current Plan
           </div>
         </div>
@@ -164,11 +164,11 @@ export default function PricingCard({
         disabled={isCurrentPlan || isFree}
         className={`w-full px-6 py-3 rounded-xl font-semibold text-sm transition-all ${
           isCurrentPlan
-            ? 'bg-blue-100 text-blue-600 cursor-default'
+            ? 'bg-primary-100 text-primary-600 cursor-default'
             : isFree
             ? 'bg-gray-200 text-gray-500 cursor-default'
             : isPopular
-            ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl'
+            ? 'bg-gradient-primary text-white hover:opacity-90 shadow-lg hover:shadow-xl'
             : 'bg-gray-900 text-white hover:bg-gray-800'
         }`}
       >

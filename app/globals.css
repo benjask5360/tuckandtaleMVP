@@ -84,12 +84,12 @@
            active:scale-95 focus:ring-primary-300;
   }
 
-  /* Purple Variant */
+  /* Purple Variant - Kept for backwards compatibility */
   .btn-purple {
-    @apply btn text-white bg-gradient-purple rounded-2xl shadow-button
-           hover:shadow-purple-glow hover:-translate-y-0.5 hover:scale-[1.02]
+    @apply btn text-white bg-gradient-primary rounded-2xl shadow-button
+           hover:shadow-blue-glow hover:-translate-y-0.5 hover:scale-[1.02]
            active:translate-y-0 active:scale-100
-           focus:ring-purple-400;
+           focus:ring-primary-400;
   }
 
   /* Teal Variant */
@@ -191,7 +191,7 @@
   }
 
   .badge-purple {
-    @apply badge bg-purple-100 text-purple-700;
+    @apply badge bg-primary-100 text-primary-700;
   }
 
   .badge-teal {
@@ -317,9 +317,16 @@
 
   .gradient-mesh-purple {
     background-image:
-      radial-gradient(at 40% 20%, rgba(192, 132, 252, 0.12) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(168, 85, 247, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgba(147, 51, 234, 0.06) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, rgba(54, 173, 248, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(71, 176, 255, 0.12) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(26, 148, 255, 0.08) 0px, transparent 50%);
+  }
+
+  .gradient-mesh-primary {
+    background-image:
+      radial-gradient(at 40% 20%, rgba(54, 173, 248, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(71, 176, 255, 0.12) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(26, 148, 255, 0.08) 0px, transparent 50%);
   }
 
   .gradient-mesh-teal {

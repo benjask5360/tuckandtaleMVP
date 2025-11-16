@@ -268,7 +268,7 @@ export default function MyChildrenPage() {
                         className="w-full h-full object-contain"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-200 to-purple-200 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-sky-200 to-primary-200 flex items-center justify-center">
                         <User className="w-1/3 h-1/3 text-white opacity-50" />
                       </div>
                     )}
@@ -294,13 +294,13 @@ export default function MyChildrenPage() {
 
         {/* Upgrade Prompt */}
         {!canAddMore && userTier && (
-          <div className="mt-6 md:mt-8 bg-gradient-to-r from-purple-50 to-primary-50 rounded-2xl p-6 md:p-8 text-center">
+          <div className="mt-6 md:mt-8 bg-gradient-to-r from-sky-50 to-primary-50 rounded-2xl p-6 md:p-8 text-center">
             <p className="text-base md:text-lg text-gray-700 font-medium mb-4 md:mb-6">
               You've reached the limit for your {userTier.name} plan.
             </p>
             <Link
               href="/pricing"
-              className="btn-purple btn-md inline-flex items-center gap-2"
+              className="btn-primary btn-md inline-flex items-center gap-2"
             >
               Upgrade for More Profiles
             </Link>

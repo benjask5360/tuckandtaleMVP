@@ -67,15 +67,15 @@ export default function FeatureGate({
     <div className="relative opacity-60 pointer-events-none select-none">
       <div className="absolute inset-0 bg-gray-100 bg-opacity-50 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
         <div className="bg-white rounded-lg shadow-lg p-4 text-center">
-          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Lock className="w-5 h-5 text-purple-600" />
+          <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <Lock className="w-5 h-5 text-primary-600" />
           </div>
           <p className="text-sm font-semibold text-gray-900 mb-1">
             {getFeatureName(feature)}
           </p>
           <Link
             href="/pricing"
-            className="text-xs text-purple-600 hover:text-purple-700 font-medium pointer-events-auto"
+            className="text-xs text-primary-600 hover:text-primary-700 font-medium pointer-events-auto"
           >
             Upgrade to unlock
           </Link>

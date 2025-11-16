@@ -117,9 +117,9 @@ export default function PricingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-primary-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading pricing...</p>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 to-primary-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -150,7 +150,7 @@ export default function PricingPage() {
             <span className="text-sm">Instant activation</span>
           </div>
           <div className="flex items-center gap-2 text-gray-700">
-            <Sparkles className="w-5 h-5 text-purple-600" />
+            <Sparkles className="w-5 h-5 text-primary-600" />
             <span className="text-sm">Cancel anytime</span>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function PricingPage() {
             Have questions?{' '}
             <a
               href="mailto:support@tuckandtale.com"
-              className="text-purple-600 hover:text-purple-700 font-semibold"
+              className="text-primary-600 hover:text-primary-700 font-semibold"
             >
               Contact our support team
             </a>
@@ -253,7 +253,7 @@ export default function PricingPage() {
       {processingCheckout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-sm text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Redirecting to checkout...
             </h3>

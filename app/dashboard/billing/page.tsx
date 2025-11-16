@@ -80,7 +80,7 @@ function BillingPageContent() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading billing information...</p>
         </div>
       </div>
@@ -160,7 +160,7 @@ function BillingPageContent() {
             ) : (
               <button
                 onClick={handleUpgrade}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-all flex items-center gap-2"
               >
                 <span>Upgrade Plan</span>
                 <ArrowRight className="w-4 h-4" />
@@ -267,7 +267,7 @@ function BillingPageContent() {
 
         {/* Upgrade CTA (if free tier) */}
         {isFree && (
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 text-center">
+          <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Unlock More Stories
             </h2>
@@ -276,7 +276,7 @@ function BillingPageContent() {
             </p>
             <button
               onClick={handleUpgrade}
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all font-semibold inline-flex items-center gap-2"
+              className="px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-semibold inline-flex items-center gap-2"
             >
               <span>View Plans</span>
               <ArrowRight className="w-5 h-5" />
@@ -292,7 +292,7 @@ function BillingPageContent() {
           </p>
           <a
             href="mailto:support@tuckandtale.com"
-            className="text-purple-600 hover:text-purple-700 font-semibold text-sm inline-flex items-center gap-1"
+            className="text-primary-600 hover:text-primary-700 font-semibold text-sm inline-flex items-center gap-1"
           >
             Contact Support
             <ExternalLink className="w-4 h-4" />
@@ -308,7 +308,7 @@ export default function BillingPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading billing information...</p>
         </div>
       </div>

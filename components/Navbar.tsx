@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles, Info } from 'lucide-react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import TierBadge from '@/components/subscription/TierBadge'
 
@@ -115,6 +115,7 @@ export default function Navbar() {
 
   // Menu items configuration (excluding Sign Out which needs special form handling)
   const menuItems = [
+    { icon: Info, label: 'About', href: '/about' },
     { icon: CreditCard, label: 'Billing & Subscription', href: '/dashboard/billing' },
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     { icon: HelpCircle, label: 'Help', href: '/help' },
@@ -169,14 +170,14 @@ export default function Navbar() {
                 >
                   {/* Tier Badge Header */}
                   {tier && (
-                    <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200">
+                    <div className="px-4 py-3 bg-gradient-to-r from-sky-50 to-primary-50 border-b border-gray-200">
                       <div className="flex items-center justify-between">
                         <TierBadge showQuota={false} />
                         {tier.id === 'tier_free' && (
                           <Link
                             href="/pricing"
                             onClick={closeMenu}
-                            className="text-xs font-semibold text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                            className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1"
                           >
                             <Sparkles className="w-3 h-3" />
                             Upgrade

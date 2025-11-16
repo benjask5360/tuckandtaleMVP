@@ -127,7 +127,10 @@
       "Bash(node scripts/verify-webhook.js:*)",
       "Bash(node scripts/test-stripe-integration.js:*)",
       "Bash(set PORT=3001)",
-      "Bash(npx next dev:*)"
+      "Bash(npx next dev:*)",
+      "Bash(node scripts/apply-contact-migration.js:*)",
+      "Bash(node scripts/verify-contact-table.js:*)",
+      "Bash(node scripts/check-resend-key.js:*)"
     ],
     "deny": [],
     "ask": []

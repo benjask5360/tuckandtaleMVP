@@ -88,7 +88,7 @@ export default function HomePage() {
                 description: "Max wasn't scared when he met the dragon. In fact, they became best friends!",
                 age: "Ages 5-8",
                 time: "15 minutes",
-                color: "from-purple-400 to-purple-600"
+                color: "from-primary-400 to-primary-600"
               },
               {
                 title: "Emma's Underwater Kingdom",
@@ -192,7 +192,7 @@ export default function HomePage() {
             </div>
 
             <div className="card-feature group">
-              <div className="w-20 h-20 bg-gradient-purple rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-purple-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-blue-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 <BookOpen className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-3 text-gray-900">Endless Adventures with Best Friends Characters</h3>
@@ -369,7 +369,7 @@ export default function HomePage() {
 
       {/* CTA Section */}
       <section className="py-24 bg-gradient-bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh-purple opacity-30"></div>
+        <div className="absolute inset-0 gradient-mesh-primary opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">
             Ready to create your first story?
@@ -396,12 +396,12 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
               <p className="text-center md:text-left text-gray-500">© 2024 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
-                <a href="#" className="hover:text-primary-600 transition-colors">About</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Contact Us</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">FAQ</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Founder Parents</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a>
+                <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
+                <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
+                <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
+                <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>
+                <a href="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
+                <a href="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</a>
               </nav>
             </div>
           </div>

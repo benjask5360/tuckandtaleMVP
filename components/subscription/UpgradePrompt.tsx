@@ -43,7 +43,7 @@ export default function UpgradePrompt({
 
   if (variant === 'banner') {
     return (
-      <div className={`bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg ${className}`}>
+      <div className={`bg-gradient-primary text-white p-4 rounded-lg ${className}`}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Sparkles className="w-5 h-5 flex-shrink-0" />
@@ -51,7 +51,7 @@ export default function UpgradePrompt({
           </div>
           <Link
             href="/pricing"
-            className="px-4 py-2 bg-white text-purple-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap flex items-center gap-2"
+            className="px-4 py-2 bg-white text-primary-600 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors whitespace-nowrap flex items-center gap-2"
           >
             Upgrade
             <ArrowRight className="w-4 h-4" />
@@ -65,7 +65,7 @@ export default function UpgradePrompt({
     return (
       <Link
         href="/pricing"
-        className={`inline-flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700 font-medium ${className}`}
+        className={`inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-medium ${className}`}
       >
         <Sparkles className="w-4 h-4" />
         Upgrade to {recommended.name}
@@ -76,8 +76,8 @@ export default function UpgradePrompt({
 
   // Card variant (default)
   return (
-    <div className={`bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 text-center border-2 border-purple-200 ${className}`}>
-      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+    <div className={`bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl p-6 text-center border-2 border-primary-200 ${className}`}>
+      <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
         <Sparkles className="w-6 h-6 text-white" />
       </div>
       <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -88,7 +88,7 @@ export default function UpgradePrompt({
       </p>
       <Link
         href="/pricing"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl"
+        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-primary text-white rounded-full font-semibold hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
       >
         View Plans
         <ArrowRight className="w-4 h-4" />

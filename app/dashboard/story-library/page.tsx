@@ -312,7 +312,7 @@ export default function StoryLibraryPage() {
                       onClick={() => setModeFilter('fun')}
                       className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
                         modeFilter === 'fun'
-                          ? 'bg-purple-600 text-white'
+                          ? 'bg-primary-600 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >

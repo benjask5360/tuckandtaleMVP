@@ -141,7 +141,7 @@ export default function SignupPage() {
             </div>
 
             <div className="flex gap-4 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-purple flex items-center justify-center flex-shrink-0 shadow-purple-glow">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-blue-glow">
                 <Users className="w-7 h-7 text-white" />
               </div>
               <div>

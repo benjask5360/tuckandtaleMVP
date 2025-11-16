@@ -23,9 +23,9 @@ export default function TierBadge({ className = '', showQuota = false }: TierBad
       case 'tier_free':
         return 'bg-gray-100 text-gray-700 border-gray-300';
       case 'tier_basic':
-        return 'bg-blue-100 text-blue-700 border-blue-300';
+        return 'bg-sky-100 text-sky-700 border-sky-300';
       case 'tier_plus':
-        return 'bg-purple-100 text-purple-700 border-purple-300';
+        return 'bg-primary-100 text-primary-700 border-primary-300';
       case 'tier_premium':
         return 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-700 border-orange-300';
       default:
