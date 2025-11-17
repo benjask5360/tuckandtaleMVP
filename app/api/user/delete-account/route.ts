@@ -3,10 +3,6 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-10-29.clover',
-});
-
 // Sentinel UUID for deleted users (instead of NULL for better analytics)
 const DELETED_USER_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -47,6 +43,9 @@ export async function DELETE() {
     // Cancel Stripe subscription if active
     if (profile.stripe_subscription_id && profile.subscription_status === 'active') {
       try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+          apiVersion: '2025-10-29.clover',
+        });
         await stripe.subscriptions.cancel(profile.stripe_subscription_id);
         console.log(`Canceled Stripe subscription: ${profile.stripe_subscription_id}`);
       } catch (stripeError) {
