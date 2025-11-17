@@ -224,7 +224,7 @@ export abstract class BaseStoryPromptBuilder {
     if (includeIllustrations) {
       instructions += '\n\n**ILLUSTRATION PROMPT GENERATION:**\n';
       instructions += 'Additionally, create an illustration prompt field in the JSON response:\n\n';
-      instructions += '"illustration_prompt": "Create a picture with of a 3x3 grid with each of the following images:\\n';
+      instructions += '"illustration_prompt": "Create a picture with of a 3x3 grid with each of the following images progressing from left to right:\\n';
       instructions += '• [All main characters with their descriptions, e.g., Character Name (description with appearance details)]\\n';
       instructions += '• [Brief visual description for scene 1 mentioning character names]\\n';
       instructions += '• [Brief visual description for scene 2 mentioning character names]\\n';
@@ -234,7 +234,7 @@ export abstract class BaseStoryPromptBuilder {
       instructions += '• [Brief visual description for scene 6 mentioning character names]\\n';
       instructions += '• [Brief visual description for scene 7 mentioning character names]\\n';
       instructions += '• [Brief visual description for scene 8 mentioning character names]\\n';
-      instructions += 'Disney Pixar style. Each image progresses from the next. No text or numbers"\n\n';
+      instructions += 'Disney Pixar style. No text or numbers"\n\n';
       instructions += '**Important:** The illustration prompt should use bullet points (•) with no scene numbers or brackets.\n';
       instructions += 'The first bullet MUST list all characters with their appearance descriptions.\n';
       instructions += 'Each scene description should be concise and visual, mentioning character names.\n';
