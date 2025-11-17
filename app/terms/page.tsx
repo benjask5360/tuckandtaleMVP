@@ -34,7 +34,7 @@ export default function TermsPage() {
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                By accessing or using Tuck and Tale ("Tuck and Tale," "we," "our," or "us"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the Service.
+                By accessing or using Tuck and Tale ("Tuck and Tale," "we," "our," or "us"), you agree to be bound by these Terms of Service ("Terms"). Tuck and Tale is a registered Doing Business As (DBA) brand of NovaPoint AI, LLC, a U.S.-based company and the legal entity that operates and provides this Service. If you do not agree to these Terms, please do not use the Service.
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 These Terms apply to all users, including parents and guardians who create accounts to generate stories for their children.
@@ -228,7 +228,7 @@ export default function TermsPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
             <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
-              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
+              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> in the USA for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
               <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>

@@ -97,7 +97,7 @@ INSERT INTO subscription_tiers (
   (
     'moonlight', 'Moonlight (Free)',
     0.00, NULL, 1, true,
-    3, 0, 5,
+    3, 3, 5,
     1, 1, 3,
     true, false,
     true, false, false,

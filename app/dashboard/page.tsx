@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Users, Sparkles, Library, User, Heart } from 'lucide-react'
+import { Users, Sparkles, Library, User, Heart, Moon, Star, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -84,12 +84,22 @@ export default async function DashboardPage() {
   const maxIllustratedStories = userTier?.illustrated_limit_month !== undefined ? userTier.illustrated_limit_month : 3
   const maxTextStories = userTier?.text_limit_month !== undefined ? userTier.text_limit_month : 10
 
+  // Get tier icon based on tier ID
+  const getTierIcon = () => {
+    const tierId = userTier?.id || 'tier_free'
+    if (tierId.includes('supernova')) return Zap
+    if (tierId.includes('starlight')) return Star
+    return Moon // Moonlight/Free tier
+  }
+
+  const TierIcon = getTierIcon()
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">
 
         {/* Header - Centered and mobile-optimized */}
-        <div className="mb-3 md:mb-4 text-center">
+        <div className="mb-3 md:mb-4 text-center pt-4 md:pt-0">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-gray-900 mb-2 md:mb-3">
             Welcome back, {firstName}!
           </h1>
@@ -111,27 +121,27 @@ export default async function DashboardPage() {
         {primaryCharacter ? (
           <Link
             href="/dashboard/stories/create"
-            className="block relative w-full mb-6 md:mb-8 p-6 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] min-h-[120px] overflow-hidden"
+            className="block relative w-full mb-6 md:mb-8 p-3 md:p-10 bg-gradient-primary rounded-2xl md:rounded-3xl shadow-blue-glow active:shadow-xl active:scale-[0.98] md:hover:shadow-xl transition-all duration-300 group md:hover:scale-[1.02] md:min-h-[120px] overflow-hidden"
           >
             {/* Decorative faded stars in background */}
-            <div className="absolute top-4 right-32 opacity-20">
-              <Sparkles className="w-12 h-12 text-yellow-300" />
+            <div className="absolute top-2 md:top-4 right-32 opacity-20">
+              <Sparkles className="w-8 h-8 md:w-12 md:h-12 text-yellow-300" />
             </div>
-            <div className="absolute bottom-6 right-48 opacity-15">
-              <Sparkles className="w-8 h-8 text-yellow-300" />
+            <div className="absolute bottom-4 md:bottom-6 right-48 opacity-15">
+              <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-yellow-300" />
             </div>
-            <div className="absolute top-8 right-20 opacity-10">
-              <Sparkles className="w-6 h-6 text-yellow-300" />
+            <div className="absolute top-6 md:top-8 right-20 opacity-10">
+              <Sparkles className="w-4 h-4 md:w-6 md:h-6 text-yellow-300" />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
-              <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-transparent flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-8 h-8 md:w-10 md:h-10 text-yellow-400" />
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 md:gap-4 relative z-10">
+              <div className="flex flex-col sm:flex-row items-center gap-3 md:gap-5">
+                <div className="w-14 h-14 md:w-20 md:h-20 bg-transparent flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-7 h-7 md:w-10 md:h-10 text-yellow-400" />
                 </div>
                 <div className="text-center sm:text-left">
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-1 md:mb-2">Create Story</h2>
-                  <p className="text-sky-100 text-base md:text-lg">Generate a new magical personalized story</p>
+                  <h2 className="text-xl md:text-3xl font-bold text-white mb-0.5 md:mb-2">Create Story</h2>
+                  <p className="text-sky-100 text-sm md:text-lg">Generate a new magical personalized story</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 bg-white text-primary-600 px-4 md:px-6 py-2 md:py-3 rounded-full font-semibold shadow-lg group-hover:shadow-xl transition-all">
@@ -322,17 +332,17 @@ export default async function DashboardPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
             <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
-              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
+              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> in the USA for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
               <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
-                <a href="#" className="hover:text-primary-600 transition-colors">About</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Contact Us</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">FAQ</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Founder Parents</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-primary-600 transition-colors">Terms of Service</a>
+                <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
+                <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
+                <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
+                <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>
+                <a href="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
+                <a href="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</a>
               </nav>
             </div>
           </div>

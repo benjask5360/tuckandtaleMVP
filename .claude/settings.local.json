@@ -131,7 +131,11 @@
       "Bash(node scripts/apply-contact-migration.js:*)",
       "Bash(node scripts/verify-contact-table.js:*)",
       "Bash(node scripts/check-resend-key.js:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(node scripts/apply-descriptor-migration.js:*)",
+      "Bash(node scripts/exec-sql.js:*)",
+      "Bash(node scripts/update-free-tier-limit.js:*)",
+      "Bash(node scripts/check-subscription-tiers.js:*)"
     ],
     "deny": [],
     "ask": []

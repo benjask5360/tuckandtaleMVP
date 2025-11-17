@@ -169,8 +169,8 @@ export default function PricingPage() {
       {tiers.some(t => t.promo_active) && (
         <section className="py-6 bg-gray-50">
           <div className="container-narrow">
-            <div className="bg-gradient-to-r from-red-50 via-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
-              <p className="text-lg md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-600 to-amber-600">
+            <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
+              <p className="text-lg md:text-2xl font-bold text-white">
                 🎁 Limited-Time Holiday Offer — Save 50% on Starlight & Supernova
               </p>
             </div>
@@ -491,7 +491,7 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
             <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
-              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> for little dreamers everywhere
+              Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> in the USA for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
               <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>

@@ -127,7 +127,7 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-soft">
       <div className="container-narrow section-padding pr-4 md:pr-6">
         <div className="flex items-center justify-between gap-4 h-20">
-          <Link href="/" className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
+          <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
             <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
               <Image
                 src="/images/logo.png"
@@ -230,7 +230,7 @@ export default function Navbar() {
             </div>
           ) : (
             <Link href="/auth/login">
-              <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl">
+              <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl whitespace-nowrap">
                 Get Started
               </button>
             </Link>
