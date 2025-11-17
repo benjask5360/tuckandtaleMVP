@@ -67,20 +67,34 @@ export async function POST(request: Request) {
     }
 
     // Validate feature permissions
+    // Free tier default IDs
+    const FREE_TIER_DEFAULTS = {
+      genreId: '7359b854-532f-4761-bc1d-4a9ca434461d', // Adventure
+      toneId: '486d23c1-f77e-4a5a-87de-6c7d25b75664', // Classic Bedtime
+      lengthId: '4701edf9-497b-4483-b1a2-7be30de987d5', // Medium Story
+    };
+
+    // Genre validation - allow free tier to use Adventure only
     if (params.genreId && !tier.allow_genres) {
-      return NextResponse.json(
-        { error: 'Genre selection is not available on your plan' },
-        { status: 403 }
-      );
+      if (params.genreId !== FREE_TIER_DEFAULTS.genreId) {
+        return NextResponse.json(
+          { error: 'This genre is not available on your plan. Upgrade to access all genres.' },
+          { status: 403 }
+        );
+      }
     }
 
+    // Writing style validation - allow free tier to use Classic Bedtime only
     if (params.toneId && !tier.allow_writing_styles) {
-      return NextResponse.json(
-        { error: 'Tone/writing style selection is not available on your plan' },
-        { status: 403 }
-      );
+      if (params.toneId !== FREE_TIER_DEFAULTS.toneId) {
+        return NextResponse.json(
+          { error: 'This writing style is not available on your plan. Upgrade to access all styles.' },
+          { status: 403 }
+        );
+      }
     }
 
+    // Custom instructions - completely blocked for free tier
     if (params.customInstructions && !tier.allow_special_requests) {
       return NextResponse.json(
         { error: 'Custom instructions are not available on your plan' },
@@ -88,12 +102,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate story length permission (default to 'medium' if not allowed)
-    if (params.lengthId && params.lengthId !== 'medium' && !tier.allow_story_length) {
-      return NextResponse.json(
-        { error: 'Story length selection is not available on your plan' },
-        { status: 403 }
-      );
+    // Story length validation - allow free tier to use Medium only
+    if (params.lengthId && !tier.allow_story_length) {
+      if (params.lengthId !== FREE_TIER_DEFAULTS.lengthId) {
+        return NextResponse.json(
+          { error: 'This story length is not available on your plan. Upgrade to access all lengths.' },
+          { status: 403 }
+        );
+      }
     }
 
     // Check usage limits - pass includeIllustrations flag

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client';
 import type { SubscriptionTier } from '@/lib/types/subscription-types';
 
-interface UsageStats {
+export interface UsageStats {
   illustrated: {
     used: number;
     limit: number | null;

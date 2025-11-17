@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Target } from 'lucide-react'
+import { Loader2, Sparkles, Target, Lock } from 'lucide-react'
 import FeatureGate from '@/components/subscription/FeatureGate'
-import UsageMeter from '@/components/subscription/UsageMeter'
+import { useSubscription } from '@/contexts/SubscriptionContext'
+import Link from 'next/link'
 
 interface CharacterProfile {
   id: string
@@ -36,6 +37,114 @@ interface GroupedParameters {
   growth_category?: StoryParameter[]
   growth_topic?: StoryParameter[]
   moral_lesson?: StoryParameter[]
+}
+
+// Reusable locked field wrapper
+function LockedFieldWrapper({
+  feature,
+  featureName,
+  children
+}: {
+  feature: string;
+  featureName: string;
+  children: React.ReactNode;
+}) {
+  const { canUseFeature, loading } = useSubscription();
+  const hasAccess = canUseFeature(feature as any);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse bg-gray-100 rounded-lg p-4">
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    );
+  }
+
+  if (hasAccess) {
+    return <>{children}</>;
+  }
+
+  // Locked state - visible but disabled with upgrade prompt
+  return (
+    <div className="relative">
+      <div className="opacity-60 pointer-events-none">
+        {children}
+      </div>
+      <div className="absolute top-0 right-0 mt-2 mr-2">
+        <Lock className="w-4 h-4 text-primary-600" />
+      </div>
+      <Link
+        href="/pricing"
+        className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group"
+      >
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none">
+          <p className="text-xs font-semibold text-primary-600">Upgrade to unlock {featureName}</p>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+function GrowthStoryButton({ mode, setMode }: { mode: 'fun' | 'growth', setMode: (mode: 'fun' | 'growth') => void }) {
+  const { canUseFeature, loading } = useSubscription();
+  const hasAccess = canUseFeature('allow_growth_stories' as any);
+
+  if (loading) {
+    return (
+      <div className="p-4 rounded-lg border-2 border-gray-200 bg-gray-50 animate-pulse min-h-[44px]">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+      </div>
+    );
+  }
+
+  if (hasAccess) {
+    return (
+      <button
+        type="button"
+        onClick={() => setMode('growth')}
+        className={`p-4 rounded-lg border-2 transition-all text-left min-h-[44px] ${
+          mode === 'growth'
+            ? 'border-primary-600 bg-primary-50'
+            : 'border-gray-200 hover:border-gray-300'
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <Target className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'growth' ? 'text-primary-600' : 'text-gray-400'}`} />
+          <div>
+            <div className="font-semibold text-gray-900">Help My Child Grow</div>
+            <div className="text-sm text-gray-600">Stories that teach life skills</div>
+          </div>
+        </div>
+      </button>
+    );
+  }
+
+  // Locked state - visible but disabled with upgrade prompt
+  return (
+    <div className="relative">
+      <div className="p-4 rounded-lg border-2 border-gray-300 bg-gray-50 text-left min-h-[44px] opacity-75">
+        <div className="flex items-start gap-3">
+          <Target className="w-5 h-5 flex-shrink-0 mt-0.5 text-gray-400" />
+          <div className="flex-1">
+            <div className="font-semibold text-gray-900 flex items-center gap-2">
+              Help My Child Grow
+              <Lock className="w-4 h-4 text-primary-600" />
+            </div>
+            <div className="text-sm text-gray-600">Stories that teach life skills</div>
+          </div>
+        </div>
+      </div>
+      <Link
+        href="/pricing"
+        className="absolute inset-0 flex items-center justify-center bg-primary-600 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group"
+      >
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none">
+          <p className="text-xs font-semibold text-primary-600">Upgrade to unlock Growth Stories</p>
+        </div>
+      </Link>
+    </div>
+  );
 }
 
 export default function StoryGenerationForm({ childProfiles }: StoryGenerationFormProps) {
@@ -165,42 +274,61 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Usage Meters */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-gray-900">Your Story Quota</h3>
-        <UsageMeter type="illustrated" />
-        <UsageMeter type="text" />
-      </div>
-
       {/* Include Illustrations Toggle */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-2">
-          Include Illustrations
-        </label>
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={() => {
-              setIncludeIllustrations(!includeIllustrations)
-              // Clear character limit message when toggling
-              setCharacterLimitMessage(null)
-            }}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              includeIllustrations ? 'bg-primary-600' : 'bg-gray-200'
-            }`}
-          >
-            <span className="sr-only">Include illustrations</span>
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                includeIllustrations ? 'translate-x-6' : 'translate-x-1'
-              }`}
-            />
-          </button>
-          {includeIllustrations && (
-            <span className="text-sm text-gray-600">
-              Story will include personalized illustrations inspired by each scene.
-            </span>
-          )}
+      <div
+        onClick={() => {
+          setIncludeIllustrations(!includeIllustrations)
+          setCharacterLimitMessage(null)
+        }}
+        className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
+          includeIllustrations
+            ? 'border-primary-600 bg-primary-50'
+            : 'border-gray-300 bg-white hover:border-primary-300'
+        }`}
+      >
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              includeIllustrations ? 'bg-primary-100' : 'bg-gray-100'
+            }`}>
+              <span className="text-2xl">🎨</span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className={`text-base font-semibold ${
+                includeIllustrations ? 'text-primary-900' : 'text-gray-900'
+              }`}>
+                Include Illustrations
+              </h3>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIncludeIllustrations(!includeIllustrations);
+                  setCharacterLimitMessage(null);
+                }}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                  includeIllustrations ? 'bg-primary-600' : 'bg-gray-300'
+                }`}
+              >
+                <span className="sr-only">Include illustrations</span>
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${
+                    includeIllustrations ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <p className={`text-sm ${
+              includeIllustrations ? 'text-primary-700' : 'text-gray-600'
+            }`}>
+              {includeIllustrations
+                ? 'Your story will include personalized illustrations inspired by each scene.'
+                : 'Add beautiful illustrations to bring your story to life.'
+              }
+            </p>
+          </div>
         </div>
       </div>
 
@@ -362,25 +490,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
             </div>
           </button>
 
-          <FeatureGate feature="allow_growth_stories">
-            <button
-              type="button"
-              onClick={() => setMode('growth')}
-              className={`p-4 rounded-lg border-2 transition-all text-left min-h-[44px] ${
-                mode === 'growth'
-                  ? 'border-primary-600 bg-primary-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <Target className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'growth' ? 'text-primary-600' : 'text-gray-400'}`} />
-                <div>
-                  <div className="font-semibold text-gray-900">Help My Child Grow</div>
-                  <div className="text-sm text-gray-600">Stories that teach life skills</div>
-                </div>
-              </div>
-            </button>
-          </FeatureGate>
+          <GrowthStoryButton mode={mode} setMode={setMode} />
         </div>
       </div>
 
@@ -388,26 +498,38 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       {mode === 'growth' && (
         <>
           <div>
-            <label htmlFor="growthCategory" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
               What area should we focus on? <span className="text-red-500">*</span>
             </label>
-            <select
-              id="growthCategory"
-              value={growthCategoryId}
-              onChange={(e) => {
-                setGrowthCategoryId(e.target.value)
-                setGrowthTopicId('') // Reset topic when category changes
-              }}
-              required={mode === 'growth'}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Select a growth area...</option>
-              {parameters.growth_category?.map(category => (
-                <option key={category.id} value={category.id}>
-                  {category.metadata?.icon} {category.display_name}
-                </option>
-              ))}
-            </select>
+            <LockedFieldWrapper feature="allow_growth_areas" featureName="Growth Topics">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {parameters.growth_category?.map(category => {
+                  const emoji = category.metadata?.icon || '🌱';
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => {
+                        setGrowthCategoryId(category.id);
+                        setGrowthTopicId(''); // Reset topic when category changes
+                      }}
+                      className={`px-3 py-2 rounded-lg border-2 transition-all flex items-center justify-start gap-2 ${
+                        growthCategoryId === category.id
+                          ? 'border-primary-600 bg-primary-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className="text-base">{emoji}</span>
+                      <span className={`text-sm font-medium whitespace-nowrap ${
+                        growthCategoryId === category.id ? 'text-primary-700' : 'text-gray-700'
+                      }`}>
+                        {category.display_name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </LockedFieldWrapper>
             {growthCategoryId && parameters.growth_category?.find(c => c.id === growthCategoryId)?.metadata?.description_long && (
               <p className="mt-2 text-sm text-gray-600">
                 {parameters.growth_category.find(c => c.id === growthCategoryId)?.metadata?.description_long}
@@ -444,6 +566,125 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         </>
       )}
 
+      {/* Genre */}
+      <LockedFieldWrapper feature="allow_genres" featureName="Genre Selection">
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-3">
+            What genre? <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            {parameters.genre?.map(genre => {
+              const genreEmojis: { [key: string]: string } = {
+                'adventure': '⚔️',
+                'fantasy': '✨',
+                'fairy_tale': '🏰',
+                'friendship': '🤝',
+                'animals': '🐾',
+                'space': '🚀',
+                'family': '👨‍👩‍👧‍👦',
+                'mystery': '🔍'
+              };
+              const emoji = genreEmojis[genre.name] || '📖';
+
+              return (
+                <button
+                  key={genre.id}
+                  type="button"
+                  onClick={() => setGenreId(genre.id)}
+                  className={`px-3 py-2 rounded-lg border-2 transition-all flex items-center justify-start gap-2 ${
+                    genreId === genre.id
+                      ? 'border-primary-600 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-base">{emoji}</span>
+                  <span className={`text-sm font-medium whitespace-nowrap ${genreId === genre.id ? 'text-primary-700' : 'text-gray-700'}`}>
+                    {genre.display_name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </LockedFieldWrapper>
+
+      {/* Tone */}
+      <LockedFieldWrapper feature="allow_writing_styles" featureName="Writing Styles">
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-3">
+            What writing style? <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+            {parameters.tone?.map(tone => {
+              const toneEmojis: { [key: string]: string } = {
+                'classic_bedtime': '🌙',
+                'pixar_adventure': '🎬',
+                'disney_princess': '👑',
+                'funny_silly': '😄',
+                'gentle_calming': '🕊️',
+                'rhyming_seuss': '📝'
+              };
+              const emoji = toneEmojis[tone.name] || '✍️';
+
+              return (
+                <button
+                  key={tone.id}
+                  type="button"
+                  onClick={() => setToneId(tone.id)}
+                  className={`px-3 py-2 rounded-lg border-2 transition-all flex items-center justify-start gap-2 ${
+                    toneId === tone.id
+                      ? 'border-primary-600 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-base">{emoji}</span>
+                  <span className={`text-sm font-medium whitespace-nowrap ${toneId === tone.id ? 'text-primary-700' : 'text-gray-700'}`}>
+                    {tone.display_name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </LockedFieldWrapper>
+
+      {/* Length */}
+      <LockedFieldWrapper feature="allow_story_length" featureName="Story Length">
+        <div>
+          <label className="block text-sm font-semibold text-gray-900 mb-3">
+            How long? <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+            {parameters.length?.map(length => {
+              const lengthEmojis: { [key: string]: string } = {
+                'short': '⚡',
+                'medium': '📖',
+                'long': '📚'
+              };
+              const emoji = lengthEmojis[length.name] || '📄';
+
+              return (
+                <button
+                  key={length.id}
+                  type="button"
+                  onClick={() => setLengthId(length.id)}
+                  className={`px-3 py-2 rounded-lg border-2 transition-all flex items-center justify-start gap-2 ${
+                    lengthId === length.id
+                      ? 'border-primary-600 bg-primary-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="text-base">{emoji}</span>
+                  <span className={`text-sm font-medium whitespace-nowrap ${lengthId === length.id ? 'text-primary-700' : 'text-gray-700'}`}>
+                    {length.display_name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </LockedFieldWrapper>
+
       {/* Moral Lesson (optional for fun mode) */}
       {mode === 'fun' && parameters.moral_lesson && (
         <div>
@@ -466,90 +707,22 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         </div>
       )}
 
-      {/* Genre */}
-      <FeatureGate feature="allow_genres">
-        <div>
-          <label htmlFor="genre" className="block text-sm font-semibold text-gray-900 mb-2">
-            What genre? <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="genre"
-            value={genreId}
-            onChange={(e) => setGenreId(e.target.value)}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-          >
-            {parameters.genre?.map(genre => (
-              <option key={genre.id} value={genre.id}>
-                {genre.display_name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </FeatureGate>
-
-      {/* Tone */}
-      <div>
-        <label htmlFor="tone" className="block text-sm font-semibold text-gray-900 mb-2">
-          What writing style? <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="tone"
-          value={toneId}
-          onChange={(e) => setToneId(e.target.value)}
-          required
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        >
-          {parameters.tone?.map(tone => (
-            <option key={tone.id} value={tone.id}>
-              {tone.display_name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Length */}
-      <FeatureGate feature="allow_story_length">
-        <div>
-          <label htmlFor="length" className="block text-sm font-semibold text-gray-900 mb-2">
-            How long? <span className="text-red-500">*</span>
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {parameters.length?.map(length => (
-              <button
-                key={length.id}
-                type="button"
-                onClick={() => setLengthId(length.id)}
-                className={`p-4 rounded-lg border-2 transition-all text-center min-h-[44px] ${
-                  lengthId === length.id
-                    ? 'border-primary-600 bg-primary-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="font-semibold text-gray-900">{length.display_name}</div>
-                {length.description && (
-                  <div className="text-sm text-gray-600 mt-1">{length.description}</div>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </FeatureGate>
-
       {/* Custom Instructions */}
-      <div>
-        <label htmlFor="customInstructions" className="block text-sm font-semibold text-gray-900 mb-2">
-          Any special requests? (Optional)
-        </label>
-        <textarea
-          id="customInstructions"
-          value={customInstructions}
-          onChange={(e) => setCustomInstructions(e.target.value)}
-          rows={3}
-          placeholder="E.g., Include their favorite toy, set it in a specific location, etc."
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
-        />
-      </div>
+      <LockedFieldWrapper feature="allow_special_requests" featureName="Special Requests">
+        <div>
+          <label htmlFor="customInstructions" className="block text-sm font-semibold text-gray-900 mb-2">
+            Any special requests? (Optional)
+          </label>
+          <textarea
+            id="customInstructions"
+            value={customInstructions}
+            onChange={(e) => setCustomInstructions(e.target.value)}
+            rows={3}
+            placeholder="E.g., Include their favorite toy, set it in a specific location, etc."
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
+          />
+        </div>
+      </LockedFieldWrapper>
 
       {/* Error Display */}
       {error && (

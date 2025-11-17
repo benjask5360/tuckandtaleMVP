@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BookOpen, Calendar, Heart, Sparkles, Target, Filter, SortAsc, Film } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import StoryCard from '@/components/StoryCard'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 interface Story {
   id: string
@@ -37,6 +38,98 @@ interface Story {
       }
     }
   }>
+}
+
+function StoryQuotaDisplay() {
+  const { tier, usage, loading } = useSubscription();
+
+  if (loading || !tier || !usage) {
+    return null;
+  }
+
+  const illustratedUsed = tier.id === 'tier_free' ? usage.illustrated.lifetimeUsed : usage.illustrated.used;
+  const illustratedLimit = tier.id === 'tier_free' ? usage.illustrated.lifetimeLimit : tier.illustrated_limit_month;
+  const textUsed = usage.text.used;
+  const textLimit = tier.text_limit_month;
+
+  const illustratedPercentage = illustratedLimit ? Math.min(100, (illustratedUsed / illustratedLimit) * 100) : 0;
+  const textPercentage = textLimit ? Math.min(100, (textUsed / textLimit) * 100) : 0;
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 100) return 'bg-red-500';
+    if (percentage >= 80) return 'bg-yellow-500';
+    return 'bg-primary-500';
+  };
+
+  const getProgressBgColor = (percentage: number) => {
+    if (percentage >= 100) return 'bg-red-50';
+    if (percentage >= 80) return 'bg-yellow-50';
+    return 'bg-gray-50';
+  };
+
+  return (
+    <div className="mb-6 pb-6 border-b border-gray-200">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Illustrated Stories */}
+        <div className={`p-4 rounded-xl border-2 ${illustratedPercentage >= 80 ? 'border-yellow-200' : 'border-gray-200'} ${getProgressBgColor(illustratedPercentage)}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">🎨</span>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900">Illustrated Stories</h3>
+              <p className="text-sm text-gray-600">
+                {illustratedUsed} of {illustratedLimit || '∞'} {tier.id === 'tier_free' ? 'total' : 'this month'}
+              </p>
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full transition-all duration-500 ${getProgressColor(illustratedPercentage)}`}
+              style={{ width: `${illustratedPercentage}%` }}
+            />
+          </div>
+          {illustratedPercentage >= 80 && illustratedPercentage < 100 && (
+            <p className="text-xs text-yellow-700 mt-2 font-medium">
+              ⚠️ Almost there! {illustratedLimit! - illustratedUsed} left
+            </p>
+          )}
+          {illustratedPercentage >= 100 && (
+            <p className="text-xs text-red-700 mt-2 font-medium">
+              🎉 You've used all your illustrated stories! <Link href="/pricing" className="underline">Upgrade?</Link>
+            </p>
+          )}
+        </div>
+
+        {/* Text Stories */}
+        <div className={`p-4 rounded-xl border-2 ${textPercentage >= 80 ? 'border-yellow-200' : 'border-gray-200'} ${getProgressBgColor(textPercentage)}`}>
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">📚</span>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900">Text Stories</h3>
+              <p className="text-sm text-gray-600">
+                {textUsed} of {textLimit || '∞'} this month
+              </p>
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full transition-all duration-500 ${getProgressColor(textPercentage)}`}
+              style={{ width: `${textPercentage}%` }}
+            />
+          </div>
+          {textPercentage >= 80 && textPercentage < 100 && (
+            <p className="text-xs text-yellow-700 mt-2 font-medium">
+              ⚠️ Almost there! {textLimit! - textUsed} left
+            </p>
+          )}
+          {textPercentage >= 100 && (
+            <p className="text-xs text-red-700 mt-2 font-medium">
+              🎉 You've used all your text stories! <Link href="/pricing" className="underline">Upgrade?</Link>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function StoryLibraryPage() {
@@ -275,9 +368,6 @@ export default function StoryLibraryPage() {
                 </p>
               </div>
               <div className="text-center md:text-right flex-shrink-0">
-                <p className="text-sm md:text-base text-gray-500 mb-3 md:mb-4">
-                  {stories.length} {stories.length === 1 ? 'story' : 'stories'} · {maxStories === null ? 'Unlimited' : `${maxStories}/month`}
-                </p>
                 <Link
                   href="/dashboard/stories/create"
                   className="btn-primary btn-md inline-flex items-center gap-2"
@@ -287,6 +377,9 @@ export default function StoryLibraryPage() {
                 </Link>
               </div>
             </div>
+
+            {/* Playful Story Quota */}
+            <StoryQuotaDisplay />
 
             {/* Filters and Sorting */}
             {stories.length > 0 && (
