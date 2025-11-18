@@ -10,6 +10,7 @@ import TierBadge from '@/components/subscription/TierBadge'
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const supabase = createClient()
@@ -22,6 +23,17 @@ export default function Navbar() {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setIsAuthenticated(!!user)
+
+      // Check if user is admin
+      if (user) {
+        const { data: userProfile } = await supabase
+          .from('user_profiles')
+          .select('user_type')
+          .eq('id', user.id)
+          .single()
+
+        setIsAdmin(userProfile?.user_type === 'admin')
+      }
     }
 
     checkAuth()
@@ -29,6 +41,9 @@ export default function Navbar() {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session)
+      if (!session) {
+        setIsAdmin(false)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -117,6 +132,7 @@ export default function Navbar() {
   const menuItems = [
     { icon: Info, label: 'About', href: '/about' },
     { icon: CreditCard, label: 'Billing & Subscription', href: '/dashboard/billing' },
+    ...(isAdmin ? [{ icon: Shield, label: 'Admin Dashboard', href: '/dashboard/admin' }] : []),
     { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
     { icon: HelpCircle, label: 'Help', href: '/faq' },
     { icon: Shield, label: 'Privacy Policy', href: '/privacy' },

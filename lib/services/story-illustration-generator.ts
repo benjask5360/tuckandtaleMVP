@@ -32,46 +32,79 @@ export class StoryIllustrationGenerator {
         return null;
       }
 
-      // 2. Import and initialize Gemini client
-      const { GeminiClient } = await import('@/lib/google/client');
-      const gemini = new GeminiClient();
+      // 2. Generate image based on provider
+      let result: any;
+      let imageBlob: Blob;
 
-      // 3. Build Gemini generation config
-      const geminiConfig = AIConfigService.buildGeminiConfig(aiConfig, prompt);
+      if (aiConfig.provider === 'google') {
+        // Google Gemini implementation
+        console.log('Using Google Gemini for image generation...');
+        const { GeminiClient } = await import('@/lib/google/client');
+        const gemini = new GeminiClient();
+        const geminiConfig = AIConfigService.buildGeminiConfig(aiConfig, prompt);
+        result = await gemini.generateImage(geminiConfig);
 
-      // 4. Generate the image
-      console.log('Calling Gemini API for image generation...');
-      const result = await gemini.generateImage(geminiConfig);
+        if (!result.imageData) {
+          console.error('No image data returned from Gemini');
+          return null;
+        }
 
-      if (!result.imageData) {
-        console.error('No image data returned from Gemini');
-        return null;
+        imageBlob = await gemini.downloadImage(result.imageData, result.mimeType);
+
+      } else if (aiConfig.provider === 'openai') {
+        // OpenAI DALL-E 3 implementation
+        console.log('Using OpenAI DALL-E 3 for image generation...');
+        const { OpenAIDallEClient } = await import('@/lib/openai/dalle-client');
+        const dalle = new OpenAIDallEClient();
+        const dalleConfig = AIConfigService.buildDallE3Config(aiConfig, prompt, userId);
+        result = await dalle.generateImage(dalleConfig);
+
+        if (!result.imageData) {
+          console.error('No image data returned from DALL-E 3');
+          return null;
+        }
+
+        // Convert base64 to blob
+        imageBlob = await this.convertBase64ToBlob(result.imageData, result.mimeType);
+
+      } else {
+        throw new Error(`Unsupported provider for story illustration: ${aiConfig.provider}`);
       }
 
-      // 5. Convert base64 to blob
-      const imageBlob = await gemini.downloadImage(result.imageData, result.mimeType);
-
-      // 6. Upload to Supabase storage
+      // 3. Upload to Supabase storage
       const uploadResult = await this.uploadToStorage(imageBlob, userId, contentId, result.mimeType);
       if (!uploadResult) {
         console.error('Failed to upload image to storage');
         return null;
       }
 
-      // 7. Get public URL
+      // 4. Get public URL
       const publicUrl = await this.getPublicUrl(uploadResult.storagePath);
 
-      // 8. Log generation cost
+      // 5. Log generation cost
+      const costMetadata: any = {
+        content_id: contentId,
+        prompt_used: prompt,
+        operation: 'story_illustration_grid',
+      };
+
+      // Add provider-specific metadata
+      if (aiConfig.provider === 'openai' && result.revisedPrompt) {
+        costMetadata.revised_prompt = result.revisedPrompt;
+      }
+
+      // For OpenAI, use calculated cost directly; for Gemini, use tokens
+      const tokensOrUnits = aiConfig.provider === 'openai' ? 1 : (result.tokensUsed || 1290);
+      const actualCost = aiConfig.provider === 'openai' ? result.cost : (result.tokensUsed || 1290);
+
       await AIConfigService.logGenerationCost(
         userId,
         null, // No character profile for story illustrations
         aiConfig,
-        result.tokensUsed || 1290, // Default to 1290 tokens if not provided
+        tokensOrUnits,
         {
-          content_id: contentId,
-          prompt_used: prompt,
-          operation: 'story_illustration_grid',
-          actual_cost: result.tokensUsed || 1290 // Enable USD cost calculation
+          ...costMetadata,
+          actual_cost: actualCost
         }
       );
 
@@ -255,6 +288,19 @@ export class StoryIllustrationGenerator {
     }
 
     return gridIllustration;
+  }
+
+  /**
+   * Convert base64 image data to Blob
+   * Used for DALL-E 3 images (Gemini client has its own method)
+   */
+  private static async convertBase64ToBlob(
+    base64Data: string,
+    mimeType: string
+  ): Promise<Blob> {
+    const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Clean, 'base64');
+    return new Blob([buffer], { type: mimeType });
   }
 }
 

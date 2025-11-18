@@ -135,7 +135,11 @@
       "Bash(node scripts/apply-descriptor-migration.js:*)",
       "Bash(node scripts/exec-sql.js:*)",
       "Bash(node scripts/update-free-tier-limit.js:*)",
-      "Bash(node scripts/check-subscription-tiers.js:*)"
+      "Bash(node scripts/check-subscription-tiers.js:*)",
+      "Bash(set:*)",
+      "Bash(node scripts/apply-dalle3-migration.js:*)",
+      "Bash(node scripts/update-dalle3-to-hd.js:*)",
+      "Bash(node scripts/switch-to-gemini.js:*)"
     ],
     "deny": [],
     "ask": []

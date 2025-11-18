@@ -179,6 +179,28 @@ export class AIConfigService {
   }
 
   /**
+   * Build OpenAI DALL-E 3 API configuration from our config
+   */
+  static buildDallE3Config(
+    aiConfig: AIConfig,
+    prompt: string,
+    userId?: string
+  ) {
+    const config: any = {
+      prompt,
+      size: aiConfig.settings.size || '1024x1024',
+      quality: aiConfig.settings.quality || 'standard',
+      style: aiConfig.settings.style || 'vivid',
+    };
+
+    if (userId) {
+      config.user = userId;
+    }
+
+    return config;
+  }
+
+  /**
    * Log AI generation cost
    */
   static async logGenerationCost(
