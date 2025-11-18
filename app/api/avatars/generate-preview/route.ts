@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
       breed: attributes?.breed,
       primaryColor: attributes?.primaryColor,
       creatureType: attributes?.creatureType,
+      color: attributes?.color, // Magical creature color
     });
 
     console.log('Generated preview avatar prompt:', avatarPrompt);

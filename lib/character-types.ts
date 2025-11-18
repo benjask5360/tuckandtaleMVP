@@ -40,8 +40,8 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Gender',
             required: true,
             options: [
-              { value: 'male', label: 'Boy', emoji: '👦' },
-              { value: 'female', label: 'Girl', emoji: '👧' },
+              { value: 'male', label: 'Male', emoji: '👦' },
+              { value: 'female', label: 'Female', emoji: '👧' },
               { value: 'non-binary', label: 'Prefer not to say', emoji: '🌟' }
             ]
           }
@@ -214,8 +214,7 @@ export const characterTypes: CharacterTypeConfig[] = [
             options: [
               { value: 'male', label: 'Male' },
               { value: 'female', label: 'Female' },
-              { value: 'non_binary', label: 'Non-binary' },
-              { value: 'other', label: 'Other' }
+              { value: 'non-binary', label: 'Prefer not to say' }
             ]
           }
         ]

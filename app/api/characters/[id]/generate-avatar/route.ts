@@ -107,6 +107,7 @@ export async function POST(
         breed: character.attributes?.breed,
         primaryColor: character.attributes?.primaryColor,
         creatureType: character.attributes?.creatureType,
+        color: character.attributes?.color, // Magical creature color
       }
     );
 

@@ -126,6 +126,7 @@ export function AvatarDisplay({
               species: formData?.species,
               breed: formData?.breed,
               creatureType: formData?.creatureType,
+              color: formData?.color, // Magical creature color
             },
           }),
         });
@@ -169,6 +170,7 @@ export function AvatarDisplay({
                 species: formData?.species,
                 breed: formData?.breed,
                 creatureType: formData?.creatureType,
+                color: formData?.color, // Magical creature color
               },
             }),
           });

@@ -59,7 +59,7 @@ export async function generateAvatarPrompt(
       let ageFeatures = '';
       if (numericAge !== undefined && numericAge >= 60) {
         if (numericAge >= 70) {
-          ageFeatures = ' with gentle wrinkles, soft skin, and warm wise features';
+          ageFeatures = ' with gentle wrinkles and warm features';
         } else if (numericAge >= 60) {
           ageFeatures = ' with subtle laugh lines and mature features';
         }
@@ -79,7 +79,7 @@ export async function generateAvatarPrompt(
         }
       }
 
-      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures} wearing age-appropriate, modest clothing. ${pronoun} the following characteristics:`;
+      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures}, wearing age-appropriate, modest clothing. ${pronoun} the following characteristics:`;
 
       // Build characteristics list with bullet points for clarity
       const characteristics: string[] = [];
@@ -139,6 +139,7 @@ export async function generateAvatarPrompt(
       prompt = `Disney Pixar style standing magical creature avatar: happy and enchanting ${creatureType}`;
 
       const magicFeatures: string[] = [];
+      if (enhanced.magicalColor) magicFeatures.push(`${enhanced.magicalColor} color`);
       if (enhanced.hair) magicFeatures.push(`${enhanced.hair} features`);
       if (enhanced.eyes) magicFeatures.push(`${enhanced.eyes}`);
 
