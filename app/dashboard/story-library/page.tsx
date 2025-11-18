@@ -14,7 +14,7 @@ interface Story {
   body: string
   created_at: string
   is_favorite: boolean
-  content_type: 'story' | 'vignette_story'
+  content_type: 'story'
   panel_count?: number
   story_illustrations?: Array<{
     type: string
@@ -200,7 +200,7 @@ export default function StoryLibraryPage() {
           )
         `)
         .eq('user_id', user.id)
-        .in('content_type', ['story', 'vignette_story'])
+        .eq('content_type', 'story')
         .order('created_at', { ascending: false })
 
       if (error) throw error

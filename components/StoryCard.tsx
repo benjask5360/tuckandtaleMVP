@@ -9,7 +9,7 @@ interface StoryCardProps {
     title: string
     created_at: string
     is_favorite: boolean
-    content_type: 'story' | 'vignette_story'
+    content_type: 'story'
     story_illustrations?: Array<{
       type: string
       url: string
@@ -46,10 +46,8 @@ export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCa
     year: 'numeric'
   })
 
-  // Determine story route based on content_type
-  const storyRoute = story.content_type === 'vignette_story'
-    ? `/dashboard/vignettes/${story.id}`
-    : `/dashboard/stories/${story.id}`
+  // Story route
+  const storyRoute = `/dashboard/stories/${story.id}`
 
   return (
     <div className="relative card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">

@@ -139,7 +139,8 @@
       "Bash(set:*)",
       "Bash(node scripts/apply-dalle3-migration.js:*)",
       "Bash(node scripts/update-dalle3-to-hd.js:*)",
-      "Bash(node scripts/switch-to-gemini.js:*)"
+      "Bash(node scripts/switch-to-gemini.js:*)",
+      "Bash(node scripts/check-user-admin.js:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,13 +12,13 @@ export default async function AdminDashboardPage() {
   }
 
   // Check if user is admin
-  const { data: userProfile } = await supabase
+  const { data: userProfile, error: profileError } = await supabase
     .from('user_profiles')
-    .select('user_type, first_name')
+    .select('user_type, full_name')
     .eq('id', user.id)
     .single();
 
-  if (userProfile?.user_type !== 'admin') {
+  if (profileError || userProfile?.user_type !== 'admin') {
     redirect('/dashboard');
   }
 
@@ -32,7 +32,7 @@ export default async function AdminDashboardPage() {
             <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           </div>
           <p className="text-gray-600">
-            Welcome back, {userProfile?.first_name}. Manage your platform from here.
+            Welcome back, {userProfile?.full_name?.split(' ')[0] || 'Admin'}. Manage your platform from here.
           </p>
         </div>
 
