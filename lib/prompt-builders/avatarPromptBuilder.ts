@@ -65,30 +65,6 @@ export async function generateAvatarPrompt(
         }
       }
 
-      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures}.`;
-
-      // Add physical features with "She has" / "He has" structure
-      const features: string[] = [];
-
-      // Special handling for bald - skip hair color and type
-      if (enhanced.hairLength === 'bald') {
-        features.push('a bald head');
-      } else {
-        // Build hair description with type, length, and color
-        const hairParts: string[] = [];
-        if (enhanced.hairType) hairParts.push(enhanced.hairType);
-        if (enhanced.hairLength) hairParts.push(enhanced.hairLength);
-        if (enhanced.hair) hairParts.push(enhanced.hair);
-
-        if (hairParts.length > 0) {
-          features.push(`${hairParts.join(' ')} hair`);
-        }
-      }
-
-      if (enhanced.eyes) features.push(`${enhanced.eyes} eyes`);
-      if (enhanced.skin) features.push(`${enhanced.skin} skin`);
-      if (enhanced.body) features.push(enhanced.body);  // Descriptor already includes "build"
-
       // Determine pronoun based on gender descriptor
       let pronoun = 'They have';
       let pronounSubject = 'Their';
@@ -103,26 +79,44 @@ export async function generateAvatarPrompt(
         }
       }
 
-      if (features.length > 0) {
-        prompt += ` ${pronoun} ${features.join(', ')}`;
-        if (enhanced.glasses && enhanced.glasses.trim()) {
-          prompt += `, ${enhanced.glasses}`;  // "wearing glasses"
-        }
-        prompt += ', wearing age-appropriate, modest clothing.';
+      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures} wearing age-appropriate, modest clothing. ${pronoun} the following characteristics:`;
+
+      // Build characteristics list with bullet points for clarity
+      const characteristics: string[] = [];
+
+      // Special handling for bald - skip hair color and type
+      if (enhanced.hairLength === 'bald') {
+        characteristics.push('A bald head');
       } else {
-        if (enhanced.glasses && enhanced.glasses.trim()) {
-          prompt += ` ${pronoun} ${enhanced.glasses}, wearing age-appropriate, modest clothing.`;
-        } else {
-          prompt += ` Wearing age-appropriate, modest clothing.`;
+        // Build hair description with type, length, and color
+        const hairParts: string[] = [];
+        if (enhanced.hairType) hairParts.push(enhanced.hairType);
+        if (enhanced.hairLength) hairParts.push(enhanced.hairLength);
+        if (enhanced.hair) hairParts.push(enhanced.hair);
+
+        if (hairParts.length > 0) {
+          characteristics.push(`${hairParts.join(' ')} hair`);
         }
+      }
+
+      // IMPORTANT: Eye color should be emphasized
+      if (enhanced.eyes) characteristics.push(`${enhanced.eyes} eyes (IMPORTANT: eyes must be ${enhanced.eyes})`);
+      if (enhanced.skin) characteristics.push(`${enhanced.skin} skin tone`);
+      if (enhanced.body) characteristics.push(enhanced.body);  // Descriptor already includes "build"
+      if (enhanced.glasses && enhanced.glasses.trim()) {
+        characteristics.push(enhanced.glasses);  // "wearing glasses"
+      }
+
+      if (characteristics.length > 0) {
+        prompt += '\n' + characteristics.map(c => `- ${c}`).join('\n');
       }
 
       // Add explicit age appearance reinforcement for better age distinction
       if (numericAge !== undefined) {
-        prompt += ` ${pronounSubject} physical appearance should clearly be that of a ${numericAge} year old.`;
+        prompt += `\n${pronounSubject} physical appearance should clearly be that of a ${numericAge} year old.`;
       }
 
-      prompt += ' White background, high quality.';
+      prompt += '\nWhite background, high quality.';
       break;
 
     case 'pet':
