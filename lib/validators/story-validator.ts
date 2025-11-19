@@ -26,7 +26,7 @@ export class StoryValidator {
   private static readonly MIN_TITLE_LENGTH = 3;
   private static readonly MAX_TITLE_LENGTH = 200;
   private static readonly MAX_MORAL_LENGTH = 500;
-  private static readonly MAX_ILLUSTRATION_PROMPT_LENGTH = 1000;
+  private static readonly MAX_ILLUSTRATION_PROMPT_LENGTH = 2000; // Increased to accommodate detailed AI-generated prompts
 
   /**
    * Validates a parsed story object
@@ -101,9 +101,10 @@ export class StoryValidator {
           warnings.push(`Paragraph ${index + 1} appears to contain placeholder text`);
         }
 
-        // Check if paragraph starts with expected scene format
+        // Check if paragraph starts with expected scene format (informational only, not critical)
         if (!trimmed.match(/^Scene \d+:/i) && index < this.EXPECTED_PARAGRAPH_COUNT) {
-          warnings.push(`Paragraph ${index + 1} doesn't start with "Scene ${index + 1}:"`);
+          // This is very common and not a problem - paragraphs often don't include "Scene X:" prefix
+          // Only log for debugging, don't add as a warning
         }
 
         validParagraphs.push(trimmed);
@@ -140,7 +141,12 @@ export class StoryValidator {
         warnings.push('Illustration prompt is empty');
         delete data.illustration_prompt; // Remove empty value
       } else if (data.illustration_prompt.trim().length > this.MAX_ILLUSTRATION_PROMPT_LENGTH) {
-        errors.push(`Illustration prompt is too long (maximum ${this.MAX_ILLUSTRATION_PROMPT_LENGTH} characters)`);
+        // Truncate instead of failing - this is not critical enough to reject the story
+        const originalLength = data.illustration_prompt.length;
+        data.illustration_prompt = data.illustration_prompt.substring(0, this.MAX_ILLUSTRATION_PROMPT_LENGTH);
+        warnings.push(`Illustration prompt was truncated from ${originalLength} to ${this.MAX_ILLUSTRATION_PROMPT_LENGTH} characters`);
+        // Still clean it up after truncation
+        data.illustration_prompt = this.cleanIllustrationPrompt(data.illustration_prompt);
       } else {
         // Clean up illustration prompt
         data.illustration_prompt = this.cleanIllustrationPrompt(data.illustration_prompt);

@@ -430,9 +430,19 @@ export class StoryGenerationService {
         console.log('Successfully parsed and validated story JSON');
         return validation.data;
       } else {
-        console.error('Story validation failed:', validation.errors);
+        // Validation failed with errors
+        console.error('Story validation failed with errors:', validation.errors);
         // Log the problematic JSON for debugging
         console.error('Failed JSON (first 1000 chars):', JSON.stringify(extraction.json).substring(0, 1000));
+
+        // If we extracted valid JSON structure but validation failed,
+        // we should throw an error rather than falling back to text parsing
+        // This prevents the "Body text appears to be raw JSON" error
+        if (validation.errors.length > 0) {
+          const errorMessage = `Story validation failed: ${validation.errors.join('; ')}`;
+          console.error(errorMessage);
+          throw new Error(errorMessage);
+        }
       }
     } else {
       console.warn('Could not extract valid JSON from response');
