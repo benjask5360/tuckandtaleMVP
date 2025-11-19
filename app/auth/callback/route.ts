@@ -25,27 +25,7 @@ export async function GET(request: NextRequest) {
 
         // If no characters, this is a new user
         if (!characters || characters.length === 0) {
-          // Send welcome email for new users (including OAuth signups)
-          if (user.email) {
-            // Get user's name from user_metadata (set by OAuth provider or signup)
-            const fullName = user.user_metadata?.full_name ||
-                           user.user_metadata?.name ||
-                           user.email.split('@')[0]
-
-            // Send welcome email (non-blocking)
-            fetch(`${origin}/api/send-welcome`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: user.email,
-                name: fullName
-              })
-            }).catch(error => {
-              // Log error but don't block user flow
-              console.error('Failed to send welcome email:', error)
-            })
-          }
-
+          // Welcome email will be sent after name collection in onboarding
           return NextResponse.redirect(`${origin}/onboarding/character`)
         }
       }

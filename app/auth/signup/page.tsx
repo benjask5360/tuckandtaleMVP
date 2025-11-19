@@ -10,11 +10,8 @@ import { Star, Users, Image as ImageIcon, Check } from 'lucide-react'
 import GoogleButton from '@/components/auth/GoogleButton'
 
 export default function SignupPage() {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
@@ -51,11 +48,6 @@ export default function SignupPage() {
       return
     }
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
       return
@@ -69,9 +61,6 @@ export default function SignupPage() {
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
-          full_name: `${firstName} ${lastName}`.trim(),
-          first_name: firstName,
-          last_name: lastName,
           terms_accepted_at: new Date().toISOString(),
           privacy_accepted_at: new Date().toISOString(),
         },
@@ -84,21 +73,7 @@ export default function SignupPage() {
       return
     }
 
-    // Send welcome email (non-blocking)
-    if (data.user) {
-      fetch('/api/send-welcome', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          name: `${firstName} ${lastName}`.trim() || firstName
-        })
-      }).catch(error => {
-        // Log error but don't block user flow
-        console.error('Failed to send welcome email:', error)
-      })
-    }
-
+    // Welcome email will be sent after name collection in onboarding
     // Redirect to onboarding (auth callback will handle this)
     router.push('/onboarding/character')
   }
@@ -231,38 +206,6 @@ export default function SignupPage() {
 
               {/* Email/Password Form */}
               <form onSubmit={handleSignup} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="firstName" className="label">
-                    First Name
-                  </label>
-                  <input
-                    id="firstName"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    className="input"
-                    placeholder="John"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="lastName" className="label">
-                    Last Name
-                  </label>
-                  <input
-                    id="lastName"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    className="input"
-                    placeholder="Doe"
-                  />
-                </div>
-              </div>
-
               <div>
                 <label htmlFor="email" className="label">
                   Email
@@ -291,22 +234,6 @@ export default function SignupPage() {
                   minLength={6}
                   className="input"
                   placeholder="At least 6 characters"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="confirmPassword" className="label">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="input"
-                  placeholder="Confirm your password"
                 />
               </div>
 

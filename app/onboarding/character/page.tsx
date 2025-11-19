@@ -8,42 +8,91 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import TermsConsentModal from '@/components/auth/TermsConsentModal'
+import ParentNameCollector from '@/components/onboarding/ParentNameCollector'
 
 export default function CharacterOnboarding() {
   const router = useRouter()
   const childType = getCharacterTypeById('child')
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showNameCollector, setShowNameCollector] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Check if user needs to accept terms (OAuth users)
+  // Check if user needs to provide name or accept terms
   useEffect(() => {
-    const checkTermsAcceptance = async () => {
+    const checkUserProfile = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        setIsLoading(false)
+        return
+      }
 
       setUserId(user.id)
 
-      // Check if user has already accepted terms
+      // Get user profile
       const { data: profile, error } = await supabase
         .from('user_profiles')
-        .select('terms_accepted_at, privacy_accepted_at')
+        .select('full_name, terms_accepted_at, privacy_accepted_at')
         .eq('id', user.id)
         .single()
 
       if (error) {
-        console.error('Error fetching user profile for terms check:', error)
+        console.error('Error fetching user profile:', error)
+        setIsLoading(false)
         return
       }
 
-      // Show modal if terms haven't been accepted
-      if (profile && (!profile.terms_accepted_at || !profile.privacy_accepted_at)) {
+      // Priority 1: Check if name is missing (for all users)
+      if (!profile.full_name || profile.full_name.trim() === '') {
+        setShowNameCollector(true)
+      }
+      // Priority 2: Check if terms need to be accepted (OAuth users)
+      else if (!profile.terms_accepted_at || !profile.privacy_accepted_at) {
         setShowTermsModal(true)
       }
+
+      setIsLoading(false)
     }
 
-    checkTermsAcceptance()
+    checkUserProfile()
   }, [])
+
+  // Show loading state while checking profile
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="card p-6 md:p-8 max-w-md">
+          <p className="text-gray-600 font-medium text-center">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show name collector if name is missing
+  if (showNameCollector) {
+    return (
+      <ParentNameCollector
+        onComplete={() => {
+          setShowNameCollector(false)
+          // Recheck profile to see if terms modal should be shown
+          const recheckProfile = async () => {
+            const supabase = createClient()
+            const { data: profile } = await supabase
+              .from('user_profiles')
+              .select('terms_accepted_at, privacy_accepted_at')
+              .eq('id', userId!)
+              .single()
+
+            if (profile && (!profile.terms_accepted_at || !profile.privacy_accepted_at)) {
+              setShowTermsModal(true)
+            }
+          }
+          recheckProfile()
+        }}
+      />
+    )
+  }
 
   if (!childType) {
     return (
