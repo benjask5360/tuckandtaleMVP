@@ -5,10 +5,45 @@ import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import TermsConsentModal from '@/components/auth/TermsConsentModal'
 
 export default function CharacterOnboarding() {
   const router = useRouter()
   const childType = getCharacterTypeById('child')
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Check if user needs to accept terms (OAuth users)
+  useEffect(() => {
+    const checkTermsAcceptance = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      setUserId(user.id)
+
+      // Check if user has already accepted terms
+      const { data: profile, error } = await supabase
+        .from('user_profiles')
+        .select('terms_accepted_at, privacy_accepted_at')
+        .eq('id', user.id)
+        .single()
+
+      if (error) {
+        console.error('Error fetching user profile for terms check:', error)
+        return
+      }
+
+      // Show modal if terms haven't been accepted
+      if (profile && (!profile.terms_accepted_at || !profile.privacy_accepted_at)) {
+        setShowTermsModal(true)
+      }
+    }
+
+    checkTermsAcceptance()
+  }, [])
 
   if (!childType) {
     return (
@@ -94,6 +129,14 @@ export default function CharacterOnboarding() {
           Don't worry, you can always add more children and characters later!
         </p>
       </div>
+
+      {/* Terms Consent Modal for OAuth users */}
+      {showTermsModal && userId && (
+        <TermsConsentModal
+          userId={userId}
+          onAccept={() => setShowTermsModal(false)}
+        />
+      )}
     </div>
   )
 }

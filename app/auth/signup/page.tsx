@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +26,8 @@ export default function SignupPage() {
     setError(null)
     setGoogleLoading(true)
 
+    // Note: Google OAuth users will need to accept terms in the onboarding modal
+    // since we can't get their consent before OAuth redirect
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -42,6 +45,11 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!acceptedTerms) {
+      setError('You must accept the Terms of Service and Privacy Policy to continue')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Passwords do not match')
@@ -64,6 +72,8 @@ export default function SignupPage() {
           full_name: `${firstName} ${lastName}`.trim(),
           first_name: firstName,
           last_name: lastName,
+          terms_accepted_at: new Date().toISOString(),
+          privacy_accepted_at: new Date().toISOString(),
         },
       },
     })
@@ -298,6 +308,38 @@ export default function SignupPage() {
                   className="input"
                   placeholder="Confirm your password"
                 />
+              </div>
+
+              {/* Terms and Privacy Policy Acceptance */}
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  required
+                  className="checkbox mt-1"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600 cursor-pointer">
+                  I agree to the{' '}
+                  <Link
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+                  >
+                    Terms of Service
+                  </Link>
+                  {' '}and{' '}
+                  <Link
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary-600 hover:text-primary-700 font-semibold transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </label>
               </div>
 
               <button
