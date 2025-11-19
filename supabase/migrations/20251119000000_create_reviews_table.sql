@@ -41,12 +41,16 @@ CREATE POLICY "Service role can view all reviews"
 
 -- Add trigger to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_reviews_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public, pg_temp
+LANGUAGE plpgsql
+AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TRIGGER update_reviews_updated_at_trigger
     BEFORE UPDATE ON public.reviews

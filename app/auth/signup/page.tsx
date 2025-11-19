@@ -151,7 +151,7 @@ export default function SignupPage() {
               </div>
               <div>
                 <h3 className="font-bold text-gray-900 mb-2 text-lg">Start free, no credit card required</h3>
-                <p className="text-gray-600 leading-relaxed">Try 3 stories per month on us</p>
+                <p className="text-gray-600 leading-relaxed">Try 3 stories on us</p>
               </div>
             </div>
           </div>
