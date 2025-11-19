@@ -8,6 +8,7 @@ import { FunStoryPromptBuilder } from '../prompt-builders/funStoryPromptBuilder'
 import { GrowthStoryPromptBuilder } from '../prompt-builders/growthStoryPromptBuilder';
 import { AIConfigService, type AIConfig } from './ai-config';
 import { StoryIllustrationGenerator } from './story-illustration-generator';
+import { StoryValidator } from '../validators/story-validator';
 import type {
   StoryGenerationParams,
   StoryGenerationRequest,
@@ -104,7 +105,7 @@ export class StoryGenerationService {
     const response = await this.callOpenAI(prompt, aiConfig);
 
     // 2. Parse response
-    const parsed = this.parseResponse(response.content);
+    const parsed = this.parseResponse(response.content, request.includeIllustrations);
 
     // 3. Create content record
     const story = await this.saveStory(userId, parsed, request, prompt);
@@ -407,50 +408,55 @@ export class StoryGenerationService {
   /**
    * Parse OpenAI response (JSON or fallback to text)
    */
-  private static parseResponse(text: string): ParsedStory {
-    // Try JSON first
-    try {
-      // Remove markdown code blocks if present (more aggressive cleaning)
-      let cleanText = text.trim();
+  private static parseResponse(text: string, includeIllustrations: boolean = false): ParsedStory {
+    // Log the first 500 chars of the response for debugging
+    console.log('Raw AI response (first 500 chars):', text.substring(0, 500));
 
-      // Remove ```json code blocks
-      cleanText = cleanText.replace(/^```json\s*/i, '').replace(/```\s*$/, '');
+    // Try to extract and parse JSON using the validator
+    const extraction = StoryValidator.extractJSON(text);
 
-      // Remove generic ``` code blocks
-      cleanText = cleanText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    if (extraction) {
+      // Validate the extracted JSON
+      const validation = StoryValidator.validate(extraction.json, {
+        requireIllustrationPrompt: includeIllustrations
+      });
 
-      // Remove any leading/trailing whitespace again after block removal
-      cleanText = cleanText.trim();
-
-      const json = JSON.parse(cleanText);
-
-      // Validate structure more thoroughly
-      if (json.title && json.paragraphs && Array.isArray(json.paragraphs)) {
-        // Ensure paragraphs are strings and not empty
-        const validParagraphs = json.paragraphs.filter((p: any) => typeof p === 'string' && p.trim());
-
-        if (validParagraphs.length === 0) {
-          console.warn('JSON parsed but paragraphs array is empty or invalid');
-          throw new Error('No valid paragraphs found in JSON');
-        }
-
-        return {
-          title: json.title,
-          paragraphs: validParagraphs,
-          moral: json.moral || null,
-          illustration_prompt: json.illustration_prompt || null,
-        };
-      } else {
-        console.warn('JSON parsed but missing required fields (title or paragraphs)');
-        throw new Error('JSON missing required structure');
+      // Log validation results
+      if (validation.warnings.length > 0) {
+        console.warn('Story validation warnings:', validation.warnings);
       }
-    } catch (error) {
-      console.log('Failed to parse JSON, falling back to text parsing:', error);
+
+      if (validation.isValid && validation.data) {
+        console.log('Successfully parsed and validated story JSON');
+        return validation.data;
+      } else {
+        console.error('Story validation failed:', validation.errors);
+        // Log the problematic JSON for debugging
+        console.error('Failed JSON (first 1000 chars):', JSON.stringify(extraction.json).substring(0, 1000));
+      }
+    } else {
+      console.warn('Could not extract valid JSON from response');
     }
 
     // Fallback: parse text manually
     console.log('Using text parser fallback for story response');
-    return this.parseTextResponse(text);
+    const textParsed = this.parseTextResponse(text);
+
+    // Validate the text-parsed result too
+    const textValidation = StoryValidator.validate(textParsed, {
+      requireIllustrationPrompt: false // Don't require illustration from text parsing
+    });
+
+    if (textValidation.warnings.length > 0) {
+      console.warn('Text parsing validation warnings:', textValidation.warnings);
+    }
+
+    if (!textValidation.isValid) {
+      console.error('Text parsing validation errors:', textValidation.errors);
+      // Still return it as it's our last resort, but log the issues
+    }
+
+    return textParsed;
   }
 
   /**

@@ -245,13 +245,52 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         body: JSON.stringify(requestBody),
       })
 
-      const data = await response.json()
+      // Check if response is JSON before trying to parse
+      const contentType = response.headers.get('content-type')
+      let data: any = {}
+
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          data = await response.json()
+        } catch (jsonError) {
+          console.error('Failed to parse response JSON:', jsonError)
+          // If JSON parsing fails, create a generic error message
+          data = {
+            error: 'The server response was invalid. Please try again.',
+            type: 'json_response_error'
+          }
+        }
+      } else {
+        // Non-JSON response (might be HTML error page)
+        const text = await response.text()
+        console.error('Non-JSON response received:', text.substring(0, 500))
+        data = {
+          error: 'An unexpected server error occurred. Please try again later.',
+          type: 'non_json_response'
+        }
+      }
 
       if (!response.ok) {
         if (response.status === 429) {
-          throw new Error(`You've reached your story generation limit. ${data.error}`)
+          throw new Error(`You've reached your story generation limit. ${data.error || 'Please try again later.'}`)
         }
-        throw new Error(data.error || 'Failed to generate story')
+
+        // Handle JSON parsing errors specifically
+        if (data.type === 'json_parsing_error') {
+          throw new Error('The story generation had formatting issues. Please try generating again.')
+        }
+
+        // Handle validation errors
+        if (data.type === 'validation_error') {
+          throw new Error('The generated story did not meet quality standards. Please try again with different settings.')
+        }
+
+        // Handle parsing errors
+        if (data.type === 'parsing_error') {
+          throw new Error('Failed to process the story. Please try again or adjust your story settings.')
+        }
+
+        throw new Error(data.error || 'Failed to generate story. Please try again.')
       }
 
       // Success! Redirect to the story viewer

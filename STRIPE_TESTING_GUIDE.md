@@ -1,5 +1,37 @@
 # Stripe Integration Testing Guide
 
+## ⚠️ CRITICAL: Webhook Setup for Local Testing
+
+**If webhooks aren't working, user subscriptions won't activate after payment!**
+
+For local development, Stripe webhooks MUST be forwarded using the Stripe CLI:
+
+```bash
+# Terminal 1: Start webhook forwarding (REQUIRED!)
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+
+# This outputs a webhook secret like: whsec_abc123...
+# Copy that secret and update your .env.local:
+STRIPE_WEBHOOK_SECRET=whsec_[the_secret_from_stripe_listen]
+
+# Terminal 2: Start your dev server
+npm run dev
+```
+
+**Without this setup:**
+- ✅ Stripe checkout will complete
+- ✅ Payment will be processed
+- ❌ Your app will NEVER know about it
+- ❌ User stays on free tier
+
+**With this setup:**
+- ✅ Stripe checkout completes
+- ✅ Payment processed
+- ✅ Webhook sent to your local server
+- ✅ User upgraded to paid tier
+
+---
+
 ## Prerequisites
 
 1. **Stripe CLI Installation**
@@ -205,15 +237,67 @@ Check that user status changes to "past_due"
 ### Webhook Signature Verification Failed
 - Make sure `STRIPE_WEBHOOK_SECRET` matches the one from `stripe listen`
 - For production, use the webhook secret from Stripe Dashboard
+- The webhook secret changes EVERY time you restart `stripe listen`
 
 ### User Not Found
 - Ensure you're logged in when making API calls
 - Check the auth token is correct and not expired
 
-### Subscription Not Updating
-1. Check Stripe CLI output for webhook delivery
-2. Check console logs for any errors
-3. Verify webhook event contains user_id in metadata
+### Subscription Not Updating After Payment ⚠️ COMMON ISSUE
+This is the most common problem! Here's how to diagnose:
+
+#### Step 1: Check if webhooks are being received
+Look in your terminal where you ran `npm run dev`. When you complete a checkout, you should see logs like:
+```
+[WEBHOOK] Processing checkout.session.completed
+[WEBHOOK] Found user_id: xyz...
+[WEBHOOK] Price ID from subscription: price_1SToSU...
+[WEBHOOK] Mapped price xyz to tier tier_basic
+[WEBHOOK SUCCESS] Subscription activated for user xyz
+```
+
+**If you see NOTHING**, webhooks aren't reaching your app:
+- ✅ Make sure `stripe listen` is running
+- ✅ Make sure webhook secret in `.env.local` is from current `stripe listen` session
+- ✅ Restart your dev server after updating `.env.local`
+
+**If you see `[WEBHOOK ERROR]` messages**, check the error details:
+- `Missing user_id in session metadata` → Checkout session wasn't created properly
+- `Invalid price ID` → Price ID from Stripe doesn't match your price-mapping.ts
+- `Could not determine tier from price` → Price ID not in mapping table
+- `Failed to update user profile` → Database error (check RLS policies)
+- `No user found with ID` → User doesn't exist in database
+
+#### Step 2: Verify the user's current state
+```bash
+node scripts/verify-user-subscription.js user@example.com
+```
+
+This will show:
+- What tier the user is on in your database
+- What subscriptions they have in Stripe
+- Whether there's a mismatch that needs fixing
+
+#### Step 3: Fix a stuck user
+If a user paid but didn't get upgraded, use the admin endpoint:
+
+```bash
+curl -X POST http://localhost:3000/api/admin/fix-subscription \
+  -H "Content-Type: application/json" \
+  -H "Cookie: sb-iolimejvugpcpnmruqww-auth-token=YOUR_TOKEN" \
+  -d '{"email": "user@example.com"}'
+```
+
+This will:
+- Look up their active Stripe subscription
+- Determine the correct tier
+- Update the database to match
+
+#### Step 4: Check Stripe Dashboard
+1. Go to Stripe Dashboard → Developers → Events
+2. Find the `checkout.session.completed` event
+3. Check the "Webhooks" tab to see delivery status
+4. If delivery failed, check the error message
 
 ## Production Setup
 

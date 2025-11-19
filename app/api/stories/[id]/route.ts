@@ -161,8 +161,20 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Parse request body
-    const body: UpdateStoryBody = await request.json();
+    // Parse request body with error handling
+    let body: UpdateStoryBody;
+    try {
+      body = await request.json();
+    } catch (jsonError) {
+      console.error('Failed to parse request JSON:', jsonError);
+      return NextResponse.json(
+        {
+          error: 'Invalid request format. Please ensure you are sending valid JSON.',
+          details: jsonError instanceof Error ? jsonError.message : 'JSON parsing failed'
+        },
+        { status: 400 }
+      );
+    }
 
     // Validate inputs
     if (body.title !== undefined) {

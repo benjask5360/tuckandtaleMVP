@@ -6,7 +6,7 @@
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { SubscriptionTierService } from './subscription-tier';
-import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId } from '@/lib/stripe/price-mapping';
+import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId, PRICE_TO_TIER_MAP } from '@/lib/stripe/price-mapping';
 import type { BillingPeriod, SubscriptionTier } from '@/lib/types/subscription-types';
 
 // Lazy initialization of Stripe client to avoid build-time errors
@@ -220,16 +220,33 @@ export class StripeService {
     session: Stripe.Checkout.Session,
     supabase: any
   ) {
+    console.log('[WEBHOOK] Processing checkout.session.completed', {
+      sessionId: session.id,
+      customer: session.customer,
+      subscription: session.subscription,
+      metadata: session.metadata,
+    });
+
     if (!session.customer || !session.subscription) {
-      console.error('Missing customer or subscription in checkout session');
+      console.error('[WEBHOOK ERROR] Missing customer or subscription in checkout session', {
+        sessionId: session.id,
+        hasCustomer: !!session.customer,
+        hasSubscription: !!session.subscription,
+      });
       return;
     }
 
     const userId = session.metadata?.user_id;
     if (!userId) {
-      console.error('Missing user_id in session metadata');
+      console.error('[WEBHOOK ERROR] Missing user_id in session metadata', {
+        sessionId: session.id,
+        metadata: session.metadata,
+        customer: session.customer,
+      });
       return;
     }
+
+    console.log(`[WEBHOOK] Found user_id: ${userId}, retrieving subscription details...`);
 
     // Get subscription details
     const subscription = await getStripe().subscriptions.retrieve(
@@ -239,20 +256,34 @@ export class StripeService {
     // Get the price ID and billing period from the subscription item
     const subscriptionItem = subscription.items.data[0];
     const priceId = subscriptionItem?.price.id;
+
+    console.log('[WEBHOOK] Price ID from subscription:', priceId);
+
     if (!priceId || !isValidPriceId(priceId)) {
-      console.error('Invalid price ID:', priceId);
+      console.error('[WEBHOOK ERROR] Invalid price ID', {
+        priceId,
+        userId,
+        subscriptionId: subscription.id,
+        availablePriceIds: Object.keys(PRICE_TO_TIER_MAP),
+      });
       return;
     }
 
     // Get tier from price ID
     const tierId = getTierFromPriceId(priceId);
     if (!tierId) {
-      console.error('Could not determine tier from price:', priceId);
+      console.error('[WEBHOOK ERROR] Could not determine tier from price', {
+        priceId,
+        userId,
+        subscriptionId: subscription.id,
+      });
       return;
     }
 
+    console.log(`[WEBHOOK] Mapped price ${priceId} to tier ${tierId}, updating database...`);
+
     // Update user profile
-    await supabase
+    const { data, error } = await supabase
       .from('user_profiles')
       .update({
         subscription_tier_id: tierId,
@@ -262,9 +293,34 @@ export class StripeService {
         subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
-    console.log(`Subscription activated for user ${userId} - tier: ${tierId}`);
+    if (error) {
+      console.error('[WEBHOOK ERROR] Failed to update user profile', {
+        userId,
+        tierId,
+        error: error.message,
+        errorDetails: error,
+      });
+      throw new Error(`Database update failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.error('[WEBHOOK ERROR] No user found with ID', {
+        userId,
+        tierId,
+      });
+      throw new Error(`User not found: ${userId}`);
+    }
+
+    console.log(`[WEBHOOK SUCCESS] Subscription activated for user ${userId}`, {
+      tier: tierId,
+      status: 'active',
+      subscriptionId: subscription.id,
+      periodStart: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+      periodEnd: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+    });
   }
 
   /**
@@ -274,24 +330,44 @@ export class StripeService {
     subscription: Stripe.Subscription,
     supabase: any
   ) {
+    console.log('[WEBHOOK] Processing subscription update', {
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      metadata: subscription.metadata,
+    });
+
     const userId = subscription.metadata?.user_id;
     if (!userId) {
-      console.error('Missing user_id in subscription metadata');
+      console.error('[WEBHOOK ERROR] Missing user_id in subscription metadata', {
+        subscriptionId: subscription.id,
+        metadata: subscription.metadata,
+      });
       return;
     }
 
     // Get the price ID and billing period from the subscription item
     const subscriptionItem = subscription.items.data[0];
     const priceId = subscriptionItem?.price.id;
+
+    console.log('[WEBHOOK] Price ID from subscription:', priceId);
+
     if (!priceId || !isValidPriceId(priceId)) {
-      console.error('Invalid price ID:', priceId);
+      console.error('[WEBHOOK ERROR] Invalid price ID', {
+        priceId,
+        userId,
+        subscriptionId: subscription.id,
+      });
       return;
     }
 
     // Get tier from price ID
     const tierId = getTierFromPriceId(priceId);
     if (!tierId) {
-      console.error('Could not determine tier from price:', priceId);
+      console.error('[WEBHOOK ERROR] Could not determine tier from price', {
+        priceId,
+        userId,
+        subscriptionId: subscription.id,
+      });
       return;
     }
 
@@ -306,8 +382,10 @@ export class StripeService {
 
     const status = statusMap[subscription.status] || 'inactive';
 
+    console.log(`[WEBHOOK] Updating user ${userId} to tier ${tierId}, status ${status}...`);
+
     // Update user profile
-    await supabase
+    const { data, error } = await supabase
       .from('user_profiles')
       .update({
         subscription_tier_id: tierId,
@@ -316,9 +394,33 @@ export class StripeService {
         subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
-    console.log(`Subscription updated for user ${userId} - tier: ${tierId}, status: ${status}`);
+    if (error) {
+      console.error('[WEBHOOK ERROR] Failed to update user profile', {
+        userId,
+        tierId,
+        status,
+        error: error.message,
+        errorDetails: error,
+      });
+      throw new Error(`Database update failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.error('[WEBHOOK ERROR] No user found with ID', {
+        userId,
+        tierId,
+      });
+      throw new Error(`User not found: ${userId}`);
+    }
+
+    console.log(`[WEBHOOK SUCCESS] Subscription updated for user ${userId}`, {
+      tier: tierId,
+      status,
+      subscriptionId: subscription.id,
+    });
   }
 
   /**
@@ -328,23 +430,50 @@ export class StripeService {
     subscription: Stripe.Subscription,
     supabase: any
   ) {
+    console.log('[WEBHOOK] Processing subscription cancellation', {
+      subscriptionId: subscription.id,
+      metadata: subscription.metadata,
+    });
+
     const userId = subscription.metadata?.user_id;
     if (!userId) {
-      console.error('Missing user_id in subscription metadata');
+      console.error('[WEBHOOK ERROR] Missing user_id in subscription metadata', {
+        subscriptionId: subscription.id,
+        metadata: subscription.metadata,
+      });
       return;
     }
 
+    console.log(`[WEBHOOK] Downgrading user ${userId} to free tier...`);
+
     // Downgrade to free tier
-    await supabase
+    const { data, error } = await supabase
       .from('user_profiles')
       .update({
         subscription_tier_id: 'tier_free',
         subscription_status: 'inactive',
         subscription_ends_at: new Date().toISOString(),
       })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
-    console.log(`Subscription canceled for user ${userId} - downgraded to tier_free`);
+    if (error) {
+      console.error('[WEBHOOK ERROR] Failed to downgrade user to free tier', {
+        userId,
+        error: error.message,
+        errorDetails: error,
+      });
+      throw new Error(`Database update failed: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      console.error('[WEBHOOK ERROR] No user found with ID', {
+        userId,
+      });
+      throw new Error(`User not found: ${userId}`);
+    }
+
+    console.log(`[WEBHOOK SUCCESS] Subscription canceled for user ${userId} - downgraded to tier_free`);
   }
 
   /**

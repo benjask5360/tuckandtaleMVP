@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { StoryGenerationService } from '@/lib/services/story-generation';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 import { SubscriptionTierService } from '@/lib/services/subscription-tier';
+import { StoryValidator } from '@/lib/validators/story-validator';
 import type { StoryGenerationParams } from '@/lib/types/story-types';
 
 export async function POST(request: Request) {
@@ -19,8 +20,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Parse request body
-    const params: StoryGenerationParams = await request.json();
+    // Parse request body with error handling
+    let params: StoryGenerationParams;
+    try {
+      params = await request.json();
+    } catch (jsonError) {
+      console.error('Failed to parse request JSON:', jsonError);
+      return NextResponse.json(
+        {
+          error: 'Invalid request format. Please ensure you are sending valid JSON.',
+          details: jsonError instanceof Error ? jsonError.message : 'JSON parsing failed'
+        },
+        { status: 400 }
+      );
+    }
 
     // Validate required fields
     if (!params.heroId || !params.mode || !params.genreId || !params.toneId || !params.lengthId) {
@@ -143,6 +156,19 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Error generating story:', error);
 
+    // Handle JSON parsing errors specifically
+    if (error instanceof SyntaxError && error.message.includes('JSON')) {
+      const friendlyMessage = StoryValidator.getJSONErrorMessage(error);
+      return NextResponse.json(
+        {
+          error: friendlyMessage,
+          type: 'json_parsing_error',
+          details: error.message
+        },
+        { status: 500 }
+      );
+    }
+
     // Handle specific error types
     if (error.message.includes('No AI config found')) {
       return NextResponse.json(
@@ -153,13 +179,40 @@ export async function POST(request: Request) {
 
     if (error.message.includes('OpenAI API')) {
       return NextResponse.json(
-        { error: 'Story generation service temporarily unavailable' },
+        { error: 'Story generation service temporarily unavailable. Please try again in a moment.' },
         { status: 503 }
       );
     }
 
+    if (error.message.includes('Story parsing failed')) {
+      return NextResponse.json(
+        {
+          error: 'Failed to process the generated story. The AI response may be malformed.',
+          type: 'parsing_error',
+          details: error.message
+        },
+        { status: 500 }
+      );
+    }
+
+    if (error.message.includes('validation failed') || error.message.includes('Invalid')) {
+      return NextResponse.json(
+        {
+          error: 'The generated story did not meet quality standards. Please try again.',
+          type: 'validation_error',
+          details: error.message
+        },
+        { status: 500 }
+      );
+    }
+
+    // Generic error fallback
     return NextResponse.json(
-      { error: error.message || 'Failed to generate story' },
+      {
+        error: 'An unexpected error occurred while generating your story. Please try again.',
+        type: 'unknown_error',
+        details: error.message || 'Failed to generate story'
+      },
       { status: 500 }
     );
   }

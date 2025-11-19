@@ -198,19 +198,36 @@ export abstract class BaseStoryPromptBuilder {
     instructions += 'Please respond with a JSON object in the following format:\n\n';
     instructions += '```json\n';
     instructions += '{\n';
-    instructions += '  "title": "The Story Title",\n';
+    instructions += '  "title": "The Adventure of the Brave Little Hero",\n';
     instructions += `  "paragraphs": [\n`;
-    instructions += '    "Scene 1: [Opening scene text...]",\n';
-    instructions += '    "Scene 2: [Setup scene text...]",\n';
-    instructions += '    "Scene 3: [Catalyst scene text...]",\n';
-    instructions += '    "Scene 4: [Rising action text...]",\n';
-    instructions += '    "Scene 5: [Development text...]",\n';
-    instructions += '    "Scene 6: [Climax text...]",\n';
-    instructions += '    "Scene 7: [Resolution text...]",\n';
-    instructions += '    "Scene 8: [Ending text...]"\n';
+    instructions += '    "Scene 1: Once upon a time, in a magical forest, there lived a curious little rabbit named Max. He loved exploring and making new friends, but sometimes he felt too small to do big things.",\n';
+    instructions += '    "Scene 2: The forest was home to many wonderful creatures. There were wise owls who lived in the tallest trees, playful squirrels who gathered nuts, and gentle deer who grazed in meadows. Max admired them all.",\n';
+    instructions += '    "Scene 3: One morning, Max heard a cry for help. A baby bird had fallen from its nest high in an oak tree. The other animals gathered around, worried but unsure how to help.",\n';
+    instructions += '    "Scene 4: Max remembered seeing some vines near the old willow tree. Despite his small size, he decided to try. He gathered the longest vines he could find and started his climb.",\n';
+    instructions += '    "Scene 5: The climb was harder than Max expected. His paws ached and he wanted to give up several times. But each time he looked down and saw the baby bird, he found new courage.",\n';
+    instructions += '    "Scene 6: Finally, Max reached the nest. With great care, he placed the baby bird back home. The mother bird chirped with joy, and all the forest animals cheered below.",\n';
+    instructions += '    "Scene 7: Max climbed down to find all his forest friends waiting. The wise owl said that being brave isn\'t about being big, it\'s about helping others even when you\'re scared.",\n';
+    instructions += '    "Scene 8: From that day on, Max knew that even the smallest creature could do amazing things with courage and kindness. He continued his adventures with new confidence."\n';
     instructions += '  ],\n';
-    instructions += '  "moral": "Optional lesson or moral (if applicable)"\n';
-    instructions += '}\n';
+    instructions += '  "moral": "True bravery comes from helping others, no matter how small you are"';
+
+    // Add illustration prompt to example if requested
+    if (includeIllustrations) {
+      instructions += ',\n';
+      instructions += '  "illustration_prompt": "Create a high-quality, sharp, and detailed 3x3 grid of images progressing from left to right:\\n';
+      instructions += '• Max (small brown rabbit with bright eyes and fluffy tail), Mother Bird (blue jay with concerned expression)\\n';
+      instructions += '• Max the rabbit looking up at something with curiosity in a magical forest\\n';
+      instructions += '• Forest animals gathered around looking at the peaceful forest setting\\n';
+      instructions += '• Baby bird on the ground with worried animals surrounding it\\n';
+      instructions += '• Max gathering vines near a large willow tree\\n';
+      instructions += '• Max climbing up the tree with determination on his face\\n';
+      instructions += '• Max carefully placing the baby bird back in its nest\\n';
+      instructions += '• All the forest animals celebrating with Max in the center\\n';
+      instructions += '• Max standing confidently with his forest friends around him\\n';
+      instructions += 'Disney Pixar 3D animated movie style with stylized cartoon characters (NOT realistic people). Exaggerated proportions, big expressive eyes, smooth toon-shaded rendering, vibrant colors, playful character design, animated feature film quality. Characters should look like Pixar animated characters with charming, whimsical features - not photographic or realistic. Clean CGI animation aesthetic. No text or numbers"';
+    }
+
+    instructions += '\n}\n';
     instructions += '```\n\n';
     instructions += '**IMPORTANT REQUIREMENTS:**\n';
     instructions += '- You MUST include exactly 8 scenes in the paragraphs array\n';
@@ -220,24 +237,14 @@ export abstract class BaseStoryPromptBuilder {
     instructions += '- Each scene should flow naturally into the next\n';
     instructions += '- Keep pacing appropriate - longer stories have more detailed scenes\n';
 
-    // Add illustration prompt instructions if requested
+    // Add additional illustration instructions if requested
     if (includeIllustrations) {
-      instructions += '\n\n**ILLUSTRATION PROMPT GENERATION:**\n';
-      instructions += 'Additionally, create an illustration prompt field in the JSON response:\n\n';
-      instructions += '"illustration_prompt": "Create a high-quality, sharp, and detailed 3x3 grid of images progressing from left to right:\\n';
-      instructions += '• [All main characters with their descriptions, e.g., Character Name (description with appearance details)]\\n';
-      instructions += '• [Brief visual description for scene 1 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 2 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 3 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 4 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 5 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 6 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 7 mentioning character names]\\n';
-      instructions += '• [Brief visual description for scene 8 mentioning character names]\\n';
-      instructions += 'Disney Pixar 3D animated movie style with stylized cartoon characters (NOT realistic people). Exaggerated proportions, big expressive eyes, smooth toon-shaded rendering, vibrant colors, playful character design, animated feature film quality. Characters should look like Pixar animated characters with charming, whimsical features - not photographic or realistic. Clean CGI animation aesthetic. No text or numbers"\n\n';
-      instructions += '**Important:** The illustration prompt should use bullet points (•) with no scene numbers or brackets.\n';
-      instructions += 'The first bullet MUST list all characters with their appearance descriptions.\n';
-      instructions += 'Each scene description should be concise and visual, mentioning character names.\n';
+      instructions += '\n**ILLUSTRATION PROMPT NOTES:**\n';
+      instructions += '- Include the "illustration_prompt" field in your JSON response (as shown in the example above)\n';
+      instructions += '- Use bullet points (•) with NO scene numbers or brackets\n';
+      instructions += '- First bullet MUST list all characters with their appearance descriptions\n';
+      instructions += '- Each scene description should be concise, visual, and mention character names\n';
+      instructions += '- Maintain the Disney Pixar 3D animated style throughout\n';
     }
 
     return instructions;
