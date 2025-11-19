@@ -55,8 +55,8 @@ export class OpenAIDallEClient {
       user: config.user,
     });
 
-    const imageData = response.data[0]?.b64_json;
-    const revisedPrompt = response.data[0]?.revised_prompt;
+    const imageData = response.data?.[0]?.b64_json;
+    const revisedPrompt = response.data?.[0]?.revised_prompt;
 
     if (!imageData) {
       console.error('[DALL-E 3] No image data in response');

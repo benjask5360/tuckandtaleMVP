@@ -26,6 +26,7 @@ interface PreviewGenerationRequest {
     breed?: string;
     primaryColor?: string;  // Pet fur/feather/scale color
     creatureType?: string;
+    color?: string;  // Magical creature color
   };
   configName?: string;
 }

@@ -38,8 +38,7 @@ export async function GET(
         generation_metadata,
         story_illustrations,
         content_characters (
-          character_profiles (
-            id,
+          character_profiles!inner (
             name
           )
         )
@@ -62,15 +61,25 @@ export async function GET(
       );
     }
 
+    // Transform the data to match PDF template expectations
+    const pdfStory = {
+      ...story,
+      content_characters: story.content_characters?.map((cc: any) => ({
+        character_profiles: Array.isArray(cc.character_profiles)
+          ? cc.character_profiles[0]
+          : cc.character_profiles
+      }))
+    };
+
     // Generate PDF
     const pdfStream = await renderToStream(
-      <StoryPDFTemplate story={story} />
+      <StoryPDFTemplate story={pdfStory} />
     );
 
     // Convert stream to buffer
     const chunks: Uint8Array[] = [];
     for await (const chunk of pdfStream) {
-      chunks.push(chunk);
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
     }
     const pdfBuffer = Buffer.concat(chunks);
 
