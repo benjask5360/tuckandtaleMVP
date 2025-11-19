@@ -62,152 +62,192 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stories Kids Actually Want Section */}
-      <section className="py-12 md:py-16 bg-gradient-bg-primary">
-        <div className="container-narrow section-padding">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Stories Kids Actually Want to Hear
-            </h2>
-            <p className="text-xl text-gray-600">
-              Every story is unique and personalized
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Luna's Space Adventure",
-                description: "Luna put on her sparkly space helmet and zoomed past twinkling stars.",
-                age: "Ages 4-6",
-                time: "10 minutes",
-                color: "from-sky-400 to-primary-500"
-              },
-              {
-                title: "Max and the Friendly Dragon",
-                description: "Max wasn't scared when he met the dragon. In fact, they became best friends!",
-                age: "Ages 5-8",
-                time: "15 minutes",
-                color: "from-primary-400 to-primary-600"
-              },
-              {
-                title: "Emma's Underwater Kingdom",
-                description: "Emma discovered she could breathe underwater and talk to the colorful fish.",
-                age: "Ages 6-9",
-                time: "12 minutes",
-                color: "from-teal-400 to-teal-600"
-              }
-            ].map((story, index) => (
-              <div key={index} className="card-interactive p-6 group">
-                <div className={`h-48 bg-gradient-to-br ${story.color} rounded-2xl mb-5 flex items-center justify-center group-hover:scale-105 transition-transform shadow-soft`}>
-                  <Moon className="w-16 h-16 text-white/90 group-hover:rotate-12 transition-transform" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-gray-900">{story.title}</h3>
-                <p className="text-gray-600 mb-4 leading-relaxed">{story.description}</p>
-                <div className="flex justify-between text-sm">
-                  <span className="badge-gray">{story.age}</span>
-                  <span className="text-gray-500">{story.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Parents Love It Section */}
+      {/* Meet the Magic Behind Every Story Section */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container-narrow section-padding">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Parents Love It
+              Meet the Magic Behind Every Story
             </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              At Tuck and Tale, every adventure begins with the people (and pets!) your child loves most.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Sarah M.",
-                role: "Mom of 2",
-                review: "My daughter asks for her 'Tuck and Tale' story EVERY night now. She loves hearing her name!",
-                rating: 5
-              },
-              {
-                name: "James P.",
-                role: "Dad of 3",
-                review: "Finally found something that actually gets my son excited for bedtime. The personalization is amazing.",
-                rating: 5
-              },
-              {
-                name: "Maria L.",
-                role: "Mom of Twins",
-                review: "The stories are educational AND entertaining. My kids have learned so much!",
-                rating: 5
-              }
-            ].map((review, index) => (
-              <div key={index} className="card p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-14 h-14 bg-gradient-primary rounded-full flex items-center justify-center shadow-blue-glow">
-                    <span className="text-white font-bold text-xl">
-                      {review.name.charAt(0)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{review.name}</p>
-                    <p className="text-sm text-gray-500">{review.role}</p>
-                  </div>
-                </div>
-                <div className="flex gap-1 mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-700 leading-relaxed">"{review.review}"</p>
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Card 1 - Children */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/children.jpg"
+                  alt="Children characters in personalized stories"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-            ))}
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Your Child, Their Way</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Stories shaped around your little one — their look, age, and personality.
+              </p>
+            </div>
+
+            {/* Card 2 - Magical Characters */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/characters.jpg"
+                  alt="Magical characters including dragons, mermaids, and elves"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">A World Full of Wonder</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Magical friends who spark imagination and bring each tale to life.
+              </p>
+            </div>
+
+            {/* Card 3 - Pets */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/pets.jpg"
+                  alt="Beloved pets including dogs and cats joining the story"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Furry Friends Welcome</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Corgis, pugs, goldens, cats — their favorite buddies can join the fun too.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center animate-fade-in">
+            <p className="text-xl md:text-2xl font-semibold text-gray-800">
+              Personalized. Magical. Made just for your family.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* How It Works Section */}
       <section className="py-12 md:py-16 bg-gradient-bg-primary">
         <div className="container-narrow section-padding">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Everything You Need for Magical Bedtime
+              How It Works
             </h2>
-            <p className="text-xl text-gray-600">
-              Create personalized stories your kids will love, night after night
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              A magical story made just for your child — in three simple steps.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10">
-            <div className="card-feature group">
-              <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-blue-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <Users className="w-10 h-10 text-white" />
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Step 1 - Tell Us About Your Little One */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/avatar.png"
+                  alt="Create a character profile for your child"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Personalized Stories & Illustrations</h3>
+              <div className="text-4xl font-bold text-primary-500 mb-3">1</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Tell Us About Your Little One</h3>
               <p className="text-gray-600 leading-relaxed">
-                Beautiful AI-generated stories and artwork featuring your child as the main hero, with their name, age, and favorite things
+                Share their name, age, and interests so we can shape a story that feels just like them.
               </p>
             </div>
 
-            <div className="card-feature group">
-              <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-blue-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <BookOpen className="w-10 h-10 text-white" />
+            {/* Step 2 - Pick an Adventure */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/create.png"
+                  alt="Choose from various story adventures"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Endless Adventures with Best Friends Characters</h3>
+              <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick an Adventure</h3>
               <p className="text-gray-600 leading-relaxed">
-                Never run out of story ideas! Include pets, siblings, and friends to make the story even more special
+                Choose from bedtime stories, magical quests, or sweet everyday moments.
               </p>
             </div>
 
-            <div className="card-feature group">
-              <div className="w-20 h-20 bg-gradient-teal rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-teal-glow group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                <Shield className="w-10 h-10 text-white" />
+            {/* Step 3 - Watch Their Story Come to Life */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/read.jpg"
+                  alt="Read personalized illustrated stories"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Perfect for Bedtime</h3>
+              <div className="text-4xl font-bold text-primary-500 mb-3">3</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Watch Their Story Come to Life</h3>
               <p className="text-gray-600 leading-relaxed">
-                Calming stories designed to help kids settle down peacefully. Story library & favorites available anytime
+                In seconds, a beautifully illustrated tale appears — starring your child and their friends.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center animate-fade-in">
+            <p className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
+              Every bedtime becomes a moment they&apos;ll remember.
+            </p>
+            <p className="text-lg md:text-xl text-gray-600">
+              Personalized, magical, and made for the way your child sees the world.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Early Parent Reactions Section */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="container-narrow section-padding">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
+              Early Parent Reactions
+            </h2>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white fill-white" />
+              </div>
+              <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                "My child lit up the moment they saw themselves in the story."
+              </p>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white fill-white" />
+              </div>
+              <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                "It looks like a Pixar book starring my kid."
+              </p>
+            </div>
+
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
+                <Heart className="w-5 h-5 text-white fill-white" />
+              </div>
+              <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+                "Bedtime became fun again."
               </p>
             </div>
           </div>
@@ -241,7 +281,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
-            <div className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all">
+            <Link href="/pricing" className="card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all cursor-pointer">
               <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Moonlight</h3>
               <p className="text-sm md:text-base text-gray-600 mb-6">Perfect for trying out bedtime stories</p>
               <div className="mb-6 md:mb-8">
@@ -281,10 +321,10 @@ export default function HomePage() {
               <button className="btn-secondary btn-md w-full">
                 Start Free
               </button>
-            </div>
+            </Link>
 
             {/* Starlight Plan */}
-            <div className="card p-6 md:p-8 relative border-2 border-primary-400 shadow-blue-glow md:scale-105 active:scale-[0.98] md:hover:shadow-xl transition-all">
+            <Link href="/pricing" className="card p-6 md:p-8 relative border-2 border-primary-400 shadow-blue-glow md:scale-105 active:scale-[0.98] md:hover:shadow-xl transition-all cursor-pointer">
               <div className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2">
                 <span className="bg-gradient-primary text-white px-4 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold shadow-button">
                   Most Popular
@@ -347,10 +387,10 @@ export default function HomePage() {
               <button className="btn-primary btn-md w-full">
                 Get Started
               </button>
-            </div>
+            </Link>
 
             {/* Supernova Plan */}
-            <div className="card p-6 md:p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all">
+            <Link href="/pricing" className="card p-6 md:p-8 hover:shadow-card-hover hover:-translate-y-1 transition-all cursor-pointer">
               <h3 className="text-xl md:text-2xl font-bold mb-2 text-gray-900">Supernova</h3>
               <p className="text-sm md:text-base text-gray-600 mb-6">For families who love daily story time</p>
               <div className="mb-6 md:mb-8">
@@ -412,7 +452,7 @@ export default function HomePage() {
               <button className="btn-secondary btn-md w-full">
                 Get Started
               </button>
-            </div>
+            </Link>
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-10">
