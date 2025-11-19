@@ -25,19 +25,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   coverPage: {
-    padding: 40,
+    padding: 30,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F8F9FF',
+    backgroundColor: '#FFFFFF',
   },
   brandingHeader: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: 20,
+    marginBottom: 10,
   },
   logo: {
     width: 40,
@@ -46,49 +46,44 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 20,
     fontWeight: 'bold',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#667eea',
+    color: '#0c8ce9',
   },
   trademark: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#667eea',
+    color: '#0c8ce9',
   },
   coverContent: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     flex: 1,
+    width: '100%',
   },
   coverImage: {
     width: '100%',
     maxWidth: 400,
     height: 400,
     objectFit: 'contain',
-    marginBottom: 30,
+    marginBottom: 20,
     borderRadius: 8,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#1F2937',
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  modeBadge: {
-    backgroundColor: '#8B5CF6',
-    color: '#FFFFFF',
-    padding: '8 16',
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-    marginBottom: 20,
+    marginBottom: 15,
+    width: '100%',
+    alignSelf: 'center',
   },
   characters: {
-    marginTop: 20,
+    marginTop: 15,
     textAlign: 'center',
+    width: '100%',
+    alignSelf: 'center',
   },
   charactersLabel: {
     fontSize: 12,
@@ -100,16 +95,13 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontWeight: 'bold',
   },
-  metadata: {
-    marginTop: 30,
-    padding: 15,
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-  },
-  metadataText: {
+  coverDate: {
     fontSize: 11,
     color: '#6B7280',
-    marginBottom: 4,
+    marginTop: 15,
+    textAlign: 'center',
+    width: '100%',
+    alignSelf: 'center',
   },
   contentPage: {
     padding: 40,
@@ -238,32 +230,14 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
 
           <Text style={styles.title}>{story.title}</Text>
 
-        <View style={styles.modeBadge}>
-          <Text>{story.generation_metadata.mode === 'growth' ? 'Growth Story' : 'Fun Story'}</Text>
-        </View>
+          {characters.length > 0 && (
+            <View style={styles.characters}>
+              <Text style={styles.charactersLabel}>Featuring</Text>
+              <Text style={styles.characterName}>{characters.join(' & ')}</Text>
+            </View>
+          )}
 
-        {characters.length > 0 && (
-          <View style={styles.characters}>
-            <Text style={styles.charactersLabel}>Featuring</Text>
-            <Text style={styles.characterName}>{characters.join(' & ')}</Text>
-          </View>
-        )}
-
-        <View style={styles.metadata}>
-          {story.generation_metadata.genre_display && (
-            <Text style={styles.metadataText}>Genre: {story.generation_metadata.genre_display}</Text>
-          )}
-          {story.generation_metadata.tone_display && (
-            <Text style={styles.metadataText}>Tone: {story.generation_metadata.tone_display}</Text>
-          )}
-          {story.generation_metadata.length_display && (
-            <Text style={styles.metadataText}>Length: {story.generation_metadata.length_display}</Text>
-          )}
-          {story.generation_metadata.growth_topic_display && (
-            <Text style={styles.metadataText}>Topic: {story.generation_metadata.growth_topic_display}</Text>
-          )}
-          <Text style={styles.metadataText}>Created: {formattedDate}</Text>
-        </View>
+          <Text style={styles.coverDate}>Created: {formattedDate}</Text>
         </View>
 
         <Text style={styles.footer}>

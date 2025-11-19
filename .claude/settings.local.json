@@ -147,7 +147,8 @@
       "Bash(node scripts/check-stories-view.js:*)",
       "Bash(node scripts/test-stories-access.js:*)",
       "Bash(node scripts/find-all-functions.js:*)",
-      "Bash(node scripts/get-function-defs.js:*)"
+      "Bash(node scripts/get-function-defs.js:*)",
+      "Bash(node scripts/apply-featured-migration-direct.js:*)"
     ],
     "deny": [],
     "ask": []
