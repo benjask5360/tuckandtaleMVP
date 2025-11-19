@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X } from 'lucide-react'
 import type { StoryIllustration } from '@/lib/types/story-types'
+import ReviewRequestModal from '@/components/ReviewRequestModal'
 
 interface Story {
   id: string
@@ -45,6 +46,8 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   const [editedTitle, setEditedTitle] = useState('')
   const [editedParagraphs, setEditedParagraphs] = useState<string[]>([])
   const [editedMoral, setEditedMoral] = useState('')
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [shouldCheckReviewModal, setShouldCheckReviewModal] = useState(false)
 
   useEffect(() => {
     loadStory()
@@ -112,9 +115,32 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
       }
 
       setStory({ ...story, is_favorite: newFavoriteStatus })
+
+      // If user just favorited (not unfavorited), check if we should show review modal
+      if (newFavoriteStatus) {
+        checkAndShowReviewModal()
+      }
     } catch (err: any) {
       console.error('Error updating favorite:', err)
       alert(err.message)
+    }
+  }
+
+  const checkAndShowReviewModal = async () => {
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'GET',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.should_show_modal) {
+          setShowReviewModal(true)
+        }
+      }
+    } catch (err) {
+      console.error('Error checking review modal status:', err)
+      // Fail silently - don't interrupt user experience
     }
   }
 
@@ -611,6 +637,14 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
           </Link>
         </div>
       </div>
+
+      {/* Review Request Modal */}
+      <ReviewRequestModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        storyId={params.id}
+        storyTitle={story?.title}
+      />
     </div>
   )
 }

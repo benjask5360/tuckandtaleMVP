@@ -7,6 +7,7 @@ import { BookOpen, Calendar, Heart, Sparkles, Target, Filter, SortAsc, Film } fr
 import { useRouter } from 'next/navigation'
 import StoryCard from '@/components/StoryCard'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import ReviewRequestModal from '@/components/ReviewRequestModal'
 
 interface Story {
   id: string
@@ -141,6 +142,8 @@ export default function StoryLibraryPage() {
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'favorites'>('newest')
   const [maxStories, setMaxStories] = useState<number | null>(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [reviewStoryId, setReviewStoryId] = useState<string>('')
   const router = useRouter()
   const supabase = createClient()
 
@@ -290,11 +293,13 @@ export default function StoryLibraryPage() {
     const story = stories.find(s => s.id === storyId)
     if (!story) return
 
+    const newFavoriteStatus = !story.is_favorite
+
     try {
-      const response = await fetch(`/api/stories/${storyId}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/stories/${storyId}/favorite`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_favorite: !story.is_favorite })
+        body: JSON.stringify({ is_favorite: newFavoriteStatus })
       })
 
       if (!response.ok) {
@@ -303,11 +308,35 @@ export default function StoryLibraryPage() {
 
       // Update local state
       setStories(prev => prev.map(s =>
-        s.id === storyId ? { ...s, is_favorite: !s.is_favorite } : s
+        s.id === storyId ? { ...s, is_favorite: newFavoriteStatus } : s
       ))
+
+      // If user just favorited (not unfavorited), check if we should show review modal
+      if (newFavoriteStatus) {
+        checkAndShowReviewModal(storyId)
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error)
       alert('Failed to update favorite status. Please try again.')
+    }
+  }
+
+  const checkAndShowReviewModal = async (storyId: string) => {
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'GET',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.should_show_modal) {
+          setReviewStoryId(storyId)
+          setShowReviewModal(true)
+        }
+      }
+    } catch (err) {
+      console.error('Error checking review modal status:', err)
+      // Fail silently - don't interrupt user experience
     }
   }
 
@@ -542,6 +571,14 @@ export default function StoryLibraryPage() {
           </div>
         </div>
       </footer>
+
+      {/* Review Request Modal */}
+      <ReviewRequestModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        storyId={reviewStoryId}
+        storyTitle={stories.find(s => s.id === reviewStoryId)?.title}
+      />
     </div>
   )
 }
