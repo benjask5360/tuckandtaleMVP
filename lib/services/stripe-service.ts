@@ -6,7 +6,7 @@
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
 import { SubscriptionTierService } from './subscription-tier';
-import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId, PRICE_TO_TIER_MAP } from '@/lib/stripe/price-mapping';
+import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId, STRIPE_PRICES } from '@/lib/stripe/price-mapping';
 import type { BillingPeriod, SubscriptionTier } from '@/lib/types/subscription-types';
 
 // Lazy initialization of Stripe client to avoid build-time errors
@@ -264,7 +264,9 @@ export class StripeService {
         priceId,
         userId,
         subscriptionId: subscription.id,
-        availablePriceIds: Object.keys(PRICE_TO_TIER_MAP),
+        availablePriceIds: Object.values(STRIPE_PRICES).flatMap(tier =>
+          [tier.monthly.regular.id, tier.monthly.promo.id, tier.yearly.regular.id, tier.yearly.promo.id]
+        ),
       });
       return;
     }
