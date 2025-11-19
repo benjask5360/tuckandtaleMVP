@@ -8,7 +8,7 @@ import {
   User,
   Mail,
   Shield,
-  Bell,
+  // Bell, // Hidden until email preferences are implemented
   FileText,
   HelpCircle,
   Save,
@@ -32,9 +32,10 @@ export default function SettingsPage() {
 
   // Form state
   const [fullName, setFullName] = useState('');
-  const [emailMarketing, setEmailMarketing] = useState(false);
-  const [emailProductUpdates, setEmailProductUpdates] = useState(true);
-  const [emailAccountNotifications, setEmailAccountNotifications] = useState(true);
+  // Email preferences hidden until email system is set up
+  // const [emailMarketing, setEmailMarketing] = useState(false);
+  // const [emailProductUpdates, setEmailProductUpdates] = useState(true);
+  // const [emailAccountNotifications, setEmailAccountNotifications] = useState(true);
 
   useEffect(() => {
     loadProfileData();
@@ -47,9 +48,10 @@ export default function SettingsPage() {
         const data: UserProfileData = await response.json();
         setProfileData(data);
         setFullName(data.full_name || '');
-        setEmailMarketing(data.preferences.email_marketing);
-        setEmailProductUpdates(data.preferences.email_product_updates);
-        setEmailAccountNotifications(data.preferences.email_account_notifications);
+        // Email preferences hidden until email system is set up
+        // setEmailMarketing(data.preferences.email_marketing);
+        // setEmailProductUpdates(data.preferences.email_product_updates);
+        // setEmailAccountNotifications(data.preferences.email_account_notifications);
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -71,11 +73,12 @@ export default function SettingsPage() {
         },
         body: JSON.stringify({
           full_name: fullName,
-          preferences: {
-            email_marketing: emailMarketing,
-            email_product_updates: emailProductUpdates,
-            email_account_notifications: emailAccountNotifications,
-          },
+          // Email preferences hidden until email system is set up
+          // preferences: {
+          //   email_marketing: emailMarketing,
+          //   email_product_updates: emailProductUpdates,
+          //   email_account_notifications: emailAccountNotifications,
+          // },
         }),
       });
 
@@ -272,8 +275,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Email Preferences Section */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        {/* Email Preferences Section - Hidden until email system is set up */}
+        {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center">
               <Bell className="w-5 h-5 text-primary-600" />
@@ -282,7 +285,6 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            {/* Marketing Emails */}
             <div className="flex items-start justify-between py-3">
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
@@ -304,7 +306,6 @@ export default function SettingsPage() {
               </label>
             </div>
 
-            {/* Product Updates */}
             <div className="flex items-start justify-between py-3 border-t border-gray-100">
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
@@ -326,7 +327,6 @@ export default function SettingsPage() {
               </label>
             </div>
 
-            {/* Account Notifications */}
             <div className="flex items-start justify-between py-3 border-t border-gray-100">
               <div className="flex items-start gap-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
@@ -348,7 +348,7 @@ export default function SettingsPage() {
               </label>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Data & Privacy Section */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
