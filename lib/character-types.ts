@@ -110,7 +110,6 @@ export const characterTypes: CharacterTypeConfig[] = [
             options: [
               { value: 'fair', label: 'Fair' },
               { value: 'light', label: 'Light' },
-              { value: 'medium', label: 'Medium' },
               { value: 'olive', label: 'Olive' },
               { value: 'tan', label: 'Tan' },
               { value: 'brown', label: 'Brown' },
@@ -289,7 +288,6 @@ export const characterTypes: CharacterTypeConfig[] = [
             options: [
               { value: 'fair', label: 'Fair' },
               { value: 'light', label: 'Light' },
-              { value: 'medium', label: 'Medium' },
               { value: 'olive', label: 'Olive' },
               { value: 'tan', label: 'Tan' },
               { value: 'brown', label: 'Brown' },
