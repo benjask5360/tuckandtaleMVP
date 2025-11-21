@@ -23,24 +23,30 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * Build pet description from attributes
- * Matches logic in lib/prompt-builders/descriptionBuilder.ts
+ * Matches logic in lib/prompt-builders/descriptorMapper.ts and descriptionBuilder.ts
  */
 function buildPetDescription(attributes) {
   const parts = [];
 
-  // Get species/breed
+  // Get species/breed - PRIORITY: breed over species (don't concatenate!)
+  // This matches descriptorMapper.ts lines 263-271
   let species = '';
-  if (attributes.breed && attributes.species) {
-    species = `${attributes.breed} ${attributes.species}`;
-  } else if (attributes.breed) {
-    species = attributes.breed;
+  if (attributes.breed) {
+    species = attributes.breed;  // Use ONLY breed if provided
   } else if (attributes.species) {
-    species = attributes.species;
+    species = attributes.species;  // Fall back to species only if no breed
+  }
+
+  // Clean up primaryColor - extract just the color part if it has extra text
+  let petColor = attributes.primaryColor;
+  if (petColor) {
+    // Remove common suffixes like ", solid color" or extra whitespace
+    petColor = petColor.replace(/,\s*solid color/i, '').trim();
   }
 
   // Start with color (if provided) then species/breed
-  if (attributes.primaryColor && species) {
-    parts.push(`A ${attributes.primaryColor} ${species}`);
+  if (petColor && species) {
+    parts.push(`A ${petColor} ${species}`);
   } else if (species) {
     parts.push(`A ${species}`);
   } else {

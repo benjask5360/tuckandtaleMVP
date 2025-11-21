@@ -70,6 +70,14 @@ export function buildCharacterDescription(
 
     case 'pet':
       // Build description for pets
+      // Debug logging to diagnose missing species/color
+      console.log('🐾 Building pet description:', {
+        petColor: enhanced.petColor,
+        species: enhanced.species,
+        eyes: enhanced.eyes,
+        fullEnhanced: JSON.stringify(enhanced, null, 2)
+      });
+
       // Start with color (if provided) then species/breed
       if (enhanced.petColor && enhanced.species) {
         parts.push(`A ${enhanced.petColor} ${enhanced.species}`);
@@ -77,6 +85,7 @@ export function buildCharacterDescription(
         parts.push(`A ${enhanced.species}`);
       } else {
         parts.push('A pet');
+        console.warn('⚠️ Pet description defaulting to generic "A pet" - missing species/color');
       }
 
       // Add any additional physical attributes if provided

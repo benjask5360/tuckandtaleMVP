@@ -245,21 +245,44 @@ export async function mapSelectionsToEnhanced(
   }
 
   if (profileType === 'pet' && selections.primaryColor && !enhanced.petColor) {
-    console.log('Pet color fallback - using raw input:', selections.primaryColor);
+    console.log('🐾 Pet color fallback - using raw input:', selections.primaryColor);
     enhanced.petColor = selections.primaryColor;
   }
 
   // For pets: ALWAYS prioritize user-entered breed over generic species lookup
   // This ensures custom breeds (like "Golden Retriever") appear in descriptions
   if (profileType === 'pet') {
+    console.log('🐾 Pet descriptor mapping - checking breed/species:', {
+      breed: selections.breed,
+      species: selections.species,
+      currentEnhancedSpecies: enhanced.species,
+      willUseBreed: !!selections.breed,
+      willUseSpecies: !selections.breed && !!selections.species
+    });
+
     if (selections.breed) {
       // Always use the specific breed if provided by user
-      console.log('Pet breed - using user input:', selections.breed);
+      console.log('🐾 Pet breed - using user input:', selections.breed);
       enhanced.species = selections.breed;
     } else if (selections.species && !enhanced.species) {
       // Fall back to species only if no breed was specified
-      console.log('Pet species fallback - using raw input:', selections.species);
+      console.log('🐾 Pet species fallback - using raw input:', selections.species);
       enhanced.species = selections.species;
+    }
+
+    // Final check for debugging
+    if (!enhanced.species) {
+      console.error('❌ PET SPECIES MISSING after fallback logic!', {
+        selectionsBreed: selections.breed,
+        selectionsSpecies: selections.species,
+        enhancedSpecies: enhanced.species
+      });
+    }
+    if (!enhanced.petColor) {
+      console.error('❌ PET COLOR MISSING after fallback logic!', {
+        selectionsPrimaryColor: selections.primaryColor,
+        enhancedPetColor: enhanced.petColor
+      });
     }
   }
 
