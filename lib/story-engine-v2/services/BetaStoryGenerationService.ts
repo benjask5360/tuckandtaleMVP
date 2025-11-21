@@ -135,44 +135,21 @@ export class BetaStoryGenerationService {
       }
       console.log('✅ Cost log updated');
 
-      // 10. Generate illustrations if requested
-      if (request.includeIllustrations) {
-        console.log('\nStep 10: Generating illustrations...');
-        try {
-          const illustrationResult = await BetaIllustrationService.generateAllIllustrations(
-            userId,
-            storyId,
-            validation.story.scenes,
-            validation.story.coverIllustrationPrompt
-          );
-
-          console.log(`✅ All illustrations generated (${illustrationResult.sceneIllustrations.length} scenes + 1 cover)`);
-
-          // Update scenes with illustration URLs
-          await BetaIllustrationService.updateScenesWithIllustrations(
-            storyId,
-            validation.story.scenes,
-            illustrationResult.sceneIllustrations
-          );
-
-          // Update cover illustration
-          await BetaIllustrationService.updateCoverIllustration(
-            storyId,
-            illustrationResult.coverIllustrationUrl
-          );
-
-          console.log('✅ Story updated with illustration URLs');
-        } catch (error) {
-          console.error('❌ Illustration generation failed:', error);
-          // Don't fail the entire story generation if illustrations fail
-          console.log('⚠️  Continuing without illustrations');
-        }
-      }
-
-      // 11. Fetch and return final story
-      console.log('\nStep 11: Fetching final story...');
+      // 10. Return story immediately, generate illustrations asynchronously
+      console.log('\nStep 10: Fetching story for immediate return...');
       const story = await this.getStory(storyId);
-      console.log('✅ Story generation complete!');
+      console.log('✅ Story ready for user to read!');
+
+      // 11. Generate illustrations in the background (don't await)
+      if (request.includeIllustrations) {
+        console.log('\nStep 11: Scheduling illustration generation (background)...');
+        // Fire and forget - illustrations will be generated asynchronously
+        this.generateIllustrationsAsync(userId, storyId, validation.story.scenes, validation.story.coverIllustrationPrompt)
+          .catch((error) => {
+            console.error('❌ Background illustration generation failed:', error);
+          });
+        console.log('✅ Illustration generation scheduled');
+      }
 
       console.log('\n' + '='.repeat(80));
       console.log('BETA STORY GENERATION COMPLETED SUCCESSFULLY');
@@ -529,7 +506,7 @@ export class BetaStoryGenerationService {
   private static async getStory(storyId: string): Promise<any> {
     const supabase = createAdminClient();
 
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('content')
       .select('*')
       .eq('id', storyId)
@@ -540,5 +517,48 @@ export class BetaStoryGenerationService {
     }
 
     return data;
+  }
+
+  /**
+   * Generate illustrations asynchronously in the background
+   * This allows the user to start reading while illustrations are being created
+   */
+  private static async generateIllustrationsAsync(
+    userId: string,
+    storyId: string,
+    scenes: Scene[],
+    coverPrompt: string
+  ): Promise<void> {
+    console.log(`\n🎨 Starting background illustration generation for story ${storyId}...`);
+
+    try {
+      const illustrationResult = await BetaIllustrationService.generateAllIllustrations(
+        userId,
+        storyId,
+        scenes,
+        coverPrompt
+      );
+
+      console.log(`✅ All illustrations generated (${illustrationResult.sceneIllustrations.length} scenes + 1 cover)`);
+
+      // Update scenes with illustration URLs
+      await BetaIllustrationService.updateScenesWithIllustrations(
+        storyId,
+        scenes,
+        illustrationResult.sceneIllustrations
+      );
+
+      // Update cover illustration
+      await BetaIllustrationService.updateCoverIllustration(
+        storyId,
+        illustrationResult.coverIllustrationUrl
+      );
+
+      console.log(`✅ Story ${storyId} updated with all illustration URLs`);
+    } catch (error) {
+      console.error(`❌ Background illustration generation failed for story ${storyId}:`, error);
+      // Illustrations failed, but story text is still available
+      throw error;
+    }
   }
 }

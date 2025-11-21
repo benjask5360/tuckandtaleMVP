@@ -8,6 +8,7 @@ import Image from 'next/image'
 import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X } from 'lucide-react'
 import type { StoryIllustration } from '@/lib/types/story-types'
 import ReviewRequestModal from '@/components/ReviewRequestModal'
+import { IllustrationPending } from '@/components/IllustrationPending'
 
 interface BetaScene {
   paragraph: string
@@ -60,11 +61,56 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   const [editedMoral, setEditedMoral] = useState('')
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [shouldCheckReviewModal, setShouldCheckReviewModal] = useState(false)
+  const [illustrationsComplete, setIllustrationsComplete] = useState(false)
 
   useEffect(() => {
     loadStory()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
+
+  // Poll for illustration updates if they're pending
+  useEffect(() => {
+    if (!story || illustrationsComplete) return
+
+    const isBeta = story.engine_version === 'beta'
+    if (!isBeta) return
+
+    // Check if illustrations are still pending
+    const hasPendingIllustrations =
+      !story.cover_illustration_url ||
+      (story.story_scenes && story.story_scenes.some(scene => !scene.illustrationUrl))
+
+    if (!hasPendingIllustrations) {
+      setIllustrationsComplete(true)
+      return
+    }
+
+    // Poll every 3 seconds for updates
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/stories/${params.id}`)
+        const data = await response.json()
+
+        if (response.ok && data.story) {
+          setStory(data.story)
+
+          // Check if all illustrations are now complete
+          const allComplete =
+            data.story.cover_illustration_url &&
+            (!data.story.story_scenes || data.story.story_scenes.every((scene: BetaScene) => scene.illustrationUrl))
+
+          if (allComplete) {
+            setIllustrationsComplete(true)
+            clearInterval(pollInterval)
+          }
+        }
+      } catch (error) {
+        console.error('Error polling for illustration updates:', error)
+      }
+    }, 3000)
+
+    return () => clearInterval(pollInterval)
+  }, [story, params.id, illustrationsComplete])
 
   const loadStory = async () => {
     try {
@@ -512,17 +558,34 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
             <div className="border-t border-gray-200 mb-6"></div>
 
             {/* Cover Image */}
-            {coverImageUrl && (
+            {isBetaStory ? (
               <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
-                <Image
-                  src={coverImageUrl}
-                  alt="Story Cover"
-                  width={512}
-                  height={512}
-                  className="w-full h-auto object-contain"
-                  priority
-                />
+                {coverImageUrl ? (
+                  <Image
+                    src={coverImageUrl}
+                    alt="Story Cover"
+                    width={512}
+                    height={512}
+                    className="w-full h-auto object-contain"
+                    priority
+                  />
+                ) : (
+                  <IllustrationPending type="cover" />
+                )}
               </div>
+            ) : (
+              coverImageUrl && (
+                <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
+                  <Image
+                    src={coverImageUrl}
+                    alt="Story Cover"
+                    width={512}
+                    height={512}
+                    className="w-full h-auto object-contain"
+                    priority
+                  />
+                </div>
+              )
             )}
 
             {/* Starring Row - Clean Avatar Line */}
@@ -565,17 +628,34 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
               return (
                 <div key={index}>
                   {/* Scene Illustration above paragraph */}
-                  {sceneImageUrl && (
+                  {isBetaStory ? (
                     <div className="mt-8 mb-6 relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
-                      <Image
-                        src={sceneImageUrl}
-                        alt={`Scene ${index + 1}`}
-                        width={512}
-                        height={512}
-                        className="w-full h-auto object-contain"
-                        loading="lazy"
-                      />
+                      {sceneImageUrl ? (
+                        <Image
+                          src={sceneImageUrl}
+                          alt={`Scene ${index + 1}`}
+                          width={512}
+                          height={512}
+                          className="w-full h-auto object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <IllustrationPending type="scene" />
+                      )}
                     </div>
+                  ) : (
+                    sceneImageUrl && (
+                      <div className="mt-8 mb-6 relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
+                        <Image
+                          src={sceneImageUrl}
+                          alt={`Scene ${index + 1}`}
+                          width={512}
+                          height={512}
+                          className="w-full h-auto object-contain"
+                          loading="lazy"
+                        />
+                      </div>
+                    )
                   )}
 
                   {/* Paragraph text */}
