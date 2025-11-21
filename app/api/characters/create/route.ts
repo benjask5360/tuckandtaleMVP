@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { generateAIPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
 import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
 import { SubscriptionTierService } from '@/lib/services/subscription-tier'
+import { normalizeCharacterSelections } from '@/lib/descriptors/normalize'
 
 function calculateAge(dateOfBirth: string): number | null {
   if (!dateOfBirth) return null
@@ -85,10 +86,16 @@ export async function POST(request: Request) {
     const profileType = character_type as ProfileType
 
     // Build character selections from attributes
-    const selections: CharacterSelections = {
+    let selections: CharacterSelections = {
       ...attributes,
       age: attributes.age || calculateAge(attributes.dateOfBirth),
     }
+
+    // Normalize selections to use descriptor simple_terms when available
+    selections = await normalizeCharacterSelections(profileType, selections)
+
+    // Update attributes with normalized values
+    Object.assign(attributes, selections)
 
     // Generate enhanced appearance description using descriptor system
     let appearance_description = `A ${character_type.replace('_', ' ')}`
