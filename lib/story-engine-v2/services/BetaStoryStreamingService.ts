@@ -160,8 +160,8 @@ export class BetaStoryStreamingService {
             content: prompt,
           },
         ],
-        max_tokens: aiConfig.max_tokens || 4000,
-        temperature: aiConfig.temperature || 0.8,
+        max_tokens: aiConfig.settings.max_tokens || 4000,
+        temperature: aiConfig.settings.temperature || 0.8,
         stream: true,
         response_format: { type: 'json_object' },
       }),
@@ -283,7 +283,7 @@ export class BetaStoryStreamingService {
     // Start illustration generation if requested
     if (request.includeIllustrations && parsedStory.coverIllustrationPrompt) {
       BetaIllustrationService.generateAllIllustrations(
-        request.characters[0].id, // userId
+        userId,
         storyId,
         parsedStory.scenes,
         parsedStory.coverIllustrationPrompt
