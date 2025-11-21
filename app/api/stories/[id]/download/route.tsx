@@ -68,6 +68,8 @@ export async function GET(
     // Transform the data to match PDF template expectations
     const pdfStory = {
       ...story,
+      // Map story_text to body for legacy PDF template compatibility
+      body: story.story_text || story.paragraphs?.join('\n\n') || '',
       content_characters: story.content_characters?.map((cc: any) => ({
         character_profiles: Array.isArray(cc.character_profiles)
           ? cc.character_profiles[0]
