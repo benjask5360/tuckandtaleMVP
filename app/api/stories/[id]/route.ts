@@ -150,6 +150,7 @@ export async function PUT(
       .select('id, user_id, title, body, generation_metadata')
       .eq('id', params.id)
       .eq('content_type', 'story')
+      .is('deleted_at', null)
       .single();
 
     if (storyError || !story) {

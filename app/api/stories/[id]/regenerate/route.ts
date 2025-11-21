@@ -28,6 +28,7 @@ export async function PUT(
       .select('generation_metadata, user_id')
       .eq('id', storyId)
       .eq('content_type', 'story')
+      .is('deleted_at', null)
       .single();
 
     if (fetchError || !originalStory) {
