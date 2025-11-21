@@ -115,7 +115,7 @@ export class BetaStoryStreamingService {
       }
 
       // Final update with complete content
-      await this.finalizeStory(storyId, accumulatedContent, request, params);
+      await this.finalizeStory(storyId, userId, accumulatedContent, request, params);
 
     } catch (error) {
       console.error('Error in async story generation:', error);
@@ -244,6 +244,7 @@ export class BetaStoryStreamingService {
    */
   private static async finalizeStory(
     storyId: string,
+    userId: string,
     completeContent: string,
     request: BetaStoryGenerationRequest,
     params: StoryGenerationParams
