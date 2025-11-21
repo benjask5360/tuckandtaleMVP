@@ -12,7 +12,9 @@
       "Bash(npm run migrate:*)",
       "Bash(node scripts/debug-story.js:*)",
       "Bash(node scripts/check-stories-view.js:*)",
-      "Bash(node scripts/test-api-story.js:*)"
+      "Bash(node scripts/test-api-story.js:*)",
+      "Bash(node scripts/test-cheeto-normalization.js:*)",
+      "Bash(node scripts/regenerate-cheeto.js:*)"
     ],
     "deny": [],
     "ask": []

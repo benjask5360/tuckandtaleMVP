@@ -73,6 +73,10 @@ export interface BetaStoryGenerationRequest {
     metadata?: {
       targetParagraphs?: number;
       wordsPerParagraph?: number;
+      wordsMin?: number;
+      wordsMax?: number;
+      word_count_min?: number;
+      word_count_max?: number;
     };
   };
   growthTopic?: {
