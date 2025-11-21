@@ -295,7 +295,7 @@ Your stories:
     instructions += '    }\n';
     instructions += '  ],\n';
     instructions += '  "moral": "Curiosity and courage help us discover wonderful things",\n';
-    instructions += '  "coverIllustrationPrompt": "Disney pixar book cover illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, determined expression. SETTING: Magical scene that captures the essence of the story. ACTIONS: - ' + heroName + ' stands at the center looking brave and ready for adventure. STYLE: Disney pixar storybook cover"\n';
+    instructions += '  "coverIllustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, determined expression. SETTING: Magical scene that captures the essence of the story. ACTIONS: - ' + heroName + ' stands at the center looking brave and ready for adventure. STYLE: Disney pixar"\n';
     instructions += '}\n';
     instructions += '```\n\n';
 
@@ -337,9 +337,11 @@ Your stories:
 
     instructions += '**COVER ILLUSTRATION PROMPT:**\n';
     instructions += '- Should capture the essence of the entire story\n';
-    instructions += '- Feature the hero prominently\n';
-    instructions += '- Use "Disney pixar storybook cover" style\n';
-    instructions += '- Follow the same format as scene prompts\n';
+    instructions += '- Feature the hero prominently in a central, iconic pose\n';
+    instructions += '- Use the EXACT SAME format as scene illustration prompts\n';
+    instructions += '- Start with "Disney pixar illustration" (NOT "book cover" - that creates text)\n';
+    instructions += '- End with "STYLE: Disney pixar" (NOT "storybook cover")\n';
+    instructions += '- Keep clothing, hair color, and eye color IDENTICAL to all scene prompts\n';
 
     return instructions;
   }
