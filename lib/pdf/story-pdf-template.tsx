@@ -201,7 +201,7 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
 
   // Get paragraphs - handle both Beta and Legacy formats
   const paragraphs = isBetaStory
-    ? story.story_scenes.map((scene: any) => scene.paragraph)
+    ? story.story_scenes?.map((scene: any) => scene.paragraph) || []
     : (story.paragraphs || story.story_text?.split('\n\n').filter((p: string) => p.trim()) || []);
 
   // Get cover illustration - handle both formats
@@ -212,11 +212,11 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
   // Get scene illustrations - handle both formats
   const sceneIllustrations = isBetaStory
     ? story.story_scenes
-        .filter((scene: any) => scene.illustrationUrl)
+        ?.filter((scene: any) => scene.illustrationUrl)
         .map((scene: any, index: number) => ({
           type: `scene_${index + 1}`,
           url: scene.illustrationUrl
-        }))
+        })) || []
     : (story.story_illustrations?.filter(ill => ill.type !== 'scene_0') || []);
 
   // Get character names - use generation_metadata.characters if available, fallback to content_characters
