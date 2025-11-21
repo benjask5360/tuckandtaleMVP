@@ -73,7 +73,7 @@ export default async function DashboardPage() {
   // Fetch stories with cover illustrations
   const { data: stories, count: storyCount } = await supabase
     .from('stories')
-    .select('id, title, story_illustrations', { count: 'exact' })
+    .select('id, title, story_illustrations, engine_version, cover_illustration_url', { count: 'exact' })
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(3)
@@ -273,8 +273,12 @@ export default async function DashboardPage() {
               {stories && stories.length > 0 ? (
                 <>
                   {stories.slice(0, 3).map((story: any, idx: number) => {
-                    // Get cover illustration (scene_0)
-                    const coverIllustration = story.story_illustrations?.find((ill: any) => ill.type === 'scene_0')
+                    // Get cover illustration - handle both Beta and Legacy formats
+                    // Beta: use cover_illustration_url
+                    // Legacy: use scene_0 from story_illustrations
+                    const coverUrl = story.engine_version === 'beta'
+                      ? story.cover_illustration_url
+                      : story.story_illustrations?.find((ill: any) => ill.type === 'scene_0')?.url
 
                     return (
                       <div
@@ -282,9 +286,9 @@ export default async function DashboardPage() {
                         className="relative"
                         style={{ marginLeft: idx > 0 ? '-8px' : '0', zIndex: idx }}
                       >
-                        {coverIllustration?.url ? (
+                        {coverUrl ? (
                           <img
-                            src={coverIllustration.url}
+                            src={coverUrl}
                             alt={story.title}
                             className="w-12 h-12 rounded-full object-cover object-top ring-2 ring-white shadow-sm"
                           />
