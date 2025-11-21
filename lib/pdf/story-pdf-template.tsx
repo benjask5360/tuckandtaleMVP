@@ -162,6 +162,10 @@ interface StoryPDFTemplateProps {
     title: string;
     body: string;
     created_at: string;
+    // Database fields for both Beta and Legacy stories
+    story_text?: string;
+    paragraphs?: string[];
+    moral?: string;
     generation_metadata: {
       mode: 'fun' | 'growth';
       genre_display?: string;
