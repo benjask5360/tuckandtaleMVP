@@ -170,11 +170,17 @@ interface StoryPDFTemplateProps {
       growth_topic_display?: string;
       moral?: string;
       paragraphs?: string[];
+      characters?: Array<{
+        character_profile_id: string | null;
+        character_name: string;
+        profile_type: string | null;
+      }>;
     };
     story_illustrations?: Array<{
       type: string;
       url: string;
     }>;
+    // Deprecated - kept for backward compatibility
     content_characters?: Array<{
       character_profiles: {
         name: string;
@@ -193,8 +199,10 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
   // Get scene illustrations (scene_1 through scene_8)
   const sceneIllustrations = story.story_illustrations?.filter(ill => ill.type !== 'scene_0') || [];
 
-  // Get character names
-  const characters = story.content_characters?.map(cc => cc.character_profiles.name) || [];
+  // Get character names - use generation_metadata.characters if available, fallback to content_characters
+  const characters = story.generation_metadata.characters?.map(c => c.character_name) ||
+    story.content_characters?.map(cc => cc.character_profiles.name) ||
+    [];
 
   // Format date
   const formattedDate = new Date(story.created_at).toLocaleDateString('en-US', {

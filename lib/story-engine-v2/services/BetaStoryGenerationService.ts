@@ -111,10 +111,10 @@ export class BetaStoryGenerationService {
       const storyId = await this.saveStory(userId, validation.story, request, prompt);
       console.log(`✅ Story saved with ID: ${storyId}`);
 
-      // 8. Link characters
-      console.log('\nStep 8: Linking characters...');
-      await this.linkCharacters(storyId, request.characters);
-      console.log('✅ Characters linked');
+      // 8. Link characters - DEPRECATED: Now stored in generation_metadata
+      // console.log('\nStep 8: Linking characters...');
+      // await this.linkCharacters(storyId, request.characters);
+      // console.log('✅ Characters linked');
 
       // 9. Update cost log with tokens
       console.log('\nStep 9: Updating cost log...');
@@ -451,6 +451,12 @@ export class BetaStoryGenerationService {
           hero_age: heroAge,
           character_count: request.characters.length,
           include_illustrations: request.includeIllustrations,
+          // Store characters directly in metadata (replacing content_characters table)
+          characters: request.characters.map(char => ({
+            character_profile_id: char.id || null,
+            character_name: char.name,
+            profile_type: char.profileType || null,
+          })),
         },
         include_illustrations: request.includeIllustrations,
         engine_version: 'beta',

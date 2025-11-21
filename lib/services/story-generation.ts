@@ -110,8 +110,8 @@ export class StoryGenerationService {
     // 3. Create content record
     const story = await this.saveStory(userId, parsed, request, prompt);
 
-    // 4. Link characters
-    await this.linkCharacters(story.id, request.characters);
+    // 4. Link characters - DEPRECATED: Now stored in generation_metadata
+    // await this.linkCharacters(story.id, request.characters);
 
     // 5. Generate illustration if prompt exists and illustrations were requested
     if (parsed.illustration_prompt && request.includeIllustrations) {
@@ -565,6 +565,12 @@ export class StoryGenerationService {
           hero_age: request.heroAge,
           character_count: request.characters.length,
           include_illustrations: request.includeIllustrations || false,
+          // Store characters directly in metadata (replacing content_characters table)
+          characters: request.characters.map(char => ({
+            character_profile_id: char.id || null,
+            character_name: char.name,
+            profile_type: char.profileType || null,
+          })),
         },
         include_illustrations: request.includeIllustrations || false,
         story_illustration_prompt: parsed.illustration_prompt || null,

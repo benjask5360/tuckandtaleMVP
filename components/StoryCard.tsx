@@ -17,8 +17,14 @@ interface StoryCardProps {
     }>
     generation_metadata: {
       mode: 'fun' | 'growth'
+      characters?: Array<{
+        character_profile_id: string | null
+        character_name: string
+        profile_type: string | null
+      }>
     }
-    content_characters: Array<{
+    // Deprecated - kept for backward compatibility
+    content_characters?: Array<{
       character_profiles: {
         id: string
         name: string
@@ -44,7 +50,9 @@ export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCa
     : story.story_illustrations?.find(ill => ill.type === 'scene_0')?.url
 
   // Get hero character (first character)
-  const heroCharacter = story.content_characters[0]?.character_profiles
+  // Use generation_metadata.characters if available, fallback to content_characters for backward compatibility
+  const heroCharacter = story.generation_metadata?.characters?.[0] ||
+    story.content_characters?.[0]?.character_profiles
 
   // Format date
   const date = new Date(story.created_at).toLocaleDateString('en-US', {
@@ -126,12 +134,13 @@ export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCa
               </span>
             )}
 
-            {heroCharacter?.avatar_cache?.image_url && (
+            {/* Show avatar only if we have content_characters data (backward compatibility) */}
+            {story.content_characters?.[0]?.character_profiles?.avatar_cache?.image_url && (
               <>
                 <span className="text-gray-400">•</span>
                 <img
-                  src={heroCharacter.avatar_cache.image_url}
-                  alt={heroCharacter.name}
+                  src={story.content_characters[0].character_profiles.avatar_cache.image_url}
+                  alt={story.content_characters[0].character_profiles.name}
                   className="w-6 h-6 rounded-full border border-gray-200"
                 />
               </>

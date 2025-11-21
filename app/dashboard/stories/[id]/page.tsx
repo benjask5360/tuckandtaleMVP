@@ -32,8 +32,14 @@ interface Story {
     growth_topic_display?: string
     moral?: string
     paragraphs: string[]
+    characters?: Array<{
+      character_profile_id: string | null
+      character_name: string
+      profile_type: string | null
+    }>
   }
-  content_characters: Array<{
+  // Deprecated - kept for backward compatibility
+  content_characters?: Array<{
     character_profiles: {
       id: string
       name: string
@@ -538,11 +544,13 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                   </>
                 )}
               </span>
-              {story.content_characters && story.content_characters.length > 0 && (
+              {/* Show character name from either metadata or content_characters */}
+              {(story.generation_metadata?.characters?.[0] || story.content_characters?.[0]) && (
                 <>
                   <span className="text-gray-400">•</span>
                   <span className="font-medium text-gray-700">
-                    {story.content_characters[0].character_profiles.name}
+                    {story.generation_metadata?.characters?.[0]?.character_name ||
+                     story.content_characters?.[0]?.character_profiles.name}
                   </span>
                 </>
               )}
@@ -588,27 +596,44 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
               )
             )}
 
-            {/* Starring Row - Clean Avatar Line */}
-            {story.content_characters && story.content_characters.length > 0 && (
+            {/* Starring Row - Show characters from metadata or content_characters */}
+            {((story.generation_metadata?.characters && story.generation_metadata.characters.length > 0) ||
+              (story.content_characters && story.content_characters.length > 0)) && (
               <div className="mt-6 flex items-center justify-center gap-2 flex-wrap">
                 <span className="text-sm text-gray-600">Starring:</span>
-                {story.content_characters.map((cc, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    {cc.character_profiles.avatar_url && (
-                      <img
-                        src={cc.character_profiles.avatar_url}
-                        alt={cc.character_profiles.name}
-                        className="w-6 h-6 rounded-full border border-gray-200"
-                      />
-                    )}
-                    <span className="text-sm font-medium text-gray-700">
-                      {cc.character_profiles.name}
-                    </span>
-                    {idx < story.content_characters.length - 1 && (
-                      <span className="text-gray-400">•</span>
-                    )}
-                  </div>
-                ))}
+                {/* Use metadata characters if available, otherwise fallback to content_characters */}
+                {story.generation_metadata?.characters ? (
+                  // New structure from metadata
+                  story.generation_metadata.characters.map((char, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-700">
+                        {char.character_name}
+                      </span>
+                      {idx < story.generation_metadata.characters.length - 1 && (
+                        <span className="text-gray-400">•</span>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  // Fallback to old structure (with avatars)
+                  story.content_characters?.map((cc, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      {cc.character_profiles.avatar_url && (
+                        <img
+                          src={cc.character_profiles.avatar_url}
+                          alt={cc.character_profiles.name}
+                          className="w-6 h-6 rounded-full border border-gray-200"
+                        />
+                      )}
+                      <span className="text-sm font-medium text-gray-700">
+                        {cc.character_profiles.name}
+                      </span>
+                      {idx < (story.content_characters?.length || 0) - 1 && (
+                        <span className="text-gray-400">•</span>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
