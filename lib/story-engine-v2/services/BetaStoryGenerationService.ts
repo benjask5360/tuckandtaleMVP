@@ -10,6 +10,7 @@ import { BetaStoryPromptBuilder } from '../prompt-builders/BetaStoryPromptBuilde
 import { BetaStoryValidator } from './BetaStoryValidator';
 import { BetaIllustrationService } from './BetaIllustrationService';
 import { AIConfigService, type AIConfig } from '@/lib/services/ai-config';
+import { withRetry, isRateLimitError } from '@/lib/utils/retry';
 import type {
   BetaStoryGenerationRequest,
   BetaStoryOpenAIResponse,
@@ -366,7 +367,7 @@ export class BetaStoryGenerationService {
   }
 
   /**
-   * Call OpenAI API to generate story
+   * Call OpenAI API to generate story with retry logic
    */
   private static async callOpenAI(
     prompt: string,
@@ -402,33 +403,97 @@ export class BetaStoryGenerationService {
     console.log(`  Max Tokens: ${requestBody.max_tokens}`);
     console.log(`  Temperature: ${requestBody.temperature}`);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+    // Wrap the API call with retry logic
+    return await withRetry(
+      async () => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
+
+        try {
+          const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error('OpenAI API Error Response:', {
+              status: response.status,
+              statusText: response.statusText,
+              body: errorText.substring(0, 500), // Log first 500 chars
+            });
+
+            // Create error with status for retry logic
+            const error: any = new Error(
+              `OpenAI API error: ${response.status} ${response.statusText}`
+            );
+            error.status = response.status;
+            error.statusText = response.statusText;
+            error.responseBody = errorText;
+            throw error;
+          }
+
+          const data = await response.json();
+
+          if (!data.choices || data.choices.length === 0) {
+            throw new Error('No response from OpenAI');
+          }
+
+          const content = data.choices[0].message.content;
+          const tokens = data.usage?.total_tokens || 0;
+          const promptTokens = data.usage?.prompt_tokens || 0;
+          const completionTokens = data.usage?.completion_tokens || 0;
+
+          return { content, tokens, promptTokens, completionTokens };
+        } catch (error: any) {
+          clearTimeout(timeoutId);
+
+          // Handle fetch abort (timeout)
+          if (error.name === 'AbortError') {
+            const timeoutError: any = new Error('OpenAI API request timed out after 90 seconds');
+            timeoutError.status = 408; // Request Timeout
+            throw timeoutError;
+          }
+
+          throw error;
+        }
       },
-      body: JSON.stringify(requestBody),
-    });
+      {
+        maxRetries: 3,
+        baseDelayMs: 1000,
+        maxDelayMs: 30000,
+        timeoutMs: 90000,
+        // Custom retry logic for rate limiting
+        shouldRetry: (error: any, attempt: number) => {
+          // Don't retry if we've exhausted attempts
+          if (attempt >= 3) return false;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API Error:', errorText);
-      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
-    }
+          // Longer delay for rate limit errors
+          if (isRateLimitError(error)) {
+            console.warn('⚠️  Rate limit detected, will retry with extended delay');
+            return true;
+          }
 
-    const data = await response.json();
-
-    if (!data.choices || data.choices.length === 0) {
-      throw new Error('No response from OpenAI');
-    }
-
-    const content = data.choices[0].message.content;
-    const tokens = data.usage?.total_tokens || 0;
-    const promptTokens = data.usage?.prompt_tokens || 0;
-    const completionTokens = data.usage?.completion_tokens || 0;
-
-    return { content, tokens, promptTokens, completionTokens };
+          // Retry on server errors and transient failures
+          const retryableStatuses = [408, 429, 500, 502, 503, 504];
+          return retryableStatuses.includes(error.status);
+        },
+        onRetry: (error, attempt, delayMs) => {
+          console.warn(
+            `🔄 OpenAI API retry attempt ${attempt}/3 ` +
+            `(${error.status || 'unknown'} error). ` +
+            `Waiting ${delayMs}ms before retry...`
+          );
+        },
+      }
+    );
   }
 
   /**

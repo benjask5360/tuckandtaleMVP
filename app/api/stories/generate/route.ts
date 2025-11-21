@@ -167,6 +167,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.message.includes('timed out')) {
+      return NextResponse.json(
+        {
+          error: 'Story generation timed out. The AI service may be experiencing high load. Please try again.',
+          type: 'timeout_error',
+          details: error.message
+        },
+        { status: 504 }
+      );
+    }
+
+    // Handle rate limit errors (429)
+    if (error.status === 429 || error.message.includes('rate limit')) {
+      return NextResponse.json(
+        {
+          error: 'The AI service is experiencing high demand. Please wait a moment and try again.',
+          type: 'rate_limit_error',
+          details: error.message
+        },
+        { status: 429 }
+      );
+    }
+
     // Handle specific error types
     if (error.message.includes('No AI config found')) {
       return NextResponse.json(
@@ -175,7 +199,20 @@ export async function POST(request: Request) {
       );
     }
 
+    // Handle OpenAI API errors (after retries have been exhausted)
     if (error.message.includes('OpenAI API')) {
+      // Check if it's a gateway error (502/503)
+      if (error.status === 502 || error.status === 503 || error.message.includes('Bad Gateway') || error.message.includes('Service Unavailable')) {
+        return NextResponse.json(
+          {
+            error: 'The AI service is temporarily unavailable. We attempted to retry automatically but were unsuccessful. Please try again in a few moments.',
+            type: 'service_unavailable',
+            details: error.message
+          },
+          { status: 503 }
+        );
+      }
+
       return NextResponse.json(
         { error: 'Story generation service temporarily unavailable. Please try again in a moment.' },
         { status: 503 }
