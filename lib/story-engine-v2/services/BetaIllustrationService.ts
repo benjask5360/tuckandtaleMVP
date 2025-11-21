@@ -55,56 +55,36 @@ export class BetaIllustrationService {
     }
 
     const leonardoClient = new LeonardoClient();
-    const sceneIllustrations: { sceneIndex: number; illustrationUrl: string }[] = [];
     let totalCreditsUsed = 0;
+    let sceneIllustrations: { sceneIndex: number; illustrationUrl: string }[] = [];
+    let coverIllustrationUrl = '';
 
-    // Generate scene illustrations
-    for (let i = 0; i < scenes.length; i++) {
-      const scene = scenes[i];
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`GENERATING SCENE ${i + 1}/${scenes.length} ILLUSTRATION`);
-      console.log('='.repeat(80));
-      console.log('Prompt:');
-      console.log(scene.illustrationPrompt);
-      console.log('='.repeat(80) + '\n');
+    console.log(`\n${'='.repeat(80)}`);
+    console.log('GENERATING ALL ILLUSTRATIONS CONCURRENTLY (FASTER!)');
+    console.log('='.repeat(80));
+    console.log(`Generating ${scenes.length} scenes + 1 cover = ${scenes.length + 1} total images`);
+    console.log('='.repeat(80) + '\n');
 
-      try {
-        const result = await this.generateSingleIllustration(
+    // Generate ALL illustrations concurrently (scenes + cover at the same time)
+    try {
+      const scenePromises = scenes.map((scene, i) => {
+        console.log(`Starting scene ${i + 1} illustration...`);
+        return this.generateSingleIllustration(
           leonardoClient,
           aiConfig,
           scene.illustrationPrompt,
           userId,
           contentId,
           `scene_${i}`
-        );
-
-        sceneIllustrations.push({
+        ).then(result => ({
           sceneIndex: i,
           illustrationUrl: result.url,
-        });
+          creditsUsed: result.creditsUsed,
+        }));
+      });
 
-        totalCreditsUsed += result.creditsUsed;
-
-        console.log(`✅ Scene ${i + 1} illustration generated successfully`);
-        console.log(`   URL: ${result.url}`);
-        console.log(`   Credits used: ${result.creditsUsed}`);
-      } catch (error) {
-        console.error(`❌ Failed to generate illustration for scene ${i + 1}:`, error);
-        throw new Error(`Failed to generate scene ${i + 1} illustration: ${error}`);
-      }
-    }
-
-    // Generate cover illustration
-    console.log(`\n${'='.repeat(80)}`);
-    console.log('GENERATING COVER ILLUSTRATION');
-    console.log('='.repeat(80));
-    console.log('Prompt:');
-    console.log(coverPrompt);
-    console.log('='.repeat(80) + '\n');
-
-    let coverIllustrationUrl: string;
-    try {
-      const result = await this.generateSingleIllustration(
+      console.log('Starting cover illustration...');
+      const coverPromise = this.generateSingleIllustration(
         leonardoClient,
         aiConfig,
         coverPrompt,
@@ -113,15 +93,34 @@ export class BetaIllustrationService {
         'cover'
       );
 
-      coverIllustrationUrl = result.url;
-      totalCreditsUsed += result.creditsUsed;
+      // Wait for ALL illustrations to complete
+      console.log(`\nWaiting for all ${scenes.length + 1} illustrations to complete...`);
+      const [sceneResults, coverResult] = await Promise.all([
+        Promise.all(scenePromises),
+        coverPromise,
+      ]);
 
-      console.log(`✅ Cover illustration generated successfully`);
-      console.log(`   URL: ${result.url}`);
-      console.log(`   Credits used: ${result.creditsUsed}`);
+      // Process results
+      sceneIllustrations = sceneResults.map(result => ({
+        sceneIndex: result.sceneIndex,
+        illustrationUrl: result.illustrationUrl,
+      }));
+
+      coverIllustrationUrl = coverResult.url;
+
+      // Calculate total credits
+      totalCreditsUsed = sceneResults.reduce((sum, r) => sum + r.creditsUsed, 0) + coverResult.creditsUsed;
+
+      console.log('\n' + '='.repeat(80));
+      console.log('✅ ALL ILLUSTRATIONS COMPLETED!');
+      console.log('='.repeat(80));
+      console.log(`Scenes: ${sceneResults.length}`);
+      console.log(`Cover: 1`);
+      console.log(`Total credits used: ${totalCreditsUsed}`);
+      console.log('='.repeat(80));
     } catch (error) {
-      console.error('❌ Failed to generate cover illustration:', error);
-      throw new Error(`Failed to generate cover illustration: ${error}`);
+      console.error('❌ Failed to generate illustrations:', error);
+      throw new Error(`Failed to generate illustrations: ${error}`);
     }
 
     console.log('\n' + '='.repeat(80));
