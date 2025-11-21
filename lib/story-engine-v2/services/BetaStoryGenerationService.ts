@@ -85,27 +85,51 @@ export class BetaStoryGenerationService {
       costLogId = costLog?.id || null;
       console.log(`✅ Cost log created: ${costLogId}`);
 
-      // 5. Call OpenAI to generate story
-      console.log('\nStep 5: Calling OpenAI API...');
-      const openAIResponse = await this.callOpenAI(prompt, aiConfig);
-      console.log(`✅ OpenAI response received`);
-      console.log(`   Tokens used: ${openAIResponse.tokens} (prompt: ${openAIResponse.promptTokens}, completion: ${openAIResponse.completionTokens})`);
+      // 5 & 6. Call OpenAI and parse with automatic retry on JSON errors
+      console.log('\nStep 5 & 6: Calling OpenAI and parsing response (with auto-retry)...');
 
-      // 6. Parse and validate response
-      console.log('\nStep 6: Parsing and validating response...');
-      const parsedStory = BetaStoryValidator.extractJSON(openAIResponse.content);
-      const validation = BetaStoryValidator.validate(parsedStory, {
-        requireIllustrations: request.includeIllustrations,
-      });
+      let validation: any;
+      let parsedStory: any;
+      let openAIResponse: any;
+      const maxJsonRetries = 2;
 
-      BetaStoryValidator.logValidationResult(validation);
+      for (let attempt = 0; attempt <= maxJsonRetries; attempt++) {
+        try {
+          // Call OpenAI
+          if (attempt > 0) {
+            console.log(`\n🔄 JSON parsing failed, retrying OpenAI call (attempt ${attempt + 1}/${maxJsonRetries + 1})...`);
+          }
 
-      if (!validation.isValid || !validation.story) {
-        const errorMsg = BetaStoryValidator.getErrorMessage(validation);
-        throw new Error(`Story validation failed:\n${errorMsg}`);
+          openAIResponse = await this.callOpenAI(prompt, aiConfig);
+          console.log(`✅ OpenAI response received (attempt ${attempt + 1})`);
+          console.log(`   Tokens used: ${openAIResponse.tokens} (prompt: ${openAIResponse.promptTokens}, completion: ${openAIResponse.completionTokens})`);
+
+          // Parse and validate response
+          parsedStory = BetaStoryValidator.extractJSON(openAIResponse.content);
+          validation = BetaStoryValidator.validate(parsedStory, {
+            requireIllustrations: request.includeIllustrations,
+          });
+
+          BetaStoryValidator.logValidationResult(validation);
+
+          if (!validation.isValid || !validation.story) {
+            const errorMsg = BetaStoryValidator.getErrorMessage(validation);
+            throw new Error(`Story validation failed:\n${errorMsg}`);
+          }
+
+          console.log('✅ Story parsed and validated successfully');
+          break; // Success! Exit retry loop
+
+        } catch (error: any) {
+          if (attempt < maxJsonRetries && error.message.includes('Invalid JSON')) {
+            console.warn(`⚠️  JSON parsing failed on attempt ${attempt + 1}, will retry...`);
+            console.warn(`   Error: ${error.message}`);
+            continue; // Try again
+          }
+          // Last attempt or non-JSON error - throw it
+          throw error;
+        }
       }
-
-      console.log('✅ Story validated successfully');
 
       // 7. Save story to database
       console.log('\nStep 7: Saving story to database...');

@@ -4,6 +4,7 @@
  * Ensures proper structure with scenes and Disney Pixar illustration prompts
  */
 
+import { jsonrepair } from 'jsonrepair';
 import type { BetaStoryOpenAIResponse, BetaValidationResult } from '../types/beta-story-types';
 
 export class BetaStoryValidator {
@@ -200,10 +201,24 @@ export class BetaStoryValidator {
           fixed += char;
         }
 
-        console.log('Attempting to parse repaired JSON...');
-        const parsed = JSON.parse(fixed);
-        console.log('✅ JSON repaired and parsed successfully');
-        return parsed;
+        console.log('Attempting to parse manually repaired JSON...');
+        try {
+          const parsed = JSON.parse(fixed);
+          console.log('✅ JSON repaired and parsed successfully');
+          return parsed;
+        } catch (secondError) {
+          // Manual repair failed, try jsonrepair library as last resort
+          console.log('⚠️ Manual repair failed, trying jsonrepair library...');
+          try {
+            const repaired = jsonrepair(cleaned);
+            const parsed = JSON.parse(repaired);
+            console.log('✅ JSON repaired successfully with jsonrepair library');
+            return parsed;
+          } catch (thirdError) {
+            console.error('❌ All repair attempts failed');
+            throw thirdError;
+          }
+        }
       }
     } catch (error) {
       console.error('❌ Failed to extract JSON from OpenAI response');
