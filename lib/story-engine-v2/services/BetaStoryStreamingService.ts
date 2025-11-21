@@ -251,7 +251,7 @@ export class BetaStoryStreamingService {
     const adminSupabase = createAdminClient();
 
     // Parse and validate complete story
-    const parsedStory = BetaStoryValidator.extractJSON(completeContent);
+    const parsedStory: BetaStoryOpenAIResponse = BetaStoryValidator.extractJSON(completeContent);
     const validation = BetaStoryValidator.validate(parsedStory, {
       requireIllustrations: request.includeIllustrations,
     });
