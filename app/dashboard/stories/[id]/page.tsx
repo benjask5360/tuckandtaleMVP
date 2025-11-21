@@ -648,7 +648,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                       <span className="text-sm font-medium text-gray-700">
                         {char.character_name}
                       </span>
-                      {idx < story.generation_metadata.characters.length - 1 && (
+                      {idx < (story.generation_metadata.characters?.length || 0) - 1 && (
                         <span className="text-gray-400">•</span>
                       )}
                     </div>
