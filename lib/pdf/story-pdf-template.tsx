@@ -180,6 +180,12 @@ interface StoryPDFTemplateProps {
       type: string;
       url: string;
     }>;
+    // Beta story fields
+    story_scenes?: Array<{
+      paragraph: string;
+      illustrationUrl?: string;
+    }>;
+    cover_illustration_url?: string;
     // Deprecated - kept for backward compatibility
     content_characters?: Array<{
       character_profiles: {
