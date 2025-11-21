@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Shield, Users, FileText, BarChart3, Settings, Database } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -52,19 +53,19 @@ export default async function AdminDashboardPage() {
             <div className="text-sm text-gray-500 italic">Coming soon...</div>
           </div>
 
-          {/* Content Management */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow">
+          {/* Story Inspector */}
+          <Link href="/dashboard/admin/stories" className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow block group">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-green-50 rounded-xl">
+              <div className="p-3 bg-green-50 rounded-xl group-hover:bg-green-100 transition-colors">
                 <FileText className="w-6 h-6 text-green-600" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">Content</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Story Inspector</h2>
             </div>
             <p className="text-gray-600 mb-4">
-              Review and moderate user-generated stories and content.
+              Inspect generated stories with full system prompts, content, and all 9 illustrations.
             </p>
-            <div className="text-sm text-gray-500 italic">Coming soon...</div>
-          </div>
+            <div className="text-sm text-green-600 font-medium">View Stories →</div>
+          </Link>
 
           {/* Analytics */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow">
