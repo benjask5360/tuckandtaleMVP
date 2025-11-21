@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -24,6 +24,7 @@ interface Story {
   created_at: string
   is_favorite: boolean
   story_illustrations?: StoryIllustration[]
+  generation_status?: 'generating' | 'text_complete' | 'complete' | 'error'
   generation_metadata: {
     mode: 'fun' | 'growth'
     genre_display: string
@@ -37,6 +38,11 @@ interface Story {
       character_name: string
       profile_type: string | null
     }>
+    progress?: {
+      scenes_completed: number
+      total_scenes: number
+      is_streaming?: boolean
+    }
   }
   // Deprecated - kept for backward compatibility
   content_characters?: Array<{
@@ -69,89 +75,159 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   const [shouldCheckReviewModal, setShouldCheckReviewModal] = useState(false)
   const [illustrationsComplete, setIllustrationsComplete] = useState(false)
 
+  // Polling control ref to prevent multiple loops
+  const pollingActiveRef = useRef(false)
+
   useEffect(() => {
     loadStory()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
 
-  // Poll for illustration updates if they're pending
+  // Poll for story text and illustration updates if they're pending
   useEffect(() => {
-    if (!story || illustrationsComplete) return
+    // Start polling immediately, even before story loads
+    // This ensures we catch updates as soon as the story is created
 
-    const isBeta = story.engine_version === 'beta'
-    if (!isBeta) return
+    // If we have a story, check if it's Beta and needs polling
+    if (story) {
+      const isBeta = story.engine_version === 'beta'
+      if (!isBeta) return
 
-    // Check if illustrations are still pending
-    const hasPendingIllustrations =
-      !story.cover_illustration_url ||
-      (story.story_scenes && story.story_scenes.some(scene => !scene.illustrationUrl))
+      // Check completion status early
+      if (story.generation_status === 'complete') {
+        setIllustrationsComplete(true)
+        return
+      }
 
-    if (!hasPendingIllustrations) {
-      setIllustrationsComplete(true)
+      // Check if we need to poll
+      const isTextGenerating = story.generation_status === 'generating' || !story.generation_status
+      const hasPendingIllustrations =
+        (story.generation_status === 'text_complete' || !story.generation_status) &&
+        (!story.cover_illustration_url ||
+         (story.story_scenes && story.story_scenes.some(scene => !scene.illustrationUrl)))
+
+      // Continue polling if text is generating OR if there might be updates
+      if (!isTextGenerating && !hasPendingIllustrations) {
+        setIllustrationsComplete(true)
+        return
+      }
+    }
+    // If no story yet, we still want to poll to get initial data
+
+    // Prevent multiple polling loops
+    if (pollingActiveRef.current) {
       return
     }
 
-    // Start with faster polling (1 second), then gradually slow down
-    let pollCount = 0
+    pollingActiveRef.current = true
+
+    // Abort controller for request cancellation
+    const abortController = new AbortController()
     let timeoutId: NodeJS.Timeout
+    let pollCount = 0
+    let isPolling = false
+    let lastPollTime = 0
 
     const getPollInterval = () => {
-      if (pollCount < 10) return 1000 // First 10 polls: every 1 second
-      if (pollCount < 20) return 2000 // Next 10 polls: every 2 seconds
-      return 3000 // After that: every 3 seconds
+      // Faster polling while text is generating or story hasn't loaded yet
+      if (!story || story.generation_status === 'generating') {
+        return 500 // Poll every 500ms for streaming text or initial load
+      }
+      // Standard polling for illustrations
+      if (pollCount < 10) return 2000 // First 10 polls: every 2 seconds
+      if (pollCount < 20) return 3000 // Next 10 polls: every 3 seconds
+      return 5000 // After that: every 5 seconds
     }
 
     const poll = async () => {
+      // Prevent concurrent polling
+      if (isPolling) return
+
+      // Enforce minimum interval
+      const now = Date.now()
+      const timeSinceLastPoll = now - lastPollTime
+      const minInterval = !story || story?.generation_status === 'generating' ? 500 : 1000
+
+      if (timeSinceLastPoll < minInterval) {
+        timeoutId = setTimeout(poll, minInterval - timeSinceLastPoll)
+        return
+      }
+
+      isPolling = true
+      lastPollTime = now
+
       try {
-        const response = await fetch(`/api/stories/${params.id}`)
+        const response = await fetch(`/api/stories/${params.id}`, {
+          signal: abortController.signal
+        })
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const data = await response.json()
 
-        if (response.ok && data.story) {
-          // Check for new illustrations
-          const previousIllustrationCount =
-            (story.cover_illustration_url ? 1 : 0) +
-            (story.story_scenes?.filter((s: BetaScene) => s.illustrationUrl).length || 0)
-
-          const newIllustrationCount =
-            (data.story.cover_illustration_url ? 1 : 0) +
-            (data.story.story_scenes?.filter((s: BetaScene) => s.illustrationUrl).length || 0)
-
+        if (data.story) {
           // Update story
           setStory(data.story)
 
-          // Reset poll count for faster polling when new illustration detected
-          if (newIllustrationCount > previousIllustrationCount) {
-            pollCount = 0
-          }
-
-          // Check if all illustrations are now complete
-          const allComplete =
+          // Check if all content is complete
+          const textComplete = data.story.generation_status !== 'generating'
+          const allIllustrationsComplete =
             data.story.cover_illustration_url &&
             (!data.story.story_scenes || data.story.story_scenes.every((scene: BetaScene) => scene.illustrationUrl))
 
-          if (allComplete) {
+          if (textComplete && allIllustrationsComplete) {
             setIllustrationsComplete(true)
+            pollingActiveRef.current = false
             return // Stop polling
           }
+
+          // Check if we should continue polling
+          const shouldContinue =
+            data.story.generation_status === 'generating' ||
+            data.story.generation_status === 'text_complete' ||
+            !allIllustrationsComplete
+
+          if (shouldContinue) {
+            pollCount++
+            timeoutId = setTimeout(poll, getPollInterval())
+          }
+        }
+      } catch (error: any) {
+        // Ignore abort errors
+        if (error.name === 'AbortError') {
+          return
         }
 
-        // Continue polling with dynamic interval
-        pollCount++
-        timeoutId = setTimeout(poll, getPollInterval())
-      } catch (error) {
-        console.error('Error polling for illustration updates:', error)
-        // Continue polling even on error, but with slower interval
-        timeoutId = setTimeout(poll, 5000)
+        console.error('Error polling for updates:', error)
+
+        // Retry with backoff on error
+        if (pollCount < 30) { // Max 30 retries
+          pollCount++
+          timeoutId = setTimeout(poll, Math.min(10000, getPollInterval() * 2))
+        } else {
+          // Max retries reached, stop polling
+          pollingActiveRef.current = false
+          console.error('Max polling retries reached, stopping')
+        }
+      } finally {
+        isPolling = false
       }
     }
 
     // Start polling
     poll()
 
+    // Cleanup function
     return () => {
-      if (timeoutId) clearTimeout(timeoutId)
+      pollingActiveRef.current = false
+      abortController.abort()
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
     }
-  }, [story, params.id, illustrationsComplete])
+  }, [params.id, story?.generation_status]) // Re-run when generation status changes
 
   const loadStory = async () => {
     try {
@@ -474,6 +550,42 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
           </div>
         )}
 
+        {/* Generation Progress Banner */}
+        {story?.generation_status === 'generating' && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+              <div className="flex-1">
+                <p className="font-medium text-blue-800">
+                  Creating your story...
+                </p>
+                {story.generation_metadata?.progress && (
+                  <p className="text-sm text-blue-700 mt-1">
+                    Scene {story.generation_metadata.progress.scenes_completed} of {story.generation_metadata.progress.total_scenes}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Illustration Progress Banner */}
+        {story?.generation_status === 'text_complete' && !illustrationsComplete && (
+          <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-purple-600 animate-pulse" />
+              <div className="flex-1">
+                <p className="font-medium text-purple-800">
+                  Illustrating your story...
+                </p>
+                <p className="text-sm text-purple-700 mt-1">
+                  Creating beautiful artwork for each scene
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6 md:mb-8">
           <Link
@@ -681,6 +793,23 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
         {/* Story Content */}
         <div className="card p-6 md:p-8 lg:p-12">
           <div className="max-w-none">
+            {/* Show placeholders if story is still generating */}
+            {story?.generation_status === 'generating' && (!paragraphs || paragraphs.length === 0) && (
+              <div className="space-y-8">
+                {[...Array(8)].map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="mb-4 h-64 bg-gray-200 rounded-2xl"></div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Show actual content as it streams in */}
             {(isEditMode ? editedParagraphs : paragraphs).map((paragraph, index) => {
               // Get scene illustration based on engine version
               // Legacy: scenes 1-8 map to paragraphs 0-7 in story_illustrations

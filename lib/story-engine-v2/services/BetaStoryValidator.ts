@@ -102,10 +102,12 @@ export class BetaStoryValidator {
       }
     }
 
-    // Validate cover illustration prompt
+    // Validate cover illustration prompt - make it optional
+    // Only warn if it's missing when illustrations are required
     if (options.requireIllustrations) {
       if (!data.coverIllustrationPrompt || typeof data.coverIllustrationPrompt !== 'string') {
-        errors.push('Missing or invalid coverIllustrationPrompt');
+        // Changed from error to warning - don't fail the entire story
+        warnings.push('Missing or invalid coverIllustrationPrompt (illustrations may not generate)');
       } else {
         const coverPrompt = data.coverIllustrationPrompt;
         if (!coverPrompt.toLowerCase().includes('disney pixar')) {

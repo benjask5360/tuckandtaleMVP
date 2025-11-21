@@ -60,15 +60,34 @@ export class BetaIllustrationService {
     let coverIllustrationUrl = '';
 
     console.log(`\n${'='.repeat(80)}`);
-    console.log('GENERATING ALL ILLUSTRATIONS CONCURRENTLY (FASTER!)');
+    console.log('GENERATING ILLUSTRATIONS WITH PRIORITY ORDER');
     console.log('='.repeat(80));
-    console.log(`Generating ${scenes.length} scenes + 1 cover = ${scenes.length + 1} total images`);
+    console.log(`Total images to generate: ${scenes.length + 1} (1 cover + ${scenes.length} scenes)`);
+    console.log('Priority: Cover first → Scenes 1-2 → Remaining scenes');
     console.log('='.repeat(80) + '\n');
 
-    // Generate ALL illustrations concurrently (scenes + cover at the same time)
     try {
-      const scenePromises = scenes.map((scene, i) => {
-        console.log(`Starting scene ${i + 1} illustration...`);
+      // PRIORITY 1: Generate cover illustration first (most important for user experience)
+      console.log('🎨 PRIORITY 1: Generating cover illustration...');
+      const coverResult = await this.generateSingleIllustration(
+        leonardoClient,
+        aiConfig,
+        coverPrompt,
+        userId,
+        contentId,
+        'cover'
+      );
+      coverIllustrationUrl = coverResult.url;
+      totalCreditsUsed += coverResult.creditsUsed;
+
+      // Update database with cover immediately
+      await this.updateStoryWithCover(contentId, coverIllustrationUrl);
+      console.log('✅ Cover illustration complete and saved!\n');
+
+      // PRIORITY 2: Generate first 2 scenes (what user sees first when scrolling)
+      console.log('🎨 PRIORITY 2: Generating scenes 1-2 (first visible scenes)...');
+      const firstScenePromises = scenes.slice(0, 2).map((scene, i) => {
+        console.log(`  Starting scene ${i + 1} illustration...`);
         return this.generateSingleIllustration(
           leonardoClient,
           aiConfig,
@@ -83,38 +102,57 @@ export class BetaIllustrationService {
         }));
       });
 
-      console.log('Starting cover illustration...');
-      const coverPromise = this.generateSingleIllustration(
-        leonardoClient,
-        aiConfig,
-        coverPrompt,
-        userId,
-        contentId,
-        'cover'
-      );
+      const firstSceneResults = await Promise.all(firstScenePromises);
 
-      // Wait for ALL illustrations to complete
-      console.log(`\nWaiting for all ${scenes.length + 1} illustrations to complete...`);
-      const [sceneResults, coverResult] = await Promise.all([
-        Promise.all(scenePromises),
-        coverPromise,
-      ]);
+      // Update database with first scenes
+      for (const result of firstSceneResults) {
+        await this.updateSceneIllustration(contentId, result.sceneIndex, result.illustrationUrl);
+        sceneIllustrations.push({
+          sceneIndex: result.sceneIndex,
+          illustrationUrl: result.illustrationUrl,
+        });
+        totalCreditsUsed += result.creditsUsed;
+      }
+      console.log('✅ First 2 scenes complete!\n');
 
-      // Process results
-      sceneIllustrations = sceneResults.map(result => ({
-        sceneIndex: result.sceneIndex,
-        illustrationUrl: result.illustrationUrl,
-      }));
+      // PRIORITY 3: Generate remaining scenes concurrently (background)
+      if (scenes.length > 2) {
+        console.log(`🎨 PRIORITY 3: Generating remaining ${scenes.length - 2} scenes in background...`);
+        const remainingScenePromises = scenes.slice(2).map((scene, i) => {
+          const actualIndex = i + 2; // Adjust index since we're starting from scene 3
+          console.log(`  Starting scene ${actualIndex + 1} illustration...`);
+          return this.generateSingleIllustration(
+            leonardoClient,
+            aiConfig,
+            scene.illustrationPrompt,
+            userId,
+            contentId,
+            `scene_${actualIndex}`
+          ).then(result => ({
+            sceneIndex: actualIndex,
+            illustrationUrl: result.url,
+            creditsUsed: result.creditsUsed,
+          }));
+        });
 
-      coverIllustrationUrl = coverResult.url;
+        const remainingResults = await Promise.all(remainingScenePromises);
 
-      // Calculate total credits
-      totalCreditsUsed = sceneResults.reduce((sum, r) => sum + r.creditsUsed, 0) + coverResult.creditsUsed;
+        // Update database with remaining scenes
+        for (const result of remainingResults) {
+          await this.updateSceneIllustration(contentId, result.sceneIndex, result.illustrationUrl);
+          sceneIllustrations.push({
+            sceneIndex: result.sceneIndex,
+            illustrationUrl: result.illustrationUrl,
+          });
+          totalCreditsUsed += result.creditsUsed;
+        }
+        console.log('✅ All remaining scenes complete!');
+      }
 
       console.log('\n' + '='.repeat(80));
       console.log('✅ ALL ILLUSTRATIONS COMPLETED!');
       console.log('='.repeat(80));
-      console.log(`Scenes: ${sceneResults.length}`);
+      console.log(`Scenes: ${sceneIllustrations.length}`);
       console.log(`Cover: 1`);
       console.log(`Total credits used: ${totalCreditsUsed}`);
       console.log('='.repeat(80));
@@ -227,7 +265,66 @@ export class BetaIllustrationService {
   }
 
   /**
-   * Update story scenes with illustration URLs
+   * Update story with cover illustration URL immediately
+   */
+  static async updateStoryWithCover(contentId: string, coverUrl: string): Promise<void> {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from('content')
+      .update({
+        cover_illustration_url: coverUrl,
+      })
+      .eq('id', contentId);
+
+    if (error) {
+      console.error('Error updating cover illustration:', error);
+      throw new Error(`Failed to update cover: ${error.message}`);
+    }
+  }
+
+  /**
+   * Update a single scene with its illustration URL
+   */
+  static async updateSceneIllustration(
+    contentId: string,
+    sceneIndex: number,
+    illustrationUrl: string
+  ): Promise<void> {
+    const supabase = createAdminClient();
+
+    // First get the current scenes
+    const { data: story, error: fetchError } = await supabase
+      .from('content')
+      .select('story_scenes')
+      .eq('id', contentId)
+      .single();
+
+    if (fetchError || !story) {
+      console.error('Error fetching story:', fetchError);
+      return;
+    }
+
+    // Update the specific scene with its illustration URL
+    const updatedScenes = story.story_scenes || [];
+    if (updatedScenes[sceneIndex]) {
+      updatedScenes[sceneIndex].illustrationUrl = illustrationUrl;
+    }
+
+    // Save back to database
+    const { error: updateError } = await supabase
+      .from('content')
+      .update({
+        story_scenes: updatedScenes,
+      })
+      .eq('id', contentId);
+
+    if (updateError) {
+      console.error(`Error updating scene ${sceneIndex} illustration:`, updateError);
+    }
+  }
+
+  /**
+   * Update story scenes with illustration URLs (batch update)
    */
   static async updateScenesWithIllustrations(
     contentId: string,
@@ -249,6 +346,7 @@ export class BetaIllustrationService {
       .from('content')
       .update({
         story_scenes: updatedScenes,
+        generation_status: 'complete', // Mark as fully complete when all illustrations are done
       })
       .eq('id', contentId);
 

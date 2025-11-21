@@ -294,7 +294,12 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       }
 
       // Success! Redirect to the story viewer
-      router.push(`/dashboard/stories/${data.story.id}`)
+      // New format returns storyId directly for instant redirect
+      const storyId = data.storyId || data.story?.id
+      if (!storyId) {
+        throw new Error('No story ID returned from server')
+      }
+      router.push(`/dashboard/stories/${storyId}`)
     } catch (err: any) {
       console.error('Error generating story:', err)
       setError(err.message)

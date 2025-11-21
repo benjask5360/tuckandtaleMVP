@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { BetaStoryGenerationService } from '@/lib/story-engine-v2/services/BetaStoryGenerationService';
+import { BetaStoryStreamingService } from '@/lib/story-engine-v2/services/BetaStoryStreamingService';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 import { SubscriptionTierService } from '@/lib/services/subscription-tier';
 import type { StoryGenerationParams } from '@/lib/types/story-types';
@@ -137,8 +137,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate story using Beta engine (synchronous for MVP)
-    const story = await BetaStoryGenerationService.generateStory(user.id, params);
+    // Start story generation and get story ID immediately
+    const { storyId } = await BetaStoryStreamingService.startGeneration(user.id, params);
 
     // Increment usage counts - pass includeIllustrations flag
     await StoryUsageLimitsService.incrementUsage(user.id, includeIllustrations);
@@ -146,11 +146,13 @@ export async function POST(request: Request) {
     // Get updated usage stats
     const updatedUsage = await StoryUsageLimitsService.getUsageStats(user.id);
 
+    // Return immediately with story ID for instant redirect
     return NextResponse.json({
       success: true,
-      story,
+      storyId,
       usage: updatedUsage,
-      message: 'Story generated successfully',
+      message: 'Story generation started',
+      redirect: `/dashboard/stories/${storyId}`,
     });
   } catch (error: any) {
     console.error('Error generating story:', error);
