@@ -102,6 +102,16 @@ export function buildCharacterDescription(
 
     case 'magical_creature':
       // Build description for magical creatures
+      // Debug logging to diagnose missing creature/color
+      console.log('✨ Building magical creature description:', {
+        magicalColor: enhanced.magicalColor,
+        creature: enhanced.creature,
+        hair: enhanced.hair,
+        eyes: enhanced.eyes,
+        skin: enhanced.skin,
+        fullEnhanced: JSON.stringify(enhanced, null, 2)
+      });
+
       // Start with color (if provided) then creature type
       if (enhanced.magicalColor && enhanced.creature) {
         parts.push(`A ${enhanced.magicalColor} ${enhanced.creature}`);
@@ -109,6 +119,7 @@ export function buildCharacterDescription(
         parts.push(`A ${enhanced.creature}`);
       } else {
         parts.push('A magical creature');
+        console.warn('⚠️ Magical creature description defaulting to generic "A magical creature" - missing creature type/color');
       }
 
       // Add any additional physical attributes if provided

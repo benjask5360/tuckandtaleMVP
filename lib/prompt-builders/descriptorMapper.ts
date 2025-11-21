@@ -287,15 +287,39 @@ export async function mapSelectionsToEnhanced(
   }
 
   // For magical creatures: if no color descriptor found, use raw input
-  if (profileType === 'magical_creature' && selections.color && !enhanced.magicalColor) {
-    console.log('Magical color fallback - using raw input:', selections.color);
-    enhanced.magicalColor = selections.color;
-  }
+  if (profileType === 'magical_creature') {
+    console.log('✨ Magical creature descriptor mapping - checking color/type:', {
+      color: selections.color,
+      creatureType: selections.creatureType,
+      currentEnhancedMagicalColor: enhanced.magicalColor,
+      currentEnhancedCreature: enhanced.creature,
+      willUseColor: !!selections.color,
+      willUseCreatureType: !!selections.creatureType
+    });
 
-  // For magical creatures: if no creature descriptor found, use raw input
-  if (profileType === 'magical_creature' && selections.creatureType && !enhanced.creature) {
-    console.log('Creature type fallback - using raw input:', selections.creatureType);
-    enhanced.creature = selections.creatureType;
+    if (selections.color && !enhanced.magicalColor) {
+      console.log('✨ Magical color fallback - using raw input:', selections.color);
+      enhanced.magicalColor = selections.color;
+    }
+
+    if (selections.creatureType && !enhanced.creature) {
+      console.log('✨ Creature type fallback - using raw input:', selections.creatureType);
+      enhanced.creature = selections.creatureType;
+    }
+
+    // Final check for debugging
+    if (!enhanced.creature) {
+      console.error('❌ MAGICAL CREATURE TYPE MISSING after fallback logic!', {
+        selectionsCreatureType: selections.creatureType,
+        enhancedCreature: enhanced.creature
+      });
+    }
+    if (!enhanced.magicalColor) {
+      console.error('❌ MAGICAL CREATURE COLOR MISSING after fallback logic!', {
+        selectionsColor: selections.color,
+        enhancedMagicalColor: enhanced.magicalColor
+      });
+    }
   }
 
   return enhanced;
