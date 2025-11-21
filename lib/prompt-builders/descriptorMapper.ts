@@ -107,7 +107,7 @@ export async function mapSelectionsToEnhanced(
   }
 
   // Map age
-  if (selections.age !== undefined) {
+  if (selections.age !== undefined && selections.age !== null) {
     fetchMappings.push({
       table: 'descriptors_age',
       term: selections.age.toString(),
@@ -117,7 +117,7 @@ export async function mapSelectionsToEnhanced(
 
   // Map gender (age-aware)
   // Gender lookup now requires age to select the appropriate age-aware descriptor
-  if (selections.gender && selections.age !== undefined) {
+  if (selections.gender && selections.age !== undefined && selections.age !== null) {
     fetchMappings.push({
       table: 'descriptors_gender',
       term: selections.gender,
