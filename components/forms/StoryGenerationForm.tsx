@@ -165,6 +165,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [moralLessonId, setMoralLessonId] = useState<string>('')
   const [customInstructions, setCustomInstructions] = useState<string>('')
   const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(false)
+  const [useBetaEngine, setUseBetaEngine] = useState<boolean>(false)
   const [characterLimitMessage, setCharacterLimitMessage] = useState<string | null>(null)
 
   // Data state
@@ -235,6 +236,9 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
       // Add includeIllustrations flag
       requestBody.includeIllustrations = includeIllustrations
+
+      // Add useBetaEngine flag
+      requestBody.useBetaEngine = useBetaEngine
 
       // Use text story generation API endpoint
       const endpoint = '/api/stories/generate'
@@ -365,6 +369,60 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
               {includeIllustrations
                 ? 'Your story will include personalized illustrations inspired by each scene.'
                 : 'Add beautiful illustrations to bring your story to life.'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Beta Engine Toggle */}
+      <div
+        onClick={() => setUseBetaEngine(!useBetaEngine)}
+        className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
+          useBetaEngine
+            ? 'border-purple-600 bg-purple-50'
+            : 'border-gray-300 bg-white hover:border-purple-300'
+        }`}
+      >
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              useBetaEngine ? 'bg-purple-100' : 'bg-gray-100'
+            }`}>
+              <span className="text-2xl">✨</span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className={`text-base font-semibold ${
+                useBetaEngine ? 'text-purple-900' : 'text-gray-900'
+              }`}>
+                Use Beta Story Engine <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full ml-2">NEW</span>
+              </h3>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUseBetaEngine(!useBetaEngine);
+                }}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                  useBetaEngine ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span className="sr-only">Use Beta Engine</span>
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${
+                    useBetaEngine ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <p className={`text-sm ${
+              useBetaEngine ? 'text-purple-700' : 'text-gray-600'
+            }`}>
+              {useBetaEngine
+                ? 'Using enhanced story generation with individual scene illustrations in Disney Pixar style.'
+                : 'Try our new Beta engine with improved prompts and scene-by-scene illustrations.'
               }
             </p>
           </div>

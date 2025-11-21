@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { StoryGenerationService } from '@/lib/services/story-generation';
+import { BetaStoryGenerationService } from '@/lib/story-engine-v2/services/BetaStoryGenerationService';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 import { SubscriptionTierService } from '@/lib/services/subscription-tier';
 import { StoryValidator } from '@/lib/validators/story-validator';
@@ -139,7 +140,10 @@ export async function POST(request: Request) {
     }
 
     // Generate story (synchronous for MVP)
-    const story = await StoryGenerationService.generateStory(user.id, params);
+    // Route to Beta engine if useBetaEngine flag is set
+    const story = params.useBetaEngine
+      ? await BetaStoryGenerationService.generateStory(user.id, params)
+      : await StoryGenerationService.generateStory(user.id, params);
 
     // Increment usage counts - pass includeIllustrations flag
     await StoryUsageLimitsService.incrementUsage(user.id, includeIllustrations);

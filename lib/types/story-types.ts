@@ -93,10 +93,12 @@ export interface StoryGenerationParams {
   toneId: string;
   lengthId: string;
   growthTopicId?: string; // Required if mode === 'growth'
+  moralLessonId?: string; // Optional moral lesson
 
   // Optional customization
   customInstructions?: string;
   includeIllustrations?: boolean; // Flag to generate illustration prompt
+  useBetaEngine?: boolean; // Flag to use Beta Story Engine
 }
 
 export interface StoryGenerationRequest {

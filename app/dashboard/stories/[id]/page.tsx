@@ -9,6 +9,13 @@ import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X }
 import type { StoryIllustration } from '@/lib/types/story-types'
 import ReviewRequestModal from '@/components/ReviewRequestModal'
 
+interface BetaScene {
+  paragraph: string
+  charactersInScene: string[]
+  illustrationPrompt: string
+  illustrationUrl?: string
+}
+
 interface Story {
   id: string
   title: string
@@ -32,6 +39,11 @@ interface Story {
       avatar_url?: string
     }
   }>
+  // Beta Engine fields
+  engine_version?: 'legacy' | 'beta'
+  story_scenes?: BetaScene[]
+  cover_illustration_url?: string
+  cover_illustration_prompt?: string
 }
 
 export default function StoryViewerPage({ params }: { params: { id: string } }) {
@@ -302,9 +314,17 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
     )
   }
 
+  // Detect if this is a Beta story
+  const isBetaStory = story.engine_version === 'beta'
+
   // Parse paragraphs with defensive handling for raw JSON in body field
   const getParagraphs = (): string[] => {
-    // First try to use the parsed paragraphs from metadata
+    // For Beta stories, extract paragraphs from story_scenes
+    if (isBetaStory && story.story_scenes && Array.isArray(story.story_scenes)) {
+      return story.story_scenes.map(scene => scene.paragraph)
+    }
+
+    // Legacy: First try to use the parsed paragraphs from metadata
     if (story.generation_metadata?.paragraphs && Array.isArray(story.generation_metadata.paragraphs)) {
       return story.generation_metadata.paragraphs
     }
@@ -330,14 +350,24 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
 
   const paragraphs = getParagraphs()
 
-  // Helper function to get illustration for a specific scene
+  // Helper function to get illustration for a specific scene (Legacy)
   const getSceneIllustration = (sceneNumber: number): StoryIllustration | undefined => {
     if (!story.story_illustrations) return undefined
     return story.story_illustrations.find(ill => ill.type === `scene_${sceneNumber}`)
   }
 
-  // Get cover illustration (Scene 0)
-  const coverIllustration = getSceneIllustration(0)
+  // Helper function to get Beta scene illustration URL
+  const getBetaSceneIllustration = (sceneIndex: number): string | undefined => {
+    if (!isBetaStory || !story.story_scenes) return undefined
+    return story.story_scenes[sceneIndex]?.illustrationUrl
+  }
+
+  // Get cover illustration
+  // For Beta: use cover_illustration_url
+  // For Legacy: use Scene 0 from story_illustrations
+  const coverImageUrl = isBetaStory
+    ? story.cover_illustration_url
+    : getSceneIllustration(0)?.url
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -481,11 +511,11 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
             {/* Subtle Divider */}
             <div className="border-t border-gray-200 mb-6"></div>
 
-            {/* Cover Image (Scene 0) */}
-            {coverIllustration && (
+            {/* Cover Image */}
+            {coverImageUrl && (
               <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
                 <Image
-                  src={coverIllustration.url}
+                  src={coverImageUrl}
                   alt="Story Cover"
                   width={512}
                   height={512}
@@ -525,16 +555,20 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
         <div className="card p-6 md:p-8 lg:p-12">
           <div className="max-w-none">
             {(isEditMode ? editedParagraphs : paragraphs).map((paragraph, index) => {
-              // Get scene illustration for this paragraph (scenes 1-8 map to paragraphs 0-7)
-              const sceneIllustration = getSceneIllustration(index + 1)
+              // Get scene illustration based on engine version
+              // Legacy: scenes 1-8 map to paragraphs 0-7 in story_illustrations
+              // Beta: use story_scenes[index].illustrationUrl directly
+              const sceneImageUrl = isBetaStory
+                ? getBetaSceneIllustration(index)
+                : getSceneIllustration(index + 1)?.url
 
               return (
                 <div key={index}>
                   {/* Scene Illustration above paragraph */}
-                  {sceneIllustration && (
+                  {sceneImageUrl && (
                     <div className="mt-8 mb-6 relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
                       <Image
-                        src={sceneIllustration.url}
+                        src={sceneImageUrl}
                         alt={`Scene ${index + 1}`}
                         width={512}
                         height={512}

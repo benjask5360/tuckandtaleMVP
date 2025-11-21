@@ -9,7 +9,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export interface AIConfig {
   id: string;
   name: string;
-  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama' | 'story_vignette_narratives';
+  purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_illustration_beta' | 'story_vignette_panorama' | 'story_vignette_narratives';
   provider: 'leonardo' | 'openai' | 'stability' | 'midjourney' | 'google';
   model_id: string;
   model_name: string;
@@ -36,7 +36,7 @@ export class AIConfigService {
    * Get the default AI configuration for a specific purpose
    */
   static async getDefaultConfig(
-    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_vignette_panorama' | 'story_vignette_narratives'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_illustration_beta' | 'story_vignette_panorama' | 'story_vignette_narratives'
   ): Promise<AIConfig | null> {
     const supabase = await createClient();
 
@@ -81,7 +81,7 @@ export class AIConfigService {
    * Get all available configs for a purpose
    */
   static async getAvailableConfigs(
-    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration'
+    purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_illustration_beta'
   ): Promise<AIConfig[]> {
     const supabase = await createClient();
 
@@ -111,6 +111,37 @@ export class AIConfigService {
       return await this.getConfigByName(configName);
     }
     return await this.getDefaultConfig('avatar_generation');
+  }
+
+  /**
+   * Get the configuration for Beta story illustrations
+   * Falls back to avatar config if no specific Beta config exists
+   */
+  static async getBetaIllustrationConfig(): Promise<AIConfig | null> {
+    // Try to get dedicated Beta illustration config
+    const betaConfig = await this.getDefaultConfig('story_illustration_beta');
+
+    if (betaConfig) {
+      return betaConfig;
+    }
+
+    // Fallback to avatar config with modified settings
+    console.log('No dedicated Beta illustration config found, using avatar config as fallback');
+    const avatarConfig = await this.getDefaultConfig('avatar_generation');
+
+    if (avatarConfig) {
+      // Modify to 512x512 for Beta illustrations
+      return {
+        ...avatarConfig,
+        settings: {
+          ...avatarConfig.settings,
+          width: 512,
+          height: 512,
+        },
+      };
+    }
+
+    return null;
   }
 
   /**

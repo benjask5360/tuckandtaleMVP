@@ -7,7 +7,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(node scripts/debug-story.js:*)",
+      "Bash(node scripts/check-stories-view.js:*)",
+      "Bash(node scripts/test-api-story.js:*)"
     ],
     "deny": [],
     "ask": []

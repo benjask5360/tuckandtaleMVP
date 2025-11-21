@@ -27,14 +27,21 @@ interface StoryCardProps {
         }
       }
     }>
+    // Beta Engine fields
+    engine_version?: 'legacy' | 'beta'
+    cover_illustration_url?: string
   }
   onDelete: (id: string) => void
   onFavoriteToggle: (id: string) => void
 }
 
 export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCardProps) {
-  // Extract cover image (Scene 0)
-  const coverUrl = story.story_illustrations?.find(ill => ill.type === 'scene_0')?.url
+  // Extract cover image
+  // For Beta: use cover_illustration_url
+  // For Legacy: use Scene 0 from story_illustrations
+  const coverUrl = story.engine_version === 'beta'
+    ? story.cover_illustration_url
+    : story.story_illustrations?.find(ill => ill.type === 'scene_0')?.url
 
   // Get hero character (first character)
   const heroCharacter = story.content_characters[0]?.character_profiles
