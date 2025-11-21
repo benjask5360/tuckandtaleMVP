@@ -28,15 +28,19 @@ export async function GET(
 
     // Fetch story with all related data
     const { data: story, error: storyError } = await supabase
-      .from('stories')
+      .from('content')
       .select(`
         id,
         title,
-        body,
+        story_text,
+        paragraphs,
+        moral,
         created_at,
         user_id,
         generation_metadata,
-        story_illustrations,
+        illustration_url,
+        cover_illustration_url,
+        story_scenes,
         content_characters (
           character_profiles!inner (
             name

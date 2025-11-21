@@ -190,19 +190,36 @@ interface StoryPDFTemplateProps {
 }
 
 export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => {
-  // Get paragraphs
-  const paragraphs = story.generation_metadata.paragraphs || story.body.split('\n\n').filter(p => p.trim());
+  // Check if this is a Beta story (has story_scenes)
+  const isBetaStory = story.story_scenes && Array.isArray(story.story_scenes);
 
-  // Get cover illustration
-  const coverIllustration = story.story_illustrations?.find(ill => ill.type === 'scene_0');
+  // Get paragraphs - handle both Beta and Legacy formats
+  const paragraphs = isBetaStory
+    ? story.story_scenes.map((scene: any) => scene.paragraph)
+    : (story.paragraphs || story.story_text?.split('\n\n').filter((p: string) => p.trim()) || []);
 
-  // Get scene illustrations (scene_1 through scene_8)
-  const sceneIllustrations = story.story_illustrations?.filter(ill => ill.type !== 'scene_0') || [];
+  // Get cover illustration - handle both formats
+  const coverIllustration = isBetaStory
+    ? (story.cover_illustration_url ? { url: story.cover_illustration_url, type: 'cover' } : null)
+    : story.story_illustrations?.find(ill => ill.type === 'scene_0');
+
+  // Get scene illustrations - handle both formats
+  const sceneIllustrations = isBetaStory
+    ? story.story_scenes
+        .filter((scene: any) => scene.illustrationUrl)
+        .map((scene: any, index: number) => ({
+          type: `scene_${index + 1}`,
+          url: scene.illustrationUrl
+        }))
+    : (story.story_illustrations?.filter(ill => ill.type !== 'scene_0') || []);
 
   // Get character names - use generation_metadata.characters if available, fallback to content_characters
-  const characters = story.generation_metadata.characters?.map(c => c.character_name) ||
-    story.content_characters?.map(cc => cc.character_profiles.name) ||
+  const characters = story.generation_metadata?.characters?.map((c: any) => c.character_name) ||
+    story.content_characters?.map((cc: any) => cc.character_profiles.name) ||
     [];
+
+  // Get moral if available
+  const moral = story.moral || story.generation_metadata?.moral;
 
   // Format date
   const formattedDate = new Date(story.created_at).toLocaleDateString('en-US', {
@@ -274,11 +291,11 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
           );
         })}
 
-        {/* Moral Section (for growth mode) */}
-        {story.generation_metadata.mode === 'growth' && story.generation_metadata.moral && (
+        {/* Moral Section (for growth mode or any story with moral) */}
+        {moral && (
           <View style={styles.moralSection}>
             <Text style={styles.moralTitle}>✨ Lesson Learned</Text>
-            <Text style={styles.moralText}>{story.generation_metadata.moral}</Text>
+            <Text style={styles.moralText}>{moral}</Text>
           </View>
         )}
 

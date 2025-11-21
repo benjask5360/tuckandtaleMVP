@@ -91,14 +91,38 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
       return
     }
 
-    // Poll every 3 seconds for updates
-    const pollInterval = setInterval(async () => {
+    // Start with faster polling (1 second), then gradually slow down
+    let pollCount = 0
+    let timeoutId: NodeJS.Timeout
+
+    const getPollInterval = () => {
+      if (pollCount < 10) return 1000 // First 10 polls: every 1 second
+      if (pollCount < 20) return 2000 // Next 10 polls: every 2 seconds
+      return 3000 // After that: every 3 seconds
+    }
+
+    const poll = async () => {
       try {
         const response = await fetch(`/api/stories/${params.id}`)
         const data = await response.json()
 
         if (response.ok && data.story) {
+          // Check for new illustrations
+          const previousIllustrationCount =
+            (story.cover_illustration_url ? 1 : 0) +
+            (story.story_scenes?.filter((s: BetaScene) => s.illustrationUrl).length || 0)
+
+          const newIllustrationCount =
+            (data.story.cover_illustration_url ? 1 : 0) +
+            (data.story.story_scenes?.filter((s: BetaScene) => s.illustrationUrl).length || 0)
+
+          // Update story
           setStory(data.story)
+
+          // Reset poll count for faster polling when new illustration detected
+          if (newIllustrationCount > previousIllustrationCount) {
+            pollCount = 0
+          }
 
           // Check if all illustrations are now complete
           const allComplete =
@@ -107,15 +131,26 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
 
           if (allComplete) {
             setIllustrationsComplete(true)
-            clearInterval(pollInterval)
+            return // Stop polling
           }
         }
+
+        // Continue polling with dynamic interval
+        pollCount++
+        timeoutId = setTimeout(poll, getPollInterval())
       } catch (error) {
         console.error('Error polling for illustration updates:', error)
+        // Continue polling even on error, but with slower interval
+        timeoutId = setTimeout(poll, 5000)
       }
-    }, 3000)
+    }
 
-    return () => clearInterval(pollInterval)
+    // Start polling
+    poll()
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [story, params.id, illustrationsComplete])
 
   const loadStory = async () => {
@@ -578,7 +613,11 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                     priority
                   />
                 ) : (
-                  <IllustrationPending type="cover" />
+                  <IllustrationPending
+                    type="cover"
+                    sceneNumber={0}
+                    totalScenes={story.story_scenes?.length || 8}
+                  />
                 )}
               </div>
             ) : (
@@ -665,7 +704,11 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                           loading="lazy"
                         />
                       ) : (
-                        <IllustrationPending type="scene" />
+                        <IllustrationPending
+                          type="scene"
+                          sceneNumber={index + 1}
+                          totalScenes={story.story_scenes?.length || 8}
+                        />
                       )}
                     </div>
                   ) : (
