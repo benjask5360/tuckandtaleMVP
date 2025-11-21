@@ -26,28 +26,27 @@ export async function GET(
 
     const storyId = params.id;
 
-    // Fetch story with all related data
+    // Fetch story with all related data using the stories view
     const { data: story, error: storyError } = await supabase
-      .from('content')
+      .from('stories')
       .select(`
-        id,
-        title,
-        story_text,
-        paragraphs,
-        moral,
-        created_at,
-        user_id,
-        generation_metadata,
-        illustration_url,
-        cover_illustration_url,
-        story_scenes,
+        *,
+        story_illustrations,
         content_characters (
-          character_profiles!inner (
-            name
+          character_profile_id,
+          role,
+          character_name_in_content,
+          character_profiles (
+            id,
+            name,
+            character_type,
+            attributes,
+            appearance_description
           )
         )
       `)
       .eq('id', storyId)
+      .eq('user_id', user.id)
       .single();
 
     if (storyError || !story) {
@@ -57,19 +56,16 @@ export async function GET(
       );
     }
 
-    // Verify user owns this story
-    if (story.user_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized - you do not own this story' },
-        { status: 403 }
-      );
-    }
+    // User ownership is already verified by the query (.eq('user_id', user.id))
 
     // Transform the data to match PDF template expectations
     const pdfStory = {
       ...story,
-      // Map story_text to body for legacy PDF template compatibility
-      body: story.story_text || story.paragraphs?.join('\n\n') || '',
+      // Ensure body is set correctly
+      body: story.body || story.generation_metadata?.paragraphs?.join('\n\n') || '',
+      // Extract moral from generation_metadata if it exists
+      moral: story.generation_metadata?.moral,
+      // Map content_characters for compatibility
       content_characters: story.content_characters?.map((cc: any) => ({
         character_profiles: Array.isArray(cc.character_profiles)
           ? cc.character_profiles[0]
