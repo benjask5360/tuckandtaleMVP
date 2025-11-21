@@ -49,6 +49,8 @@ export interface CharacterInfo {
   characterType: 'child' | 'pet' | 'storybook_character' | 'magical_creature';
   age?: number;
   role?: 'hero' | 'sidekick' | 'friend' | 'family' | 'pet';
+  relationship?: string; // e.g., "Emma's brother", "Emma's sister"
+  attributes?: any; // Character attributes including gender
 }
 
 /**

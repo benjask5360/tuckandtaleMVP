@@ -264,6 +264,25 @@ export class StoryGenerationService {
       });
     });
 
+    // Detect sibling relationships: if 2+ children, they are siblings
+    const childCharacters = characters.filter(c => c.profileType === 'child');
+
+    if (childCharacters.length >= 2) {
+      const heroName = childCharacters[0].name; // First child is always the hero
+
+      // Add relationship to all non-hero children
+      for (let i = 1; i < childCharacters.length; i++) {
+        const child = childCharacters[i];
+
+        // Determine relationship based on gender
+        const gender = child.attributes?.gender;
+        const relationLabel = gender === 'male' ? 'brother' :
+                             gender === 'female' ? 'sister' : 'sibling';
+
+        (child as any).relationship = `${heroName}'s ${relationLabel}`;
+      }
+    }
+
     return characters;
   }
 

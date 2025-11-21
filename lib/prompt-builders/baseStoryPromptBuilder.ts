@@ -75,8 +75,11 @@ export abstract class BaseStoryPromptBuilder {
 
       for (const char of context.supporting) {
         const description = await this.buildSingleCharacterDescription(char);
-        const roleLabel = char.role ? ` (${char.role})` : '';
-        characterText += `- **${char.name}${roleLabel}**: ${description}\n`;
+        // Use relationship if available (for siblings), otherwise use role
+        const label = (char as any).relationship
+          ? ` (${(char as any).relationship})`
+          : (char.role ? ` (${char.role})` : '');
+        characterText += `- **${char.name}${label}**: ${description}\n`;
       }
     }
 

@@ -149,8 +149,11 @@ Your stories:
       characterText += '\n**Supporting Characters:**\n';
       for (const char of supporting) {
         const desc = await this.getCharacterAppearance(char);
-        const roleLabel = char.role ? ` (${char.role})` : '';
-        characterText += `- **${char.name}${roleLabel}**: ${desc}\n`;
+        // Use relationship if available (for siblings), otherwise use role
+        const label = char.relationship
+          ? ` (${char.relationship})`
+          : (char.role ? ` (${char.role})` : '');
+        characterText += `- **${char.name}${label}**: ${desc}\n`;
       }
     }
 
