@@ -474,7 +474,7 @@ export class BetaStoryGenerationService {
           characters: request.characters.map(char => ({
             character_profile_id: char.id || null,
             character_name: char.name,
-            profile_type: char.profileType || null,
+            profile_type: char.characterType || null,
           })),
         },
         include_illustrations: request.includeIllustrations,
