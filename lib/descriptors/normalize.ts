@@ -59,7 +59,8 @@ export async function normalizeCharacterSelections(
   profileType: ProfileType,
   selections: CharacterSelections
 ): Promise<CharacterSelections> {
-  console.log(`\n🔧 Normalizing ${profileType} character selections...`);
+  console.log(`\n🔧 [NORMALIZE] Normalizing ${profileType} character selections...`);
+  console.log(`🔧 [NORMALIZE] Input selections:`, JSON.stringify(selections, null, 2));
 
   const normalized = { ...selections };
 
@@ -176,6 +177,7 @@ export async function normalizeCharacterSelections(
     }
   }
 
-  console.log('✅ Normalization complete\n');
+  console.log('✅ [NORMALIZE] Normalization complete');
+  console.log('✅ [NORMALIZE] Output selections:', JSON.stringify(normalized, null, 2));
   return normalized;
 }

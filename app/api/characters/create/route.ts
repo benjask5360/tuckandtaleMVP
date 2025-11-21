@@ -85,39 +85,55 @@ export async function POST(request: Request) {
     // Convert character_type to ProfileType for descriptor system
     const profileType = character_type as ProfileType
 
+    console.log('🔧 [CHARACTER CREATE] Starting character creation:', {
+      name,
+      profileType,
+      rawAttributes: attributes
+    })
+
     // Build character selections from attributes
     let selections: CharacterSelections = {
       ...attributes,
       age: attributes.age || calculateAge(attributes.dateOfBirth),
     }
 
+    console.log('🔧 [CHARACTER CREATE] Before normalization:', selections)
+
     // Normalize selections to use descriptor simple_terms when available
     selections = await normalizeCharacterSelections(profileType, selections)
+
+    console.log('🔧 [CHARACTER CREATE] After normalization:', selections)
 
     // Update attributes with normalized values
     Object.assign(attributes, selections)
 
     // Generate enhanced appearance description using descriptor system
     let appearance_description = `A ${character_type.replace('_', ' ')}`
+    console.log('🔧 [CHARACTER CREATE] Fallback description set to:', appearance_description)
+
     try {
+      console.log('🔧 [CHARACTER CREATE] Calling generateAIPrompt...')
       const { prompt } = await generateAIPrompt({
         profileType,
         selections,
         style: 'concise'
       })
       appearance_description = prompt
+      console.log('🔧 [CHARACTER CREATE] Generated description:', appearance_description)
 
       // Also generate avatar prompt for future use
       const avatarPrompt = await generateAvatarPrompt(profileType, selections)
       // Store avatar prompt in attributes for later use
       attributes._avatarPrompt = avatarPrompt
     } catch (error) {
-      console.error('Error generating enhanced description:', error)
+      console.error('❌ [CHARACTER CREATE] Error generating enhanced description:', error)
+      console.error('❌ [CHARACTER CREATE] Stack trace:', error instanceof Error ? error.stack : 'No stack trace')
       // Fallback to basic description if descriptor system fails
       if (attributes.age || attributes.dateOfBirth) {
         const age = attributes.age || calculateAge(attributes.dateOfBirth)
         appearance_description += ` ${age} years old`
       }
+      console.log('🔧 [CHARACTER CREATE] Using fallback description:', appearance_description)
       if (attributes.hairColor) {
         appearance_description += ` with ${attributes.hairColor} hair`
       }
