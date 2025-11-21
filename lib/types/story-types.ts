@@ -98,7 +98,7 @@ export interface StoryGenerationParams {
   // Optional customization
   customInstructions?: string;
   includeIllustrations?: boolean; // Flag to generate illustration prompt
-  useBetaEngine?: boolean; // Flag to use Beta Story Engine
+  useBetaEngine?: boolean; // @deprecated - No longer used. Beta engine is now the default and only engine.
 }
 
 export interface StoryGenerationRequest {
@@ -114,11 +114,13 @@ export interface StoryGenerationRequest {
 }
 
 // ============================================================================
-// STORY ILLUSTRATION TYPES
+// STORY ILLUSTRATION TYPES (Legacy - for old engine stories only)
 // ============================================================================
 
+// @deprecated - Old engine illustration types. Kept for backward compatibility with existing stories.
 export type IllustrationType = 'grid_3x3' | 'scene_0' | 'scene_1' | 'scene_2' | 'scene_3' | 'scene_4' | 'scene_5' | 'scene_6' | 'scene_7' | 'scene_8';
 
+// @deprecated - Old engine illustration structure. Kept for backward compatibility with existing stories.
 export interface StoryIllustration {
   type: IllustrationType;
   url: string;
@@ -136,11 +138,13 @@ export interface StoryIllustration {
 // STORY RESPONSE TYPES
 // ============================================================================
 
+// @deprecated - Old engine response format. Kept for backward compatibility with existing stories.
+// New stories use the Beta engine format defined in lib/story-engine-v2/types/beta-story-types.ts
 export interface ParsedStory {
   title: string;
   paragraphs: string[];
   moral?: string | null;
-  illustration_prompt?: string; // OpenAI-generated prompt for 3x3 grid illustration
+  illustration_prompt?: string; // @deprecated - Old engine field for 3x3 grid illustration
 }
 
 export interface Story {
@@ -172,10 +176,10 @@ export interface Story {
     include_illustrations?: boolean; // Whether illustrations were requested
   };
 
-  // Illustration fields
+  // Illustration fields (Legacy - for old engine stories only)
   include_illustrations?: boolean; // Flag indicating if illustrations were requested
-  story_illustration_prompt?: string; // OpenAI-generated prompt for 3x3 grid
-  story_illustrations?: StoryIllustration[]; // Array of generated illustration objects
+  story_illustration_prompt?: string; // @deprecated - Old engine: OpenAI-generated prompt for 3x3 grid
+  story_illustrations?: StoryIllustration[]; // @deprecated - Old engine: Array of generated illustration objects
 
   // User engagement
   is_favorite: boolean;

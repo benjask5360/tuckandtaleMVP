@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { StoryGenerationService } from '@/lib/services/story-generation';
+import { BetaStoryGenerationService } from '@/lib/story-engine-v2/services/BetaStoryGenerationService';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 
 export async function PUT(
@@ -81,8 +81,8 @@ export async function PUT(
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', storyId);
 
-    // Generate new story with same parameters
-    const newStory = await StoryGenerationService.generateStory(
+    // Generate new story with same parameters using Beta engine
+    const newStory = await BetaStoryGenerationService.generateStory(
       user.id,
       costLog.generation_params
     );

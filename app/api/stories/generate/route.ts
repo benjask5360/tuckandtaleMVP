@@ -1,10 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { StoryGenerationService } from '@/lib/services/story-generation';
 import { BetaStoryGenerationService } from '@/lib/story-engine-v2/services/BetaStoryGenerationService';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 import { SubscriptionTierService } from '@/lib/services/subscription-tier';
-import { StoryValidator } from '@/lib/validators/story-validator';
 import type { StoryGenerationParams } from '@/lib/types/story-types';
 
 export async function POST(request: Request) {
@@ -139,11 +137,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate story (synchronous for MVP)
-    // Route to Beta engine if useBetaEngine flag is set
-    const story = params.useBetaEngine
-      ? await BetaStoryGenerationService.generateStory(user.id, params)
-      : await StoryGenerationService.generateStory(user.id, params);
+    // Generate story using Beta engine (synchronous for MVP)
+    const story = await BetaStoryGenerationService.generateStory(user.id, params);
 
     // Increment usage counts - pass includeIllustrations flag
     await StoryUsageLimitsService.incrementUsage(user.id, includeIllustrations);
@@ -162,10 +157,9 @@ export async function POST(request: Request) {
 
     // Handle JSON parsing errors specifically
     if (error instanceof SyntaxError && error.message.includes('JSON')) {
-      const friendlyMessage = StoryValidator.getJSONErrorMessage(error);
       return NextResponse.json(
         {
-          error: friendlyMessage,
+          error: 'Failed to parse the AI response. The generated content may be malformed.',
           type: 'json_parsing_error',
           details: error.message
         },
