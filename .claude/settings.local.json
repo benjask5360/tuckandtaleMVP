@@ -14,7 +14,8 @@
       "Bash(node scripts/check-stories-view.js:*)",
       "Bash(node scripts/test-api-story.js:*)",
       "Bash(node scripts/test-cheeto-normalization.js:*)",
-      "Bash(node scripts/regenerate-cheeto.js:*)"
+      "Bash(node scripts/regenerate-cheeto.js:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []

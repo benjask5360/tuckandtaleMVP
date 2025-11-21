@@ -178,31 +178,31 @@ export async function mapSelectionsToEnhanced(
     if (key.startsWith('descriptors_attribute_')) {
       switch (descriptor.attribute_type) {
         case 'hair':
-          enhanced.hair = descriptor.rich_description;
+          enhanced.hair = descriptor.simple_term;
           break;
         case 'hair_length':
-          enhanced.hairLength = descriptor.rich_description;
+          enhanced.hairLength = descriptor.simple_term;
           break;
         case 'hair_type':
-          enhanced.hairType = descriptor.rich_description;
+          enhanced.hairType = descriptor.simple_term;
           break;
         case 'eyes':
-          enhanced.eyes = descriptor.rich_description;
+          enhanced.eyes = descriptor.simple_term;
           break;
         case 'skin':
-          enhanced.skin = descriptor.rich_description;
+          enhanced.skin = descriptor.simple_term;
           break;
         case 'body':
-          enhanced.body = descriptor.rich_description;
+          enhanced.body = descriptor.simple_term;
           break;
         case 'glasses':
-          enhanced.glasses = descriptor.rich_description;
+          enhanced.glasses = descriptor.simple_term;
           break;
         case 'pet_color':
-          enhanced.petColor = descriptor.rich_description;
+          enhanced.petColor = descriptor.simple_term;
           break;
         case 'magical_color':
-          enhanced.magicalColor = descriptor.rich_description;
+          enhanced.magicalColor = descriptor.simple_term;
           break;
       }
     } else if (key.startsWith('descriptors_age_')) {
