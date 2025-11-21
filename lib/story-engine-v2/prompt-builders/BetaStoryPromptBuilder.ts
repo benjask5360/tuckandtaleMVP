@@ -288,17 +288,17 @@ Your stories:
     instructions += '    {\n';
     instructions += '      "paragraph": "Once upon a time, in a cozy little house, there lived a curious child who loved to explore...",\n';
     instructions += `      "charactersInScene": ["${heroName}"],\n`;
-    instructions += '      "illustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Cozy bedroom at night with moonlight streaming through the window. ACTIONS: - ' + heroName + ' sits up in bed looking excited - ' + heroName + ' spots something magical outside the window. STYLE: Disney pixar"\n';
+    instructions += '      "illustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Bedroom at night, moonlight through window. ACTIONS: - ' + heroName + ' sits up in bed - ' + heroName + ' looks at window. STYLE: Disney pixar"\n';
     instructions += '    },\n';
     instructions += '    // ... 6 more scenes ...\n';
     instructions += '    {\n';
     instructions += '      "paragraph": "And from that day forward, our hero knew that every adventure brings new discoveries...",\n';
     instructions += `      "charactersInScene": ["${heroName}"],\n`;
-    instructions += '      "illustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, happy smile. SETTING: Bright morning in the cozy bedroom with sunlight. ACTIONS: - ' + heroName + ' stands confidently by the window - ' + heroName + ' looks out with wonder and joy. STYLE: Disney pixar"\n';
+    instructions += '      "illustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Bedroom in morning, sunlight. ACTIONS: - ' + heroName + ' stands by window - ' + heroName + ' looks out. STYLE: Disney pixar"\n';
     instructions += '    }\n';
     instructions += '  ],\n';
     instructions += '  "moral": "Curiosity and courage help us discover wonderful things",\n';
-    instructions += '  "coverIllustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, determined expression. SETTING: Magical scene that captures the essence of the story. ACTIONS: - ' + heroName + ' stands at the center looking brave and ready for adventure. STYLE: Disney pixar"\n';
+    instructions += '  "coverIllustrationPrompt": "Disney pixar illustration. CHARACTERS: ' + heroName + ': curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Scene from story. ACTIONS: - ' + heroName + ' stands at center. STYLE: Disney pixar"\n';
     instructions += '}\n';
     instructions += '```\n\n';
 
@@ -317,7 +317,7 @@ Your stories:
     instructions += 'Disney pixar illustration. CHARACTERS: {Name}: {hair color}, {eye color}, {age}, {clothing}, {size/build}. SETTING: {location and atmosphere}. ACTIONS: - {Action 1} - {Action 2} STYLE: Disney pixar\n';
     instructions += '```\n\n';
     instructions += 'Example (as a single-line string):\n';
-    instructions += `"Disney pixar illustration. CHARACTERS: ${heroName}: curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Cozy bedroom at night with moonlight. ACTIONS: - ${heroName} sits up in bed looking at the window - ${heroName} spots something magical outside. STYLE: Disney pixar"\n\n`;
+    instructions += `"Disney pixar illustration. CHARACTERS: ${heroName}: curly brown hair, bright green eyes, 8-year-old, blue striped pajamas, small build. SETTING: Bedroom at night, moonlight. ACTIONS: - ${heroName} sits up in bed - ${heroName} looks at window. STYLE: Disney pixar"\n\n`;
 
     instructions += '**ILLUSTRATION PROMPT GUIDELINES:**\n';
     instructions += '- ⚠️ CRITICAL: Write the entire illustrationPrompt as ONE continuous string (no line breaks)\n';
@@ -331,9 +331,12 @@ Your stories:
     instructions += '  - Bad examples: "pajamas" (too vague), "casual clothes" (changes between scenes)\n';
     instructions += '- DO NOT vary clothing between scenes - character wears the same outfit in all 8 scenes\n';
     instructions += '- Keep character descriptions SHORT and CONSISTENT\n';
-    instructions += '- Keep SETTING to 1-2 sentences maximum\n';
-    instructions += '- Limit ACTIONS to 2-3 bullet points with brief descriptions\n';
+    instructions += '- Keep SETTING to 1 SHORT sentence maximum (e.g., "Forest clearing, oak trees" NOT "Magical forest bathed in golden sunlight")\n';
+    instructions += '- Limit ACTIONS to 2-3 brief bullet points - just the action, no adverbs\n';
     instructions += '- DO NOT add poetic or flowery language - be direct and visual\n';
+    instructions += '- NO adjectives like "magical", "wonderful", "beautiful", "cozy", "warm", "bright", "golden" unless describing actual color\n';
+    instructions += '- NO emotional descriptors like "excited", "happy", "worried", "confidently", "eagerly", "joyfully"\n';
+    instructions += '- Describe ONLY what is visible - no feelings, emotions, or atmosphere\n';
     instructions += '- Each scene should visually match what happens in the paragraph\n';
     instructions += '- Always end with "STYLE: Disney pixar"\n';
     instructions += '- DO NOT use actual line breaks (\\n) in the illustrationPrompt string\n\n';
