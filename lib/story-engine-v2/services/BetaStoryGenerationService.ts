@@ -568,6 +568,7 @@ export class BetaStoryGenerationService {
         },
         include_illustrations: request.includeIllustrations,
         engine_version: 'beta',
+        generation_status: 'text_complete',
         story_scenes: story.scenes.map(scene => ({
           paragraph: scene.paragraph,
           charactersInScene: scene.charactersInScene,
