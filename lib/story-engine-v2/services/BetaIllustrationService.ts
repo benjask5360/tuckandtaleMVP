@@ -56,7 +56,7 @@ export class BetaIllustrationService {
 
     const leonardoClient = new LeonardoClient();
     let totalCreditsUsed = 0;
-    let sceneIllustrations: { sceneIndex: number; illustrationUrl: string }[] = [];
+    const sceneIllustrations: { sceneIndex: number; illustrationUrl: string }[] = [];
     let coverIllustrationUrl = '';
 
     console.log(`\n${'='.repeat(80)}`);
