@@ -85,37 +85,19 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
 
   // Poll for story text and illustration updates if they're pending
   useEffect(() => {
-    // Start polling immediately, even before story loads
-    // This ensures we catch updates as soon as the story is created
-
-    // If we have a story, check if it's Beta and needs polling
-    if (story) {
-      const isBeta = story.engine_version === 'beta'
-      if (!isBeta) return
-
-      // Check completion status early
-      if (story.generation_status === 'complete') {
-        setIllustrationsComplete(true)
-        return
-      }
-
-      // Check if we need to poll
-      const isTextGenerating = story.generation_status === 'generating' || !story.generation_status
-      const hasPendingIllustrations =
-        (story.generation_status === 'text_complete' || !story.generation_status) &&
-        (!story.cover_illustration_url ||
-         (story.story_scenes && story.story_scenes.some(scene => !scene.illustrationUrl)))
-
-      // Continue polling if text is generating OR if there might be updates
-      if (!isTextGenerating && !hasPendingIllustrations) {
-        setIllustrationsComplete(true)
-        return
-      }
-    }
-    // If no story yet, we still want to poll to get initial data
-
-    // Prevent multiple polling loops
+    // CRITICAL: Prevent multiple concurrent polling loops
     if (pollingActiveRef.current) {
+      return
+    }
+
+    // Only poll Beta stories
+    if (story && story.engine_version !== 'beta') {
+      return
+    }
+
+    // Stop polling if story is complete
+    if (story?.generation_status === 'complete') {
+      setIllustrationsComplete(true)
       return
     }
 
@@ -124,28 +106,24 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
     // Abort controller for request cancellation
     const abortController = new AbortController()
     let timeoutId: NodeJS.Timeout
-    let pollCount = 0
     let isPolling = false
     let lastPollTime = 0
 
     const getPollInterval = () => {
-      // Faster polling while text is generating or story hasn't loaded yet
       if (!story || story.generation_status === 'generating') {
-        return 500 // Poll every 500ms for streaming text or initial load
+        return 1000 // 1s for text generation
       }
-      // Slower polling for illustrations (they take 30-60s each to generate)
-      // No need to check more frequently than every 10 seconds
-      return 10000 // Poll every 10 seconds for illustrations
+      return 3000 // 3s for illustrations
     }
 
     const poll = async () => {
-      // Prevent concurrent polling
+      // Prevent concurrent requests
       if (isPolling) return
 
       // Enforce minimum interval
       const now = Date.now()
       const timeSinceLastPoll = now - lastPollTime
-      const minInterval = !story || story?.generation_status === 'generating' ? 500 : 10000
+      const minInterval = getPollInterval()
 
       if (timeSinceLastPoll < minInterval) {
         timeoutId = setTimeout(poll, minInterval - timeSinceLastPoll)
@@ -167,49 +145,25 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
         const data = await response.json()
 
         if (data.story) {
-          // Update story
           setStory(data.story)
 
-          // Check if all content is complete
-          const textComplete = data.story.generation_status !== 'generating'
-          const allIllustrationsComplete =
-            data.story.cover_illustration_url &&
-            (!data.story.story_scenes || data.story.story_scenes.every((scene: BetaScene) => scene.illustrationUrl))
-
-          if (textComplete && allIllustrationsComplete) {
+          // Stop polling if complete
+          if (data.story.generation_status === 'complete') {
             setIllustrationsComplete(true)
             pollingActiveRef.current = false
-            return // Stop polling
+            return
           }
 
-          // Check if we should continue polling
-          const shouldContinue =
-            data.story.generation_status === 'generating' ||
-            data.story.generation_status === 'text_complete' ||
-            !allIllustrationsComplete
-
-          if (shouldContinue) {
-            pollCount++
-            timeoutId = setTimeout(poll, getPollInterval())
-          }
+          // Continue polling if still generating
+          timeoutId = setTimeout(poll, getPollInterval())
         }
       } catch (error: any) {
-        // Ignore abort errors
         if (error.name === 'AbortError') {
           return
         }
-
         console.error('Error polling for updates:', error)
-
-        // Retry with backoff on error
-        if (pollCount < 30) { // Max 30 retries
-          pollCount++
-          timeoutId = setTimeout(poll, Math.min(10000, getPollInterval() * 2))
-        } else {
-          // Max retries reached, stop polling
-          pollingActiveRef.current = false
-          console.error('Max polling retries reached, stopping')
-        }
+        // Retry after delay
+        timeoutId = setTimeout(poll, 5000)
       } finally {
         isPolling = false
       }
@@ -226,7 +180,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
         clearTimeout(timeoutId)
       }
     }
-  }, [params.id, story?.generation_status]) // Re-run when generation status changes
+  }, [params.id]) // Only depend on story ID
 
   const loadStory = async () => {
     try {
