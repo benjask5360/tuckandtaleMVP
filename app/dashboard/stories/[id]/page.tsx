@@ -133,10 +133,9 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
       if (!story || story.generation_status === 'generating') {
         return 500 // Poll every 500ms for streaming text or initial load
       }
-      // Standard polling for illustrations
-      if (pollCount < 10) return 2000 // First 10 polls: every 2 seconds
-      if (pollCount < 20) return 3000 // Next 10 polls: every 3 seconds
-      return 5000 // After that: every 5 seconds
+      // Slower polling for illustrations (they take 30-60s each to generate)
+      // No need to check more frequently than every 10 seconds
+      return 10000 // Poll every 10 seconds for illustrations
     }
 
     const poll = async () => {
@@ -146,7 +145,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
       // Enforce minimum interval
       const now = Date.now()
       const timeSinceLastPoll = now - lastPollTime
-      const minInterval = !story || story?.generation_status === 'generating' ? 500 : 1000
+      const minInterval = !story || story?.generation_status === 'generating' ? 500 : 10000
 
       if (timeSinceLastPoll < minInterval) {
         timeoutId = setTimeout(poll, minInterval - timeSinceLastPoll)

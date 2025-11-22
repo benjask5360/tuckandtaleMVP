@@ -106,6 +106,7 @@ export class BetaIllustrationService {
 
       // Update database with first scenes
       for (const result of firstSceneResults) {
+        console.log(`  Updating scene ${result.sceneIndex + 1} with illustration URL: ${result.illustrationUrl.substring(0, 50)}...`);
         await this.updateSceneIllustration(contentId, result.sceneIndex, result.illustrationUrl);
         sceneIllustrations.push({
           sceneIndex: result.sceneIndex,
@@ -113,7 +114,7 @@ export class BetaIllustrationService {
         });
         totalCreditsUsed += result.creditsUsed;
       }
-      console.log('✅ First 2 scenes complete!\n');
+      console.log('✅ First 2 scenes complete and saved to database!\n');
 
       // PRIORITY 3: Generate remaining scenes concurrently (background)
       if (scenes.length > 2) {
