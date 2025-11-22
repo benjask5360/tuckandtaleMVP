@@ -106,23 +106,32 @@ export class BetaIllustrationService {
       const allResults = await Promise.all(allPromises);
       console.log('✅ All illustrations generated!\n');
 
-      // Update database with all results
-      console.log('Saving illustrations to database...');
-      for (const result of allResults) {
+      // Update database with all results CONCURRENTLY
+      console.log('Saving all illustrations to database concurrently...');
+
+      // Prepare all database update promises
+      const updatePromises = allResults.map(result => {
         if (result.type === 'cover') {
-          await this.updateStoryWithCover(contentId, result.url);
-          coverIllustrationUrl = result.url;
-          console.log('  ✓ Cover saved');
-        } else {
-          await this.updateSceneIllustration(contentId, result.sceneIndex, result.url);
-          sceneIllustrations.push({
-            sceneIndex: result.sceneIndex,
-            illustrationUrl: result.url,
+          return this.updateStoryWithCover(contentId, result.url).then(() => {
+            coverIllustrationUrl = result.url;
+            console.log('  ✓ Cover saved');
           });
-          console.log(`  ✓ Scene ${result.sceneIndex + 1} saved`);
+        } else {
+          return this.updateSceneIllustration(contentId, result.sceneIndex, result.url).then(() => {
+            sceneIllustrations.push({
+              sceneIndex: result.sceneIndex,
+              illustrationUrl: result.url,
+            });
+            console.log(`  ✓ Scene ${result.sceneIndex + 1} saved`);
+          });
         }
-        totalCreditsUsed += result.creditsUsed;
-      }
+      });
+
+      // Execute all database updates concurrently
+      await Promise.all(updatePromises);
+
+      // Calculate total credits
+      totalCreditsUsed = allResults.reduce((sum, result) => sum + result.creditsUsed, 0);
 
       console.log('\n' + '='.repeat(80));
       console.log('✅ ALL ILLUSTRATIONS COMPLETED!');
