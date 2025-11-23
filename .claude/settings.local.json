@@ -15,7 +15,14 @@
       "Bash(node scripts/test-api-story.js:*)",
       "Bash(node scripts/test-cheeto-normalization.js:*)",
       "Bash(node scripts/regenerate-cheeto.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(/dev/null --include=*.sql)",
+      "Bash(npm --version:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "Bash(ping:*)",
+      "Bash($env:NODE_OPTIONS=\"--dns-result-order=ipv4first\")",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

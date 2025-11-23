@@ -122,7 +122,7 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Body Type',
             customOptions: true,
             options: [
-              { value: 'petite', label: 'Petite' },
+              { value: 'slender', label: 'Slender' },
               { value: 'average', label: 'Average' },
               { value: 'athletic', label: 'Athletic' },
               { value: 'strong', label: 'Strong' },
@@ -300,7 +300,7 @@ export const characterTypes: CharacterTypeConfig[] = [
             label: 'Body Type',
             customOptions: true,
             options: [
-              { value: 'petite', label: 'Petite' },
+              { value: 'slender', label: 'Slender' },
               { value: 'average', label: 'Average' },
               { value: 'athletic', label: 'Athletic' },
               { value: 'strong', label: 'Strong' },
