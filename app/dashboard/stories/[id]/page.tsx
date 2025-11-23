@@ -147,8 +147,13 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
         if (data.story) {
           setStory(data.story)
 
-          // Stop polling if complete
-          if (data.story.generation_status === 'complete') {
+          // Stop polling if complete or if text-only story is text_complete
+          const isTerminalState =
+            data.story.generation_status === 'complete' ||
+            (data.story.generation_status === 'text_complete' &&
+              !data.story.include_illustrations)
+
+          if (isTerminalState) {
             setIllustrationsComplete(true)
             pollingActiveRef.current = false
             return
