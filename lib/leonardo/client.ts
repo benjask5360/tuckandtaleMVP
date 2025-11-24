@@ -4,7 +4,11 @@
  * Documentation: https://docs.leonardo.ai/reference
  */
 
+import { setDefaultResultOrder } from 'dns';
 import { env } from '@/lib/env';
+
+// Fix for Windows DNS resolution issues in development
+setDefaultResultOrder('ipv4first');
 
 export interface LeonardoGenerationConfig {
   prompt: string;
