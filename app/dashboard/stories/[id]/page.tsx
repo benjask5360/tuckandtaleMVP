@@ -671,7 +671,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
             <div className="border-t border-gray-200 mb-6"></div>
 
             {/* Cover Image */}
-            {isBetaStory ? (
+            {isBetaStory && story.include_illustrations === true ? (
               <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
                 {coverImageUrl ? (
                   <Image
@@ -779,7 +779,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
               return (
                 <div key={index}>
                   {/* Scene Illustration above paragraph */}
-                  {isBetaStory ? (
+                  {isBetaStory && story.include_illustrations === true ? (
                     <div className="mt-8 mb-6 relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-white shadow-md">
                       {sceneImageUrl ? (
                         <Image
