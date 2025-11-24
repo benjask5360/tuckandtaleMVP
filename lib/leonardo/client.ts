@@ -153,6 +153,7 @@ export class LeonardoClient {
     generationId: string,
     onProgress?: (progress: number, message: string) => void
   ): Promise<LeonardoGenerationResponse> {
+    const pollStartTime = performance.now();
     let attempts = 0;
     let lastStatus = 'PENDING';
 
@@ -177,6 +178,8 @@ export class LeonardoClient {
           if (onProgress) {
             onProgress(100, 'Image generated successfully!');
           }
+          const pollDuration = performance.now() - pollStartTime;
+          console.log(`⏱️  Leonardo polling (${generationId.slice(0, 8)}...): ${(pollDuration / 1000).toFixed(2)}s (${pollDuration.toFixed(0)}ms)`);
           return generation;
         }
 

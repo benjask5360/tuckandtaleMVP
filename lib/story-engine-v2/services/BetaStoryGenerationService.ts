@@ -29,6 +29,7 @@ export class BetaStoryGenerationService {
   ): Promise<any> {
     const supabase = await createClient();
     const startedAt = new Date().toISOString();
+    const overallStartTime = performance.now();
     let costLogId: string | null = null;
 
     console.log('\n' + '='.repeat(80));
@@ -100,9 +101,12 @@ export class BetaStoryGenerationService {
             console.log(`\n🔄 JSON parsing failed, retrying OpenAI call (attempt ${attempt + 1}/${maxJsonRetries + 1})...`);
           }
 
+          const openaiStartTime = performance.now();
           openAIResponse = await this.callOpenAI(prompt, aiConfig);
+          const openaiDuration = performance.now() - openaiStartTime;
           console.log(`✅ OpenAI response received (attempt ${attempt + 1})`);
           console.log(`   Tokens used: ${openAIResponse.tokens} (prompt: ${openAIResponse.promptTokens}, completion: ${openAIResponse.completionTokens})`);
+          console.log(`⏱️  OpenAI API call: ${(openaiDuration / 1000).toFixed(2)}s (${openaiDuration.toFixed(0)}ms)`);
 
           // Parse and validate response
           parsedStory = BetaStoryValidator.extractJSON(openAIResponse.content);
@@ -133,8 +137,11 @@ export class BetaStoryGenerationService {
 
       // 7. Save story to database
       console.log('\nStep 7: Saving story to database...');
+      const saveStartTime = performance.now();
       const storyId = await this.saveStory(userId, validation.story, request, prompt);
+      const saveDuration = performance.now() - saveStartTime;
       console.log(`✅ Story saved with ID: ${storyId}`);
+      console.log(`⏱️  Save story to DB: ${(saveDuration / 1000).toFixed(2)}s (${saveDuration.toFixed(0)}ms)`);
 
       // 8. Link characters - DEPRECATED: Now stored in generation_metadata
       // console.log('\nStep 8: Linking characters...');
@@ -176,8 +183,10 @@ export class BetaStoryGenerationService {
         console.log('✅ Illustration generation scheduled');
       }
 
+      const overallDuration = performance.now() - overallStartTime;
       console.log('\n' + '='.repeat(80));
       console.log('BETA STORY GENERATION COMPLETED SUCCESSFULLY');
+      console.log(`⏱️  TOTAL Generation Time: ${(overallDuration / 1000).toFixed(2)}s (${overallDuration.toFixed(0)}ms)`);
       console.log('='.repeat(80) + '\n');
 
       return story;

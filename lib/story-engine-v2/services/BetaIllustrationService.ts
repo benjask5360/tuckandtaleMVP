@@ -66,6 +66,8 @@ export class BetaIllustrationService {
     console.log('All images will generate simultaneously for maximum speed');
     console.log('='.repeat(80) + '\n');
 
+    const illustrationStartTime = performance.now();
+
     try {
       // Generate ALL illustrations concurrently (cover + all scenes)
       console.log('🎨 Starting concurrent generation of all illustrations...');
@@ -104,7 +106,9 @@ export class BetaIllustrationService {
 
       console.log(`Waiting for ${allPromises.length} illustrations to complete...`);
       const allResults = await Promise.all(allPromises);
-      console.log('✅ All illustrations generated!\n');
+      const illustrationDuration = performance.now() - illustrationStartTime;
+      console.log('✅ All illustrations generated!');
+      console.log(`⏱️  All illustrations (${allPromises.length} concurrent): ${(illustrationDuration / 1000).toFixed(2)}s (${illustrationDuration.toFixed(0)}ms)\n`);
 
       // Update database with all results CONCURRENTLY
       console.log('Saving all illustrations to database concurrently...');
@@ -170,6 +174,8 @@ export class BetaIllustrationService {
     contentId: string,
     imageName: string
   ): Promise<{ url: string; creditsUsed: number }> {
+    const singleImageStartTime = performance.now();
+
     // Build Leonardo configuration
     const leonardoConfig = AIConfigService.buildLeonardoConfig(aiConfig, prompt);
 
@@ -241,6 +247,9 @@ export class BetaIllustrationService {
       null, // No existing cost log ID
       contentId
     );
+
+    const singleImageDuration = performance.now() - singleImageStartTime;
+    console.log(`⏱️  Single illustration (${imageName}): ${(singleImageDuration / 1000).toFixed(2)}s (${singleImageDuration.toFixed(0)}ms)`);
 
     return {
       url: publicUrl,
