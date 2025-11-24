@@ -149,6 +149,7 @@ export default function StoryLibraryPage() {
   const [reviewStoryId, setReviewStoryId] = useState<string>('')
   const router = useRouter()
   const supabase = createClient()
+  const { refresh } = useSubscription()
 
   useEffect(() => {
     loadStories()
@@ -167,6 +168,8 @@ export default function StoryLibraryPage() {
         router.push('/auth/login')
         return
       }
+
+      refresh()
 
       // Fetch subscription tier for story limits
       const { data: userProfile } = await supabase

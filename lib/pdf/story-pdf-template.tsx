@@ -304,7 +304,7 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
         {/* Moral Section (for growth mode or any story with moral) */}
         {moral && (
           <View style={styles.moralSection}>
-            <Text style={styles.moralTitle}>✨ Lesson Learned</Text>
+            <Text style={styles.moralTitle}>Lesson Learned</Text>
             <Text style={styles.moralText}>{moral}</Text>
           </View>
         )}
