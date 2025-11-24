@@ -5,6 +5,7 @@
 
 import Stripe from 'stripe';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { SubscriptionTierService } from './subscription-tier';
 import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId, STRIPE_PRICES } from '@/lib/stripe/price-mapping';
 import type { BillingPeriod, SubscriptionTier } from '@/lib/types/subscription-types';
@@ -173,7 +174,7 @@ export class StripeService {
         process.env.STRIPE_WEBHOOK_SECRET!
       );
 
-      const supabase = await createClient();
+      const supabase = createAdminClient();
 
       // Handle different event types
       switch (event.type) {
