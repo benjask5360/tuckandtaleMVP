@@ -57,6 +57,7 @@ interface Story {
   story_scenes?: BetaScene[]
   cover_illustration_url?: string
   cover_illustration_prompt?: string
+  include_illustrations?: boolean
 }
 
 export default function StoryViewerPage({ params }: { params: { id: string } }) {
