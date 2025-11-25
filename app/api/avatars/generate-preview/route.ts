@@ -22,6 +22,7 @@ interface PreviewGenerationRequest {
     skinTone?: string;
     bodyType?: string;
     hasGlasses?: boolean;
+    background?: string;
     species?: string;
     breed?: string;
     primaryColor?: string;  // Pet fur/feather/scale color
