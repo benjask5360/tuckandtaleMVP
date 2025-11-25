@@ -121,33 +121,33 @@ export async function generateAvatarPrompt(
 
     case 'pet':
       const petType = enhanced.species || 'pet';
-      prompt = `Disney Pixar style standing pet avatar: happy ${petType}`;
+      prompt = `Disney Pixar style standing pet avatar of a happy ${petType} with the following characteristics:`;
 
-      const petFeatures: string[] = [];
-      if (enhanced.petColor) petFeatures.push(enhanced.petColor);
-      if (enhanced.eyes) petFeatures.push(`${enhanced.eyes}`);
+      const petCharacteristics: string[] = [];
+      if (enhanced.petColor) petCharacteristics.push(`${enhanced.petColor} coloring`);
+      if (enhanced.eyes) petCharacteristics.push(`${enhanced.eyes} eyes`);
 
-      if (petFeatures.length > 0) {
-        prompt += `, ${petFeatures.join(', ')}`;
+      if (petCharacteristics.length > 0) {
+        prompt += '\n' + petCharacteristics.map(c => `- ${c}`).join('\n');
       }
 
-      prompt += ', white background, high quality';
+      prompt += '\nWhite background, high quality.';
       break;
 
     case 'magical_creature':
       const creatureType = enhanced.creature || 'creature';
-      prompt = `Disney Pixar style standing magical creature avatar: happy and enchanting ${creatureType}`;
+      prompt = `Disney Pixar style standing magical creature avatar of a happy and enchanting ${creatureType} with the following characteristics:`;
 
-      const magicFeatures: string[] = [];
-      if (enhanced.magicalColor) magicFeatures.push(`${enhanced.magicalColor} color`);
-      if (enhanced.hair) magicFeatures.push(`${enhanced.hair} features`);
-      if (enhanced.eyes) magicFeatures.push(`${enhanced.eyes}`);
+      const creatureCharacteristics: string[] = [];
+      if (enhanced.magicalColor) creatureCharacteristics.push(`${enhanced.magicalColor} coloring`);
+      if (enhanced.hair) creatureCharacteristics.push(`${enhanced.hair} features`);
+      if (enhanced.eyes) creatureCharacteristics.push(`${enhanced.eyes} eyes`);
 
-      if (magicFeatures.length > 0) {
-        prompt += `, ${magicFeatures.join(', ')}`;
+      if (creatureCharacteristics.length > 0) {
+        prompt += '\n' + creatureCharacteristics.map(c => `- ${c}`).join('\n');
       }
 
-      prompt += ', white background, high quality';
+      prompt += '\nWhite background, high quality.';
       break;
 
     default:

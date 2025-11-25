@@ -367,6 +367,7 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'brown', label: 'Brown' },
               { value: 'gray', label: 'Gray' },
               { value: 'golden', label: 'Golden' },
+              { value: 'tan', label: 'Tan' },
               { value: 'orange', label: 'Orange' },
               { value: 'spotted', label: 'Spotted' },
               { value: 'striped', label: 'Striped' }
@@ -439,12 +440,6 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'white', label: 'White' },
               { value: 'black', label: 'Black' }
             ]
-          },
-          {
-            id: 'specialFeatures',
-            type: 'textarea',
-            label: 'Special Features',
-            placeholder: 'e.g., sparkly wings, breathes fire, can become invisible'
           }
         ]
       }
