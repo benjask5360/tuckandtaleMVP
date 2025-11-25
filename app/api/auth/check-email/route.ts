@@ -10,22 +10,34 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient()
+    const normalizedEmail = email.toLowerCase().trim()
 
-    // Check if user exists with this email
-    const { data, error } = await supabase.auth.admin.listUsers({
-      filter: {
-        email: email.toLowerCase().trim(),
-      },
-    })
+    // Query the auth.users table directly to check if email exists
+    const { data, error } = await supabase
+      .from('auth.users')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .limit(1)
+      .maybeSingle()
 
     if (error) {
-      console.error('Error checking email:', error)
-      return NextResponse.json({ error: 'Failed to check email' }, { status: 500 })
+      // If auth.users isn't accessible, try user_profiles as fallback
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('email', normalizedEmail)
+        .limit(1)
+        .maybeSingle()
+
+      if (profileError) {
+        console.error('Error checking email:', profileError)
+        return NextResponse.json({ error: 'Failed to check email' }, { status: 500 })
+      }
+
+      return NextResponse.json({ exists: !!profileData })
     }
 
-    const exists = data.users.length > 0
-
-    return NextResponse.json({ exists })
+    return NextResponse.json({ exists: !!data })
   } catch (error) {
     console.error('Error in check-email route:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
