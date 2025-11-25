@@ -23,9 +23,11 @@ export async function generateAvatarPrompt(
   selections: CharacterSelections
 ): Promise<string> {
   console.log('Avatar prompt - Input:', { profileType, selections });
+  console.log('Avatar prompt - Background in selections:', selections.background);
 
   const enhanced = await mapSelectionsToEnhanced(profileType, selections);
   console.log('Avatar prompt - Enhanced:', enhanced);
+  console.log('Avatar prompt - Enhanced background:', enhanced.background);
   console.log('Avatar prompt - Gender check:', {
     hasGender: !!enhanced.gender,
     genderValue: enhanced.gender,
