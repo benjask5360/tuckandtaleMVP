@@ -52,19 +52,11 @@ function LockedFieldWrapper({
 }) {
   const { canUseFeature, loading } = useSubscription();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const router = useRouter();
   const hasAccess = canUseFeature(feature as any);
 
   const handleLockedClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Check if device cannot hover (touch-only devices)
-    const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
-
-    if (isTouchDevice) {
-      setShowUpgradeModal(true);
-    } else {
-      router.push('/pricing');
-    }
+    setShowUpgradeModal(true);
   };
 
   if (loading) {
@@ -115,19 +107,11 @@ function LockedFieldWrapper({
 function GrowthStoryButton({ mode, setMode }: { mode: 'fun' | 'growth', setMode: (mode: 'fun' | 'growth') => void }) {
   const { canUseFeature, loading } = useSubscription();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const router = useRouter();
   const hasAccess = canUseFeature('allow_growth_stories' as any);
 
   const handleLockedClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Check if device cannot hover (touch-only devices)
-    const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
-
-    if (isTouchDevice) {
-      setShowUpgradeModal(true);
-    } else {
-      router.push('/pricing');
-    }
+    setShowUpgradeModal(true);
   };
 
   if (loading) {
