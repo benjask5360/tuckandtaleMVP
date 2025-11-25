@@ -29,7 +29,7 @@ Tuck and Tale is an AI-powered personalized bedtime story platform where parents
 ### Character Types
 - **Child:** Main hero with full customization
 - **Pet:** Animal companions
-- **Friend/Sibling:** Supporting characters
+- **Supporting Characters:** Other human characters, e.g. friends and family
 - **Magical Creature:** Fantasy companions
 
 ### Story Options
@@ -140,15 +140,15 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - ⏳ Character profiles
 - ⏳ Story generation
 - ⏳ Image generation
+- ⏳ PDF export
+- ⏳ Payment processing (Stripe)
 
 ### Phase 2 (Next)
-- [ ] PDF export
 - [ ] Email notifications
 - [ ] Social sharing
 - [ ] Analytics dashboard
 
 ### Phase 3 (Future)
-- [ ] Payment processing (Stripe)
 - [ ] Subscription plans
 - [ ] Multi-language support
 - [ ] Mobile app
