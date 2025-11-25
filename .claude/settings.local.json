@@ -1,28 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node scripts/apply-terms-direct.js:*)",
-      "Bash(node scripts/apply-terms-columns.js:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(npm run build:*)",
-      "Bash(npx tsc:*)",
-      "Bash(git checkout:*)",
-      "Bash(npm run migrate:*)",
-      "Bash(node scripts/debug-story.js:*)",
-      "Bash(node scripts/check-stories-view.js:*)",
-      "Bash(node scripts/test-api-story.js:*)",
-      "Bash(node scripts/test-cheeto-normalization.js:*)",
-      "Bash(node scripts/regenerate-cheeto.js:*)",
-      "Bash(node:*)",
-      "Bash(/dev/null --include=*.sql)",
-      "Bash(npm --version:*)",
-      "Bash(npm install)",
-      "Bash(npm run dev:*)",
-      "Bash(ping:*)",
       "Bash($env:NODE_OPTIONS=\"--dns-result-order=ipv4first\")",
-      "Bash(npm install:*)"
+      "Bash(ping:*)",
+      "Bash(ipconfig:*)",
+      "Bash(git checkout:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm run migrate:new:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

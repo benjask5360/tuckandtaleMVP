@@ -88,6 +88,12 @@ Your stories:
 - Create a satisfying story arc with a clear resolution
 - Leave children feeling content and ready for sweet dreams
 
+📝 **Character Descriptions in Narrative**
+- Do NOT include physical descriptions (hair color, eye color, body type, height, etc.) for the provided characters in the story text
+- Simply refer to them by name - let the illustrations show what they look like
+- You MAY describe new characters you create within the story (e.g., a wizard they meet, a magical creature)
+- Physical details for provided characters belong ONLY in the illustrationPrompt fields
+
 **Your mission:** Create a delightful 8-scene story that entertains, inspires, and brings joy to young readers.`;
   }
 
@@ -127,6 +133,12 @@ Your stories:
 - Make learning fun through an engaging story
 - Balance educational content with enjoyment
 - Create memorable characters children can learn from
+
+📝 **Character Descriptions in Narrative**
+- Do NOT include physical descriptions (hair color, eye color, body type, height, etc.) for the provided characters in the story text
+- Simply refer to them by name - let the illustrations show what they look like
+- You MAY describe new characters you create within the story (e.g., a wizard they meet, a magical creature)
+- Physical details for provided characters belong ONLY in the illustrationPrompt fields
 
 **Your mission:** Create an 8-scene educational story that helps children learn important life skills while being entertained.`;
   }
