@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Sparkles, Target, Lock } from 'lucide-react'
 import FeatureGate from '@/components/subscription/FeatureGate'
+import UpgradeModal from '@/components/subscription/UpgradeModal'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import Link from 'next/link'
 
@@ -50,7 +51,21 @@ function LockedFieldWrapper({
   children: React.ReactNode;
 }) {
   const { canUseFeature, loading } = useSubscription();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const router = useRouter();
   const hasAccess = canUseFeature(feature as any);
+
+  const handleLockedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Check if device cannot hover (touch-only devices)
+    const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
+
+    if (isTouchDevice) {
+      setShowUpgradeModal(true);
+    } else {
+      router.push('/pricing');
+    }
+  };
 
   if (loading) {
     return (
@@ -67,28 +82,53 @@ function LockedFieldWrapper({
 
   // Locked state - visible but disabled with upgrade prompt
   return (
-    <div className="relative">
-      <div className="opacity-60 pointer-events-none">
-        {children}
-      </div>
-      <div className="absolute top-0 right-0 mt-2 mr-2">
-        <Lock className="w-4 h-4 text-primary-600" />
-      </div>
-      <Link
-        href="/pricing"
-        className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group"
-      >
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none">
-          <p className="text-xs font-semibold text-primary-600">Upgrade to unlock {featureName}</p>
+    <>
+      <div className="relative">
+        <div className="opacity-60 pointer-events-none">
+          {children}
         </div>
-      </Link>
-    </div>
+        <div className="absolute top-0 right-0 mt-2 mr-2">
+          <Lock className="w-4 h-4 text-primary-600" />
+        </div>
+        <button
+          type="button"
+          onClick={handleLockedClick}
+          className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group cursor-pointer"
+          aria-label={`Upgrade to unlock ${featureName}`}
+        >
+          {/* Desktop hover tooltip - hidden on mobile */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none hidden md:block">
+            <p className="text-xs font-semibold text-primary-600">Upgrade to unlock {featureName}</p>
+          </div>
+        </button>
+      </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName={featureName}
+      />
+    </>
   );
 }
 
 function GrowthStoryButton({ mode, setMode }: { mode: 'fun' | 'growth', setMode: (mode: 'fun' | 'growth') => void }) {
   const { canUseFeature, loading } = useSubscription();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const router = useRouter();
   const hasAccess = canUseFeature('allow_growth_stories' as any);
+
+  const handleLockedClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Check if device cannot hover (touch-only devices)
+    const isTouchDevice = typeof window !== 'undefined' && window.matchMedia('(hover: none)').matches;
+
+    if (isTouchDevice) {
+      setShowUpgradeModal(true);
+    } else {
+      router.push('/pricing');
+    }
+  };
 
   if (loading) {
     return (
@@ -122,28 +162,39 @@ function GrowthStoryButton({ mode, setMode }: { mode: 'fun' | 'growth', setMode:
 
   // Locked state - visible but disabled with upgrade prompt
   return (
-    <div className="relative">
-      <div className="p-4 rounded-lg border-2 border-gray-300 bg-gray-50 text-left min-h-[44px] opacity-75">
-        <div className="flex items-start gap-3">
-          <Target className="w-5 h-5 flex-shrink-0 mt-0.5 text-gray-400" />
-          <div className="flex-1">
-            <div className="font-semibold text-gray-900 flex items-center gap-2">
-              Help My Child Grow
-              <Lock className="w-4 h-4 text-primary-600" />
+    <>
+      <div className="relative">
+        <div className="p-4 rounded-lg border-2 border-gray-300 bg-gray-50 text-left min-h-[44px] opacity-75">
+          <div className="flex items-start gap-3">
+            <Target className="w-5 h-5 flex-shrink-0 mt-0.5 text-gray-400" />
+            <div className="flex-1">
+              <div className="font-semibold text-gray-900 flex items-center gap-2">
+                Help My Child Grow
+                <Lock className="w-4 h-4 text-primary-600" />
+              </div>
+              <div className="text-sm text-gray-600">Stories that teach life skills</div>
             </div>
-            <div className="text-sm text-gray-600">Stories that teach life skills</div>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleLockedClick}
+          className="absolute inset-0 flex items-center justify-center bg-primary-600 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group cursor-pointer"
+          aria-label="Upgrade to unlock Growth Stories"
+        >
+          {/* Desktop hover tooltip - hidden on mobile */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none hidden md:block">
+            <p className="text-xs font-semibold text-primary-600">Upgrade to unlock Growth Stories</p>
+          </div>
+        </button>
       </div>
-      <Link
-        href="/pricing"
-        className="absolute inset-0 flex items-center justify-center bg-primary-600 bg-opacity-0 hover:bg-opacity-5 rounded-lg transition-all group"
-      >
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-lg shadow-lg px-4 py-2 pointer-events-none">
-          <p className="text-xs font-semibold text-primary-600">Upgrade to unlock Growth Stories</p>
-        </div>
-      </Link>
-    </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        featureName="Growth Stories"
+      />
+    </>
   );
 }
 
