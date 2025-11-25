@@ -69,8 +69,8 @@ export default function PricingPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        // Redirect to sign up
-        router.push('/auth/signup?redirect=/pricing');
+        // Redirect to login (unified auth entry point)
+        router.push('/auth/login?redirect=/pricing');
         return;
       }
 

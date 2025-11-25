@@ -37,7 +37,7 @@ export default function AuthAwareCTA({ className = "btn-primary btn-xl group", c
     if (isAuthenticated) {
       router.push('/dashboard')
     } else {
-      router.push('/auth/signup')
+      router.push('/auth/login')
     }
   }
 
