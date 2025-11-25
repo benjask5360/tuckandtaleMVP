@@ -1,7 +1,7 @@
 'use client'
 
 // Signup page component
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ import Image from 'next/image'
 import { Star, Users, Image as ImageIcon, Check } from 'lucide-react'
 import GoogleButton from '@/components/auth/GoogleButton'
 
-export default function SignupPage() {
+function SignupForm() {
   const searchParams = useSearchParams()
   const prefillEmail = searchParams.get('email') || ''
   const [email, setEmail] = useState(prefillEmail)
@@ -306,5 +306,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-bg-warm flex items-center justify-center">Loading...</div>}>
+      <SignupForm />
+    </Suspense>
   )
 }
