@@ -32,12 +32,15 @@ export function buildCharacterDescription(
 
       if (enhanced.gender) {
         // Gender term already includes age context (e.g., "young boy")
-        parts.push(`A ${enhanced.gender}`);
+        const bg = enhanced.background ? `${enhanced.background} ` : '';
+        parts.push(`A ${bg}${enhanced.gender}`);
       } else if (enhanced.age) {
         // Fallback if gender not provided but age is
-        parts.push(`A ${enhanced.age} child`);
+        const bg = enhanced.background ? `${enhanced.background} ` : '';
+        parts.push(`A ${bg}${enhanced.age} child`);
       } else {
-        parts.push('A child');
+        const bg = enhanced.background ? `${enhanced.background} ` : '';
+        parts.push(`A ${bg}child`);
       }
 
       // Add physical attributes
