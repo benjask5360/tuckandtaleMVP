@@ -3,14 +3,16 @@
 // Signup page component
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Star, Users, Image as ImageIcon, Check } from 'lucide-react'
 import GoogleButton from '@/components/auth/GoogleButton'
 
 export default function SignupPage() {
-  const [email, setEmail] = useState('')
+  const searchParams = useSearchParams()
+  const prefillEmail = searchParams.get('email') || ''
+  const [email, setEmail] = useState(prefillEmail)
   const [password, setPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [loading, setLoading] = useState(false)
