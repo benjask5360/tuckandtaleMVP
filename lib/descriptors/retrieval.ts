@@ -365,6 +365,7 @@ export async function getGroupedAttributeDescriptors(
     glasses: [],
     pet_color: [],
     magical_color: [],
+    background: [],
   };
 
   attributes.forEach((attr) => {
