@@ -438,12 +438,29 @@ export class StripeService {
       metadata: subscription.metadata,
     });
 
-    const userId = subscription.metadata?.user_id;
+    let userId = subscription.metadata?.user_id;
+
+    // Fallback: lookup user by stripe_subscription_id if user_id not in metadata
     if (!userId) {
-      console.error('[WEBHOOK ERROR] Missing user_id in subscription metadata', {
+      console.log('[WEBHOOK] No user_id in metadata, attempting lookup by subscription ID');
+      const { data: userBySubscription } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('stripe_subscription_id', subscription.id)
+        .single();
+
+      if (userBySubscription) {
+        userId = userBySubscription.id;
+        console.log(`[WEBHOOK] Found user by subscription ID: ${userId}`);
+      }
+    }
+
+    if (!userId) {
+      console.warn('[WEBHOOK WARNING] Cannot find user for subscription cancellation', {
         subscriptionId: subscription.id,
         metadata: subscription.metadata,
       });
+      // Return successfully - subscription is deleted anyway, nothing to update
       return;
     }
 
@@ -470,10 +487,12 @@ export class StripeService {
     }
 
     if (!data || data.length === 0) {
-      console.error('[WEBHOOK ERROR] No user found with ID', {
+      // User may have been deleted - log but don't throw
+      console.warn('[WEBHOOK WARNING] No user found with ID (may have been deleted)', {
         userId,
+        subscriptionId: subscription.id,
       });
-      throw new Error(`User not found: ${userId}`);
+      return;
     }
 
     console.log(`[WEBHOOK SUCCESS] Subscription canceled for user ${userId} - downgraded to tier_free`);
