@@ -135,6 +135,22 @@ export const characterTypes: CharacterTypeConfig[] = [
             type: 'toggle',
             label: 'Wears glasses?',
             defaultValue: false
+          },
+          {
+            id: 'background',
+            type: 'buttons',
+            label: 'Background',
+            customOptions: true,
+            options: [
+              { value: 'white', label: 'White' },
+              { value: 'black_african_american', label: 'Black or African American' },
+              { value: 'american_indian_alaska_native', label: 'American Indian or Alaska Native' },
+              { value: 'asian', label: 'Asian' },
+              { value: 'native_hawaiian_pacific_islander', label: 'Native Hawaiian or Other Pacific Islander' },
+              { value: 'middle_eastern_north_african', label: 'Middle Eastern or North African' },
+              { value: 'hispanic_latino', label: 'Hispanic or Latino' },
+              { value: 'other', label: 'Other' }
+            ]
           }
         ]
       },
@@ -313,6 +329,22 @@ export const characterTypes: CharacterTypeConfig[] = [
             type: 'toggle',
             label: 'Wears glasses?',
             defaultValue: false
+          },
+          {
+            id: 'background',
+            type: 'buttons',
+            label: 'Background',
+            customOptions: true,
+            options: [
+              { value: 'white', label: 'White' },
+              { value: 'black_african_american', label: 'Black or African American' },
+              { value: 'american_indian_alaska_native', label: 'American Indian or Alaska Native' },
+              { value: 'asian', label: 'Asian' },
+              { value: 'native_hawaiian_pacific_islander', label: 'Native Hawaiian or Other Pacific Islander' },
+              { value: 'middle_eastern_north_african', label: 'Middle Eastern or North African' },
+              { value: 'hispanic_latino', label: 'Hispanic or Latino' },
+              { value: 'other', label: 'Other' }
+            ]
           }
         ]
       }
