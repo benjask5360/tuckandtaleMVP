@@ -103,6 +103,7 @@ export async function POST(
         skinTone: character.attributes?.skinTone,
         bodyType: character.attributes?.bodyType,
         hasGlasses: character.attributes?.hasGlasses,
+        background: character.attributes?.background,
         species: character.attributes?.species,
         breed: character.attributes?.breed,
         primaryColor: character.attributes?.primaryColor,

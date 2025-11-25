@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
       skinTone: attributes?.skinTone,
       bodyType: attributes?.bodyType,
       hasGlasses: attributes?.hasGlasses,
+      background: attributes?.background,
       species: attributes?.species,
       breed: attributes?.breed,
       primaryColor: attributes?.primaryColor,
