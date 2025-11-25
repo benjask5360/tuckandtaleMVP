@@ -79,7 +79,8 @@ export async function generateAvatarPrompt(
         }
       }
 
-      prompt = `Disney Pixar style standing avatar of a friendly ${ageDescriptor}${ageFeatures}, wearing age-appropriate, modest clothing. ${pronoun} the following characteristics:`;
+      const backgroundPrefix = enhanced.background ? `${enhanced.background} ` : '';
+      prompt = `Disney Pixar style standing avatar of a friendly ${backgroundPrefix}${ageDescriptor}${ageFeatures}, wearing age-appropriate, modest clothing. ${pronoun} the following characteristics:`;
 
       // Build characteristics list with bullet points for clarity
       const characteristics: string[] = [];

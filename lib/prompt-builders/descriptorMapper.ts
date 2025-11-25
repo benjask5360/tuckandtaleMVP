@@ -106,6 +106,14 @@ export async function mapSelectionsToEnhanced(
     });
   }
 
+  if (selections.background) {
+    fetchMappings.push({
+      table: 'descriptors_attribute',
+      term: selections.background,
+      filters: { attribute_type: 'background' }
+    });
+  }
+
   // Map age
   if (selections.age !== undefined && selections.age !== null) {
     fetchMappings.push({
@@ -204,6 +212,9 @@ export async function mapSelectionsToEnhanced(
         case 'magical_color':
           enhanced.magicalColor = descriptor.simple_term;
           break;
+        case 'background':
+          enhanced.background = descriptor.rich_description;
+          break;
       }
     } else if (key.startsWith('descriptors_age_')) {
       enhanced.age = descriptor.rich_description;
@@ -242,6 +253,13 @@ export async function mapSelectionsToEnhanced(
   if (selections.bodyType && !enhanced.body) {
     console.log('Body type fallback - using raw input:', selections.bodyType);
     enhanced.body = selections.bodyType;
+  }
+
+  if (selections.background && !enhanced.background) {
+    // Use raw input for custom "Other" values, truncate to 50 chars for safety
+    const truncatedBackground = selections.background.slice(0, 50);
+    console.log('Background fallback - using raw input:', truncatedBackground);
+    enhanced.background = truncatedBackground;
   }
 
   if (profileType === 'pet' && selections.primaryColor && !enhanced.petColor) {
