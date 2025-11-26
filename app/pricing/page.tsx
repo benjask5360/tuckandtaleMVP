@@ -12,6 +12,7 @@ export default function PricingPage() {
   const router = useRouter();
   const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
   const [currentTierId, setCurrentTierId] = useState<string | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(true);
   const [processingCheckout, setProcessingCheckout] = useState(false);
@@ -32,11 +33,16 @@ export default function PricingPage() {
       if (user) {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('subscription_tier_id')
+          .select('subscription_tier_id, stripe_subscription_id, subscription_status')
           .eq('user_id', user.id)
           .single();
 
         setCurrentTierId(profile?.subscription_tier_id || 'tier_free');
+        // Check if user has an active paid subscription
+        setHasActiveSubscription(
+          !!profile?.stripe_subscription_id &&
+          profile?.subscription_status === 'active'
+        );
       }
 
       // Get all active tiers
@@ -87,7 +93,33 @@ export default function PricingPage() {
         return;
       }
 
-      // For paid tiers, create Stripe checkout session
+      // Check if this is an upgrade (user has active subscription and is selecting a different tier)
+      const isUpgrade = hasActiveSubscription && tierId !== currentTierId;
+
+      if (isUpgrade) {
+        // UPGRADE PATH - update existing subscription in place
+        const response = await fetch('/api/stripe/upgrade-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tierId,
+            billingPeriod,
+          }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to upgrade subscription');
+        }
+
+        // Redirect to dashboard with success message
+        router.push('/dashboard?subscription=upgraded');
+        return;
+      }
+
+      // NEW SUBSCRIPTION PATH - create Stripe checkout session
       const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
         headers: {

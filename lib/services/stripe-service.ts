@@ -583,6 +583,91 @@ export class StripeService {
   }
 
   /**
+   * Upgrade an existing subscription to a new tier
+   * Uses Stripe's subscription update with proration
+   */
+  static async upgradeSubscription({
+    userId,
+    newTierId,
+    billingPeriod,
+  }: {
+    userId: string;
+    newTierId: string;
+    billingPeriod: BillingPeriod;
+  }) {
+    try {
+      const supabase = await createClient();
+
+      // 1. Get user's current subscription
+      const { data: userProfile, error } = await supabase
+        .from('user_profiles')
+        .select('stripe_subscription_id, subscription_tier_id')
+        .eq('id', userId)
+        .single();
+
+      if (error || !userProfile?.stripe_subscription_id) {
+        throw new Error('No active subscription found');
+      }
+
+      // 2. Get the new tier's price ID
+      const newTier = await SubscriptionTierService.getTierById(newTierId);
+      const newPriceId = this.selectPriceId(newTier, billingPeriod);
+
+      if (!newPriceId) {
+        throw new Error(`No price configured for ${newTierId} ${billingPeriod}`);
+      }
+
+      // 3. Retrieve existing subscription to get the item ID
+      const subscription = await getStripe().subscriptions.retrieve(
+        userProfile.stripe_subscription_id
+      );
+
+      const subscriptionItemId = subscription.items.data[0]?.id;
+      if (!subscriptionItemId) {
+        throw new Error('Subscription has no items');
+      }
+
+      // 4. Update the subscription with new price (Stripe handles proration automatically)
+      const updatedSubscription = await getStripe().subscriptions.update(
+        userProfile.stripe_subscription_id,
+        {
+          items: [{
+            id: subscriptionItemId,
+            price: newPriceId,
+          }],
+          proration_behavior: 'create_prorations',
+          metadata: {
+            user_id: userId,
+            tier_id: newTierId,
+          },
+        }
+      );
+
+      // 5. Update database immediately (webhook will also fire, but this ensures instant UI update)
+      const subscriptionItem = updatedSubscription.items.data[0];
+      await supabase
+        .from('user_profiles')
+        .update({
+          subscription_tier_id: newTierId,
+          subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
+          subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+        })
+        .eq('id', userId);
+
+      console.log(`[UPGRADE] Successfully upgraded user ${userId} to ${newTierId}`);
+
+      return {
+        success: true,
+        subscriptionId: updatedSubscription.id,
+        newTierId,
+      };
+    } catch (error: any) {
+      console.error('Error upgrading subscription:', error);
+      throw new Error(error.message || 'Failed to upgrade subscription');
+    }
+  }
+
+  /**
    * Resume a canceled subscription
    */
   static async resumeSubscription(userId: string) {
