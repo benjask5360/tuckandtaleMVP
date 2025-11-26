@@ -635,7 +635,7 @@ export class StripeService {
             id: subscriptionItemId,
             price: newPriceId,
           }],
-          proration_behavior: 'create_prorations',
+          proration_behavior: 'always_invoice',
           metadata: {
             user_id: userId,
             tier_id: newTierId,
