@@ -538,7 +538,13 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                   Illustrating your story...
                 </p>
                 <p className="text-sm text-purple-700 mt-1">
-                  Creating beautiful artwork for each scene
+                  {(() => {
+                    const completedScenes = story?.story_scenes?.filter(s => s.illustrationUrl).length || 0
+                    const coverComplete = story?.cover_illustration_url ? 1 : 0
+                    const totalComplete = completedScenes + coverComplete
+                    const totalIllustrations = (story?.story_scenes?.length || 8) + 1
+                    return `Creating illustrations... ${totalComplete} of ${totalIllustrations} complete`
+                  })()}
                 </p>
               </div>
             </div>
@@ -564,7 +570,7 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                   type="text"
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
-                  className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center flex-1 border-2 border-primary-300 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                  className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center flex-1 min-w-0 w-full border-2 border-primary-300 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
                   placeholder="Story title..."
                 />
               ) : (

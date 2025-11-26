@@ -503,7 +503,7 @@ export class BetaStoryGenerationService {
         baseDelayMs: 1000,
         maxDelayMs: 30000,
         timeoutMs: 90000,
-        // Custom retry logic for rate limiting
+        // Custom retry logic for rate limiting and network errors
         shouldRetry: (error: any, attempt: number) => {
           // Don't retry if we've exhausted attempts
           if (attempt >= 3) return false;
@@ -516,7 +516,18 @@ export class BetaStoryGenerationService {
 
           // Retry on server errors and transient failures
           const retryableStatuses = [408, 429, 500, 502, 503, 504];
-          return retryableStatuses.includes(error.status);
+          if (retryableStatuses.includes(error.status)) {
+            return true;
+          }
+
+          // Retry on network errors (DNS failures, connection resets, etc.)
+          const networkErrors = ['ENOTFOUND', 'ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'fetch failed'];
+          if (error.message && networkErrors.some(msg => error.message.includes(msg))) {
+            console.warn('⚠️  Network error detected, will retry');
+            return true;
+          }
+
+          return false;
         },
         onRetry: (error, attempt, delayMs) => {
           console.warn(

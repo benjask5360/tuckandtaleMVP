@@ -207,11 +207,32 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [generatingMessageIndex, setGeneratingMessageIndex] = useState(0)
+
+  // Rotating messages for generating state
+  const generatingMessages = [
+    'Building your magical story...',
+    'Creating adventures...',
+    'Weaving the perfect tale...',
+    'Adding the finishing touches...',
+  ]
 
   useEffect(() => {
     loadParameters()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Rotate generating messages
+  useEffect(() => {
+    if (!generating) {
+      setGeneratingMessageIndex(0)
+      return
+    }
+    const interval = setInterval(() => {
+      setGeneratingMessageIndex(prev => (prev + 1) % generatingMessages.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [generating, generatingMessages.length])
 
   const loadParameters = async () => {
     try {
@@ -827,7 +848,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           {generating ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Generating your story... (this may take 30-60 seconds)
+              {generatingMessages[generatingMessageIndex]}
             </>
           ) : (
             <>

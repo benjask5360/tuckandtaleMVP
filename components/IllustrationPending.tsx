@@ -103,26 +103,6 @@ export function IllustrationPending({
           }} />
         </div>
 
-        {/* Progress indicator if scene number provided */}
-        {sceneNumber && totalScenes && (
-          <div className="mb-3 flex items-center gap-1">
-            {Array.from({ length: totalScenes + 1 }, (_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i === 0 ? 'w-3' : 'w-1.5'
-                } ${
-                  i < sceneNumber
-                    ? 'bg-amber-500'
-                    : i === sceneNumber
-                    ? 'bg-amber-400 animate-pulse'
-                    : 'bg-amber-200'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
         {/* Message text with fade transition */}
         <p
           className="text-lg font-semibold text-center mb-2 text-amber-900 transition-opacity duration-500"
@@ -133,13 +113,6 @@ export function IllustrationPending({
         >
           {message}
         </p>
-
-        {/* Progress text */}
-        {sceneNumber && totalScenes && (
-          <p className="text-sm text-amber-700/80 font-medium mb-1">
-            {type === 'cover' ? 'Cover' : `Scene ${sceneNumber}`} of {totalScenes + 1}
-          </p>
-        )}
 
         {/* Encouraging subtitle */}
         <p className="text-xs text-amber-600/70 font-medium">
