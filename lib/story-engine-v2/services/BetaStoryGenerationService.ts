@@ -657,6 +657,11 @@ export class BetaStoryGenerationService {
   /**
    * Generate illustrations asynchronously in the background
    * This allows the user to start reading while illustrations are being created
+   *
+   * Note: BetaIllustrationService.generateAllIllustrations now handles:
+   * - Phase 1: Saves Leonardo URLs to tempUrl fields immediately (fast display)
+   * - Phase 2: Background upload to Supabase, updates illustrationUrl fields
+   * No additional DB updates needed here.
    */
   private static async generateIllustrationsAsync(
     userId: string,
@@ -675,21 +680,11 @@ export class BetaStoryGenerationService {
       );
 
       console.log(`✅ All illustrations generated (${illustrationResult.sceneIllustrations.length} scenes + 1 cover)`);
+      console.log(`✅ Leonardo URLs saved to database - images ready for display`);
+      console.log(`✅ Background upload to Supabase in progress...`);
 
-      // Update scenes with illustration URLs
-      await BetaIllustrationService.updateScenesWithIllustrations(
-        storyId,
-        scenes,
-        illustrationResult.sceneIllustrations
-      );
-
-      // Update cover illustration
-      await BetaIllustrationService.updateCoverIllustration(
-        storyId,
-        illustrationResult.coverIllustrationUrl
-      );
-
-      console.log(`✅ Story ${storyId} updated with all illustration URLs`);
+      // Note: No need to call updateScenesWithIllustrations or updateCoverIllustration
+      // generateAllIllustrations now saves tempUrl in Phase 1 and handles Supabase upload in Phase 2
     } catch (error) {
       console.error(`❌ Background illustration generation failed for story ${storyId}:`, error);
       // Illustrations failed, but story text is still available
