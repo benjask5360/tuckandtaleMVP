@@ -54,7 +54,14 @@ export async function generateAvatarPrompt(
       if (selections.age !== undefined && selections.age !== null) {
         numericAge = selections.age;
         const ageNum = selections.age;
-        ageDescriptor = selections.age === 1 ? `one-year-old ${baseChar}` : `${ageNum}-year-old ${baseChar}`;
+        if (selections.age === 0) {
+          // For infants, use "infant baby boy/girl"
+          ageDescriptor = `infant ${baseChar}`;
+        } else if (selections.age === 1) {
+          ageDescriptor = `one-year-old ${baseChar}`;
+        } else {
+          ageDescriptor = `${ageNum}-year-old ${baseChar}`;
+        }
       }
 
       // Add age-related features for elderly/mature characters
