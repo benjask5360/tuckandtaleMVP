@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Target, Lock } from 'lucide-react'
+import { Loader2, Sparkles, Target, Lock, Plus } from 'lucide-react'
 import FeatureGate from '@/components/subscription/FeatureGate'
 import UpgradeModal from '@/components/subscription/UpgradeModal'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -468,6 +468,13 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
             </button>
           ))}
         </div>
+        <Link
+          href="/dashboard/my-children/create?returnTo=/dashboard/stories/create"
+          className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium mt-3"
+        >
+          <Plus className="w-4 h-4" />
+          Add New Child
+        </Link>
       </div>
 
       {/* Additional Characters Selection */}
@@ -564,6 +571,14 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         {!includeIllustrations && additionalCharacterIds.length === 0 && (
           <p className="text-sm text-gray-500 mt-2">No additional characters selected</p>
         )}
+
+        <Link
+          href="/dashboard/other-characters/create?returnTo=/dashboard/stories/create"
+          className="inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium mt-3"
+        >
+          <Plus className="w-4 h-4" />
+          Add New Character
+        </Link>
       </div>
 
       {/* Story Mode */}

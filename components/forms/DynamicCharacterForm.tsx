@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { CharacterTypeConfig } from '@/lib/character-types'
 import FieldRenderer from './fields/FieldRenderer'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { AvatarDisplay } from '@/components/AvatarDisplay'
 
 interface DynamicCharacterFormProps {
@@ -32,6 +32,8 @@ export default function DynamicCharacterForm({
   const [pendingAvatarCacheId, setPendingAvatarCacheId] = useState<string | null>(null) // Store preview avatar cache ID
   const [hasNewAvatar, setHasNewAvatar] = useState(false) // Track if avatar was generated in this session
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo')
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth: string) => {
@@ -337,8 +339,10 @@ export default function DynamicCharacterForm({
           <button
             type="button"
             onClick={() => {
-              // Redirect after avatar generation
-              if (characterType.category === 'child') {
+              // Redirect after avatar generation - use returnTo if provided
+              if (returnTo) {
+                router.push(returnTo)
+              } else if (characterType.category === 'child') {
                 router.push('/dashboard/my-children')
               } else {
                 router.push('/dashboard/other-characters')
@@ -346,7 +350,7 @@ export default function DynamicCharacterForm({
             }}
             className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
           >
-            Continue to Dashboard
+            {returnTo ? 'Done' : 'Continue to Dashboard'}
           </button>
         )}
       </div>
