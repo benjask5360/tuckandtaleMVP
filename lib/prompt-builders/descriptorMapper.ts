@@ -189,7 +189,7 @@ export async function mapSelectionsToEnhanced(
           enhanced.hair = descriptor.simple_term;
           break;
         case 'hair_length':
-          enhanced.hairLength = descriptor.simple_term;
+          enhanced.hairLength = descriptor.rich_description;
           break;
         case 'hair_type':
           enhanced.hairType = descriptor.simple_term;
