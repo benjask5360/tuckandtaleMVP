@@ -2,6 +2,9 @@
  * Beta Illustration Service
  * Generates individual scene illustrations using Leonardo AI
  * Creates 9 images: 8 scene illustrations + 1 cover illustration
+ *
+ * OPTIMIZATION: Returns Leonardo CDN URLs immediately for fast display,
+ * then uploads to Supabase in background for permanent storage.
  */
 
 import { AIConfigService } from '@/lib/services/ai-config';
@@ -12,16 +15,20 @@ import type { Scene } from '../types/beta-story-types';
 export interface BetaIllustrationResult {
   sceneIllustrations: {
     sceneIndex: number;
-    illustrationUrl: string;
+    illustrationUrl: string;  // This is now the Leonardo URL for fast display
   }[];
-  coverIllustrationUrl: string;
+  coverIllustrationUrl: string;  // This is now the Leonardo URL for fast display
   totalCreditsUsed: number;
 }
+
+// Store background upload promises for tracking (module-level for persistence)
+const backgroundUploadPromises: Map<string, Promise<void>> = new Map();
 
 export class BetaIllustrationService {
   /**
    * Generate all illustrations for a Beta story
    * Creates 8 scene images + 1 cover image
+   * Returns Leonardo URLs immediately, uploads to Supabase in background
    */
   static async generateAllIllustrations(
     userId: string,
@@ -64,6 +71,7 @@ export class BetaIllustrationService {
     console.log('='.repeat(80));
     console.log(`Total images to generate: ${scenes.length + 1} (1 cover + ${scenes.length} scenes)`);
     console.log('All images will generate simultaneously for maximum speed');
+    console.log('Leonardo URLs returned immediately, Supabase upload happens in background');
     console.log('='.repeat(80) + '\n');
 
     const illustrationStartTime = performance.now();
@@ -83,8 +91,10 @@ export class BetaIllustrationService {
           'cover'
         ).then(result => ({
           type: 'cover' as const,
-          url: result.url,
+          leonardoUrl: result.leonardoUrl,
           creditsUsed: result.creditsUsed,
+          generationId: result.generationId,
+          prompt: coverPrompt,
         })),
         // All scene illustrations
         ...scenes.map((scene, i) =>
@@ -98,8 +108,10 @@ export class BetaIllustrationService {
           ).then(result => ({
             type: 'scene' as const,
             sceneIndex: i,
-            url: result.url,
+            leonardoUrl: result.leonardoUrl,
             creditsUsed: result.creditsUsed,
+            generationId: result.generationId,
+            prompt: scene.illustrationPrompt,
           }))
         )
       ];
@@ -110,39 +122,79 @@ export class BetaIllustrationService {
       console.log('✅ All illustrations generated!');
       console.log(`⏱️  All illustrations (${allPromises.length} concurrent): ${(illustrationDuration / 1000).toFixed(2)}s (${illustrationDuration.toFixed(0)}ms)\n`);
 
-      // Update database with all results CONCURRENTLY
-      console.log('Saving all illustrations to database concurrently...');
+      // PHASE 1: Save Leonardo URLs immediately for fast display
+      console.log('📝 Saving Leonardo URLs to database (fast path)...');
 
-      // Prepare all database update promises
-      const updatePromises = allResults.map(result => {
-        if (result.type === 'cover') {
-          return this.updateStoryWithCover(contentId, result.url).then(() => {
-            coverIllustrationUrl = result.url;
-            console.log('  ✓ Cover saved');
-          });
-        } else {
-          return this.updateSceneIllustration(contentId, result.sceneIndex, result.url).then(() => {
-            sceneIllustrations.push({
-              sceneIndex: result.sceneIndex,
-              illustrationUrl: result.url,
-            });
-            console.log(`  ✓ Scene ${result.sceneIndex + 1} saved`);
-          });
-        }
+      // Prepare scene data with tempUrl
+      const scenesWithTempUrls = scenes.map((scene, index) => {
+        const result = allResults.find(r => r.type === 'scene' && r.sceneIndex === index);
+        return {
+          ...scene,
+          tempUrl: result?.leonardoUrl,
+        };
       });
 
-      // Execute all database updates concurrently
-      await Promise.all(updatePromises);
+      // Get cover result
+      const coverResult = allResults.find(r => r.type === 'cover');
+      coverIllustrationUrl = coverResult?.leonardoUrl || '';
+
+      // Update database with temp URLs and set status to 'uploading'
+      const supabase = createAdminClient();
+      const { error: tempUpdateError } = await supabase
+        .from('content')
+        .update({
+          story_scenes: scenesWithTempUrls,
+          temp_cover_url: coverIllustrationUrl,
+          illustration_upload_status: 'uploading',
+        })
+        .eq('id', contentId);
+
+      if (tempUpdateError) {
+        console.error('Error saving temp URLs:', tempUpdateError);
+        // Don't throw - we can still return the URLs even if DB update fails
+      } else {
+        console.log('✅ Temporary URLs saved to database');
+      }
+
+      // Build result with Leonardo URLs
+      for (const result of allResults) {
+        if (result.type === 'scene') {
+          sceneIllustrations.push({
+            sceneIndex: result.sceneIndex,
+            illustrationUrl: result.leonardoUrl,
+          });
+        }
+      }
 
       // Calculate total credits
       totalCreditsUsed = allResults.reduce((sum, result) => sum + result.creditsUsed, 0);
 
+      // PHASE 2: Start background upload to Supabase (fire-and-forget)
+      console.log('🔄 Starting background upload to Supabase storage...');
+
+      const backgroundPromise = this.uploadToSupabaseInBackground(
+        userId,
+        contentId,
+        allResults,
+        aiConfig,
+        leonardoClient
+      );
+
+      // Store the promise for potential tracking/retry
+      backgroundUploadPromises.set(contentId, backgroundPromise);
+
+      // Clean up after completion
+      backgroundPromise.finally(() => {
+        backgroundUploadPromises.delete(contentId);
+      });
+
       console.log('\n' + '='.repeat(80));
-      console.log('✅ ALL ILLUSTRATIONS COMPLETED!');
+      console.log('✅ ALL ILLUSTRATIONS READY FOR DISPLAY!');
       console.log('='.repeat(80));
       console.log(`Scenes: ${sceneIllustrations.length}`);
       console.log(`Cover: 1`);
       console.log(`Total credits used: ${totalCreditsUsed}`);
+      console.log('Background upload to Supabase: IN PROGRESS');
       console.log('='.repeat(80));
     } catch (error) {
       console.error('❌ Failed to generate illustrations:', error);
@@ -150,10 +202,11 @@ export class BetaIllustrationService {
     }
 
     console.log('\n' + '='.repeat(80));
-    console.log('BETA ILLUSTRATION GENERATION COMPLETED');
+    console.log('BETA ILLUSTRATION GENERATION COMPLETED (FAST PATH)');
     console.log('='.repeat(80));
     console.log(`Total images generated: ${sceneIllustrations.length + 1}`);
     console.log(`Total credits used: ${totalCreditsUsed}`);
+    console.log('Note: Supabase upload continues in background');
     console.log('='.repeat(80) + '\n');
 
     return {
@@ -165,6 +218,7 @@ export class BetaIllustrationService {
 
   /**
    * Generate a single illustration using Leonardo AI
+   * Returns Leonardo URL immediately (no download/upload)
    */
   private static async generateSingleIllustration(
     leonardoClient: LeonardoClient,
@@ -173,7 +227,7 @@ export class BetaIllustrationService {
     userId: string,
     contentId: string,
     imageName: string
-  ): Promise<{ url: string; creditsUsed: number }> {
+  ): Promise<{ leonardoUrl: string; creditsUsed: number; generationId: string }> {
     const singleImageStartTime = performance.now();
 
     // Build Leonardo configuration
@@ -200,61 +254,171 @@ export class BetaIllustrationService {
 
     console.log(`  Generation complete!`);
     console.log(`  Actual credit cost: ${actualCreditCost}`);
-
-    // Download image
-    console.log(`  Downloading image...`);
-    const imageBlob = await leonardoClient.downloadImage(image.url);
-
-    // Upload to Supabase Storage
-    console.log(`  Uploading to Supabase Storage...`);
-    const storagePath = `${userId}/stories/${Date.now()}_${contentId}/${imageName}.png`;
-    const supabase = createAdminClient();
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('illustrations')
-      .upload(storagePath, imageBlob, {
-        contentType: 'image/png',
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error(`  Upload error:`, uploadError);
-      throw new Error(`Failed to upload image to storage: ${uploadError.message}`);
-    }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('illustrations')
-      .getPublicUrl(storagePath);
-
-    const publicUrl = urlData.publicUrl;
-    console.log(`  Upload complete: ${publicUrl}`);
-
-    // Log cost
-    console.log(`  Logging cost to database...`);
-    await AIConfigService.logGenerationCost(
-      userId,
-      null, // No character profile for story illustrations
-      aiConfig,
-      actualCreditCost,
-      {
-        prompt_used: prompt,
-        actual_cost: actualCreditCost,
-        generation_id: generationId,
-        image_name: imageName,
-        storage_path: storagePath,
-      },
-      null, // No existing cost log ID
-      contentId
-    );
+    console.log(`  Leonardo URL: ${image.url}`);
 
     const singleImageDuration = performance.now() - singleImageStartTime;
     console.log(`⏱️  Single illustration (${imageName}): ${(singleImageDuration / 1000).toFixed(2)}s (${singleImageDuration.toFixed(0)}ms)`);
 
+    // Return Leonardo URL immediately - no download/upload here
     return {
-      url: publicUrl,
+      leonardoUrl: image.url,
       creditsUsed: actualCreditCost,
+      generationId,
     };
+  }
+
+  /**
+   * Background upload to Supabase Storage
+   * Downloads from Leonardo and uploads to Supabase for permanent storage
+   */
+  private static async uploadToSupabaseInBackground(
+    userId: string,
+    contentId: string,
+    allResults: Array<{
+      type: 'cover' | 'scene';
+      sceneIndex?: number;
+      leonardoUrl: string;
+      creditsUsed: number;
+      generationId: string;
+      prompt: string;
+    }>,
+    aiConfig: any,
+    leonardoClient: LeonardoClient
+  ): Promise<void> {
+    console.log('\n📤 BACKGROUND UPLOAD STARTED');
+    const supabase = createAdminClient();
+    const timestamp = Date.now();
+    let successCount = 0;
+    let failCount = 0;
+
+    try {
+      // Process all uploads concurrently
+      const uploadPromises = allResults.map(async (result) => {
+        const imageName = result.type === 'cover' ? 'cover' : `scene_${result.sceneIndex}`;
+
+        try {
+          console.log(`  📥 Downloading ${imageName} from Leonardo...`);
+          const imageBlob = await leonardoClient.downloadImage(result.leonardoUrl);
+
+          console.log(`  📤 Uploading ${imageName} to Supabase...`);
+          const storagePath = `${userId}/stories/${timestamp}_${contentId}/${imageName}.png`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('illustrations')
+            .upload(storagePath, imageBlob, {
+              contentType: 'image/png',
+              upsert: false,
+            });
+
+          if (uploadError) {
+            console.error(`  ❌ Upload error for ${imageName}:`, uploadError);
+            failCount++;
+            return null;
+          }
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('illustrations')
+            .getPublicUrl(storagePath);
+
+          const publicUrl = urlData.publicUrl;
+          console.log(`  ✅ ${imageName} uploaded: ${publicUrl}`);
+
+          // Log cost
+          await AIConfigService.logGenerationCost(
+            userId,
+            null,
+            aiConfig,
+            result.creditsUsed,
+            {
+              prompt_used: result.prompt,
+              actual_cost: result.creditsUsed,
+              generation_id: result.generationId,
+              image_name: imageName,
+              storage_path: storagePath,
+            },
+            null,
+            contentId
+          );
+
+          successCount++;
+          return {
+            type: result.type,
+            sceneIndex: result.sceneIndex,
+            supabaseUrl: publicUrl,
+          };
+        } catch (error) {
+          console.error(`  ❌ Failed to upload ${imageName}:`, error);
+          failCount++;
+          return null;
+        }
+      });
+
+      const uploadResults = await Promise.all(uploadPromises);
+      const successfulUploads = uploadResults.filter(r => r !== null);
+
+      // Update database with permanent Supabase URLs
+      if (successfulUploads.length > 0) {
+        // Get current story data
+        const { data: story, error: fetchError } = await supabase
+          .from('content')
+          .select('story_scenes')
+          .eq('id', contentId)
+          .single();
+
+        if (!fetchError && story) {
+          const updatedScenes = [...(story.story_scenes || [])];
+          let coverUrl = '';
+
+          for (const upload of successfulUploads) {
+            if (upload.type === 'cover') {
+              coverUrl = upload.supabaseUrl;
+            } else if (upload.sceneIndex !== undefined && updatedScenes[upload.sceneIndex]) {
+              updatedScenes[upload.sceneIndex].illustrationUrl = upload.supabaseUrl;
+            }
+          }
+
+          // Update with permanent URLs
+          const updateData: any = {
+            story_scenes: updatedScenes,
+            illustration_upload_status: failCount === 0 ? 'complete' : 'failed',
+          };
+
+          if (coverUrl) {
+            updateData.cover_illustration_url = coverUrl;
+          }
+
+          const { error: updateError } = await supabase
+            .from('content')
+            .update(updateData)
+            .eq('id', contentId);
+
+          if (updateError) {
+            console.error('❌ Error updating permanent URLs:', updateError);
+          } else {
+            console.log('✅ Permanent URLs saved to database');
+          }
+        }
+      }
+
+      console.log(`\n📤 BACKGROUND UPLOAD COMPLETED: ${successCount} success, ${failCount} failed`);
+
+      if (failCount > 0) {
+        // Mark as failed for retry
+        await supabase
+          .from('content')
+          .update({ illustration_upload_status: 'failed' })
+          .eq('id', contentId);
+      }
+    } catch (error) {
+      console.error('❌ Background upload failed:', error);
+
+      // Mark as failed for retry
+      await supabase
+        .from('content')
+        .update({ illustration_upload_status: 'failed' })
+        .eq('id', contentId);
+    }
   }
 
   /**

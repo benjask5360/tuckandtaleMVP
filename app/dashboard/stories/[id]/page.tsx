@@ -14,7 +14,8 @@ interface BetaScene {
   paragraph: string
   charactersInScene: string[]
   illustrationPrompt: string
-  illustrationUrl?: string
+  illustrationUrl?: string  // Permanent Supabase URL (set after background upload)
+  tempUrl?: string          // Temporary Leonardo CDN URL (for fast display)
 }
 
 interface Story {
@@ -55,7 +56,8 @@ interface Story {
   // Beta Engine fields
   engine_version?: 'legacy' | 'beta'
   story_scenes?: BetaScene[]
-  cover_illustration_url?: string
+  cover_illustration_url?: string    // Permanent Supabase URL
+  temp_cover_url?: string            // Temporary Leonardo CDN URL
   cover_illustration_prompt?: string
   include_illustrations?: boolean
 }
@@ -479,16 +481,18 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
   }
 
   // Helper function to get Beta scene illustration URL
+  // Prefers permanent Supabase URL, falls back to temp Leonardo URL
   const getBetaSceneIllustration = (sceneIndex: number): string | undefined => {
     if (!isBetaStory || !story.story_scenes) return undefined
-    return story.story_scenes[sceneIndex]?.illustrationUrl
+    const scene = story.story_scenes[sceneIndex]
+    return scene?.illustrationUrl || scene?.tempUrl
   }
 
   // Get cover illustration
-  // For Beta: use cover_illustration_url
+  // For Beta: prefer permanent Supabase URL, fall back to temp Leonardo URL
   // For Legacy: use Scene 0 from story_illustrations
   const coverImageUrl = isBetaStory
-    ? story.cover_illustration_url
+    ? (story.cover_illustration_url || story.temp_cover_url)
     : getSceneIllustration(0)?.url
 
   return (
@@ -539,8 +543,9 @@ export default function StoryViewerPage({ params }: { params: { id: string } }) 
                 </p>
                 <p className="text-sm text-purple-700 mt-1">
                   {(() => {
-                    const completedScenes = story?.story_scenes?.filter(s => s.illustrationUrl).length || 0
-                    const coverComplete = story?.cover_illustration_url ? 1 : 0
+                    // Count scenes with either permanent or temp URLs as complete
+                    const completedScenes = story?.story_scenes?.filter(s => s.illustrationUrl || s.tempUrl).length || 0
+                    const coverComplete = (story?.cover_illustration_url || story?.temp_cover_url) ? 1 : 0
                     const totalComplete = completedScenes + coverComplete
                     const totalIllustrations = (story?.story_scenes?.length || 8) + 1
                     return `Creating illustrations... ${totalComplete} of ${totalIllustrations} complete`
