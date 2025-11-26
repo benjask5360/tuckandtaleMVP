@@ -1,10 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { getCharacterTypesByCategory } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+
+function FormLoader() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+    </div>
+  )
+}
 
 export default function CreateOtherCharacterPage() {
   const otherTypes = getCharacterTypesByCategory('other')
@@ -75,10 +83,12 @@ export default function CreateOtherCharacterPage() {
         {/* Form */}
         {selectedType && (
           <div className="card p-6 md:p-8">
-            <DynamicCharacterForm
-              key={selectedType.id} // Force re-render when type changes
-              characterType={selectedType}
-            />
+            <Suspense fallback={<FormLoader />}>
+              <DynamicCharacterForm
+                key={selectedType.id} // Force re-render when type changes
+                characterType={selectedType}
+              />
+            </Suspense>
           </div>
         )}
       </div>

@@ -1,9 +1,18 @@
 'use client'
 
+import { Suspense } from 'react'
 import { getCharacterTypeById } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+
+function FormLoader() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+    </div>
+  )
+}
 
 export default function CreateChildPage() {
   const childType = getCharacterTypeById('child')
@@ -43,7 +52,9 @@ export default function CreateChildPage() {
 
         {/* Form */}
         <div className="card p-6 md:p-8">
-          <DynamicCharacterForm characterType={childType} />
+          <Suspense fallback={<FormLoader />}>
+            <DynamicCharacterForm characterType={childType} />
+          </Suspense>
         </div>
       </div>
     </div>
