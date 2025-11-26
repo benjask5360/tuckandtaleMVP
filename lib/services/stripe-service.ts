@@ -583,6 +583,74 @@ export class StripeService {
   }
 
   /**
+   * Preview the cost of upgrading a subscription (without charging)
+   * Returns the prorated amount the user will be charged
+   */
+  static async previewUpgrade({
+    userId,
+    newTierId,
+    billingPeriod,
+  }: {
+    userId: string;
+    newTierId: string;
+    billingPeriod: BillingPeriod;
+  }) {
+    const supabase = await createClient();
+
+    // Get user's current subscription
+    const { data: userProfile, error } = await supabase
+      .from('user_profiles')
+      .select('stripe_subscription_id')
+      .eq('id', userId)
+      .single();
+
+    if (error || !userProfile?.stripe_subscription_id) {
+      throw new Error('No active subscription found');
+    }
+
+    // Get the new tier's price ID
+    const newTier = await SubscriptionTierService.getTierById(newTierId);
+    const newPriceId = this.selectPriceId(newTier, billingPeriod);
+
+    if (!newPriceId) {
+      throw new Error(`No price configured for ${newTierId} ${billingPeriod}`);
+    }
+
+    // Retrieve existing subscription
+    const subscription = await getStripe().subscriptions.retrieve(
+      userProfile.stripe_subscription_id
+    );
+
+    const subscriptionItemId = subscription.items.data[0]?.id;
+    if (!subscriptionItemId) {
+      throw new Error('Subscription has no items');
+    }
+
+    // Create an invoice preview to see what the proration would be
+    const invoice = await getStripe().invoices.createPreview({
+      customer: subscription.customer as string,
+      subscription: userProfile.stripe_subscription_id,
+      subscription_details: {
+        items: [{
+          id: subscriptionItemId,
+          price: newPriceId,
+        }],
+        proration_behavior: 'always_invoice',
+      },
+    });
+
+    // Calculate the amount due (in cents)
+    const amountDue = invoice.amount_due;
+
+    return {
+      amountDue, // in cents
+      amountDueFormatted: `$${(amountDue / 100).toFixed(2)}`,
+      newTierName: newTier.name,
+      currency: invoice.currency,
+    };
+  }
+
+  /**
    * Upgrade an existing subscription to a new tier
    * Uses Stripe's subscription update with proration
    */

@@ -1,19 +1,13 @@
 {
   "permissions": {
     "allow": [
+      "Bash(cat:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash($env:NODE_OPTIONS=\"--dns-result-order=ipv4first\")",
-      "Bash(ping:*)",
-      "Bash(ipconfig:*)",
       "Bash(git checkout:*)",
-      "Bash(node --version:*)",
-      "Bash(npm --version:*)",
-      "Bash(npm run migrate:new:*)",
-      "Bash(npm run migrate:*)",
-      "Bash(cat:*)",
-      "Bash(find:*)"
+      "Bash(git pull:*)",
+      "Bash(git merge:*)"
     ],
     "deny": [],
     "ask": []

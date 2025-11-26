@@ -6,7 +6,14 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import PricingCard from '@/components/subscription/PricingCard';
 import type { SubscriptionTier } from '@/lib/types/subscription-types';
-import { Sparkles, Shield, Zap, ArrowRight, Heart, Check, ChevronDown } from 'lucide-react';
+import { Sparkles, Shield, Zap, ArrowRight, Heart, Check, ChevronDown, X } from 'lucide-react';
+
+interface UpgradePreview {
+  tierId: string;
+  tierName: string;
+  amountDue: number;
+  amountDueFormatted: string;
+}
 
 export default function PricingPage() {
   const router = useRouter();
@@ -16,6 +23,8 @@ export default function PricingPage() {
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(true);
   const [processingCheckout, setProcessingCheckout] = useState(false);
+  const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
   useEffect(() => {
     loadTiersAndUser();
@@ -97,25 +106,32 @@ export default function PricingPage() {
       const isUpgrade = hasActiveSubscription && tierId !== currentTierId;
 
       if (isUpgrade) {
-        // UPGRADE PATH - update existing subscription in place
-        const response = await fetch('/api/stripe/upgrade-subscription', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        // UPGRADE PATH - show preview modal first
+        setLoadingPreview(true);
+        try {
+          const response = await fetch('/api/stripe/preview-upgrade', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tierId, billingPeriod }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to preview upgrade');
+          }
+
+          const preview = await response.json();
+          const tier = tiers.find(t => t.id === tierId);
+          setUpgradePreview({
             tierId,
-            billingPeriod,
-          }),
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to upgrade subscription');
+            tierName: tier?.name || 'Supernova',
+            amountDue: preview.amountDue,
+            amountDueFormatted: preview.amountDueFormatted,
+          });
+        } finally {
+          setLoadingPreview(false);
+          setProcessingCheckout(false);
         }
-
-        // Redirect to dashboard with success message
-        router.push('/dashboard?subscription=upgraded');
         return;
       }
 
@@ -145,6 +161,34 @@ export default function PricingPage() {
       console.error('Checkout error:', error);
       alert(error.message || 'Failed to start checkout. Please try again.');
     } finally {
+      setProcessingCheckout(false);
+    }
+  };
+
+  const confirmUpgrade = async () => {
+    if (!upgradePreview) return;
+
+    try {
+      setProcessingCheckout(true);
+      const response = await fetch('/api/stripe/upgrade-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tierId: upgradePreview.tierId,
+          billingPeriod,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upgrade subscription');
+      }
+
+      setUpgradePreview(null);
+      router.push('/dashboard?subscription=upgraded');
+    } catch (error: any) {
+      console.error('Upgrade error:', error);
+      alert(error.message || 'Failed to upgrade. Please try again.');
       setProcessingCheckout(false);
     }
   };
@@ -550,6 +594,79 @@ export default function PricingPage() {
               Redirecting to checkout...
             </h3>
             <p className="text-gray-600">Please wait a moment</p>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Preview Overlay */}
+      {loadingPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-sm text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Calculating upgrade...
+            </h3>
+            <p className="text-gray-600">Please wait a moment</p>
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Confirmation Modal */}
+      {upgradePreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl font-semibold text-gray-900">
+                Confirm Upgrade
+              </h3>
+              <button
+                onClick={() => setUpgradePreview(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-600">
+                You&apos;re upgrading to <span className="font-semibold text-gray-900">{upgradePreview.tierName}</span>
+              </p>
+
+              <div className="bg-gray-50 rounded-xl p-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Amount due today</span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {upgradePreview.amountDueFormatted}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500 mt-2">
+                  This is the prorated difference for the remainder of your billing period.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setUpgradePreview(null)}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmUpgrade}
+                disabled={processingCheckout}
+                className="flex-1 px-4 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {processingCheckout ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>Confirm Upgrade</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
