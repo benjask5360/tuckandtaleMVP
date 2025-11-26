@@ -34,7 +34,7 @@ export default function PricingPage() {
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('subscription_tier_id, stripe_subscription_id, subscription_status')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
         setCurrentTierId(profile?.subscription_tier_id || 'tier_free');
