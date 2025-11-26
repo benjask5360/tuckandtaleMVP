@@ -88,6 +88,7 @@ function BillingPageContent() {
   }
 
   const isFree = tier?.id === 'tier_free';
+  const isBasic = tier?.id === 'tier_basic';
   const hasActiveSubscription = billingInfo?.hasSubscription;
   const subscriptionStatus = billingInfo?.subscriptionStatus;
 
@@ -139,24 +140,35 @@ function BillingPageContent() {
             </div>
 
             {!isFree && hasActiveSubscription ? (
-              <button
-                onClick={handleManageBilling}
-                disabled={processingPortal}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                {processingPortal ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Loading...</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-4 h-4" />
-                    <span>Manage Billing</span>
-                    <ExternalLink className="w-4 h-4" />
-                  </>
+              <div className="flex items-center gap-3">
+                {isBasic && (
+                  <button
+                    onClick={handleUpgrade}
+                    className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:opacity-90 transition-all flex items-center gap-2"
+                  >
+                    <span>Upgrade</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 )}
-              </button>
+                <button
+                  onClick={handleManageBilling}
+                  disabled={processingPortal}
+                  className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {processingPortal ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Loading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-4 h-4" />
+                      <span>Manage Billing</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={handleUpgrade}
@@ -279,6 +291,25 @@ function BillingPageContent() {
               className="px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-semibold inline-flex items-center gap-2"
             >
               <span>View Plans</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Upgrade CTA (if basic tier) */}
+        {isBasic && (
+          <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Upgrade to Supernova
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+              Get 10 child profiles, 20 character profiles, early access to new features, and premium support.
+            </p>
+            <button
+              onClick={handleUpgrade}
+              className="px-8 py-3 bg-gradient-primary text-white rounded-xl hover:opacity-90 transition-all font-semibold inline-flex items-center gap-2"
+            >
+              <span>View Supernova Plan</span>
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
