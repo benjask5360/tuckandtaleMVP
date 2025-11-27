@@ -73,6 +73,7 @@ RULES:
 - ACTIONS: 2-3 brief bullet points with character name and action
 - NO adjectives like: magical, wonderful, beautiful, cozy, warm, bright, golden
 - NO emotional descriptors like: excited, happy, worried, confidently, eagerly, joyfully
+- NEVER use these action words (they trigger content filters): shooting, hitting, fighting, punching, kicking
 - Describe ONLY what is visible - no feelings, emotions, or atmosphere
 - DO NOT use actual line breaks in the prompt string
 - ALWAYS end with " . STYLE : Disney pixar"
