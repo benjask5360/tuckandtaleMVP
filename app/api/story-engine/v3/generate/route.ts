@@ -145,8 +145,8 @@ export async function POST(request: Request) {
     // Generate story using V3 service
     const result = await V3StoryGenerationService.generateStory(user.id, params);
 
-    // Increment usage counts - V3 is text-only
-    await StoryUsageLimitsService.incrementUsage(user.id, false);
+    // Increment usage counts - pass includeIllustrations flag
+    await StoryUsageLimitsService.incrementUsage(user.id, params.includeIllustrations ?? false);
 
     // Return success response
     return NextResponse.json({

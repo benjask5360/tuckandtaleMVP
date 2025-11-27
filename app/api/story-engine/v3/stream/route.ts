@@ -279,8 +279,8 @@ export async function POST(request: Request) {
                   .eq('id', costLogId);
               }
 
-              // Increment usage
-              await StoryUsageLimitsService.incrementUsage(userId!, false);
+              // Increment usage - pass includeIllustrations flag
+              await StoryUsageLimitsService.incrementUsage(userId!, params.includeIllustrations ?? false);
 
               // Send complete event with story ID
               sendEvent(controller, { type: 'complete', storyId });

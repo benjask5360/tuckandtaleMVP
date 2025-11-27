@@ -72,9 +72,11 @@ export default async function DashboardPage() {
 
   // Fetch stories with cover illustrations
   const { data: stories, count: storyCount } = await supabase
-    .from('stories')
-    .select('id, title, story_illustrations, engine_version, cover_illustration_url', { count: 'exact' })
+    .from('content')
+    .select('id, title, story_illustrations, engine_version, cover_illustration_url, v3_illustration_status', { count: 'exact' })
     .eq('user_id', user.id)
+    .eq('content_type', 'story')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(3)
 
@@ -273,12 +275,15 @@ export default async function DashboardPage() {
               {stories && stories.length > 0 ? (
                 <>
                   {stories.slice(0, 3).map((story: any, idx: number) => {
-                    // Get cover illustration - handle both Beta and Legacy formats
+                    // Get cover illustration - handle V3, Beta, and Legacy formats
+                    // V3: use v3_illustration_status.cover (prefer imageUrl over tempUrl)
                     // Beta: use cover_illustration_url
                     // Legacy: use scene_0 from story_illustrations
-                    const coverUrl = story.engine_version === 'beta'
-                      ? story.cover_illustration_url
-                      : story.story_illustrations?.find((ill: any) => ill.type === 'scene_0')?.url
+                    const coverUrl = story.engine_version === 'v3'
+                      ? (story.v3_illustration_status?.cover?.imageUrl || story.v3_illustration_status?.cover?.tempUrl)
+                      : story.engine_version === 'beta'
+                        ? story.cover_illustration_url
+                        : story.story_illustrations?.find((ill: any) => ill.type === 'scene_0')?.url
 
                     return (
                       <div

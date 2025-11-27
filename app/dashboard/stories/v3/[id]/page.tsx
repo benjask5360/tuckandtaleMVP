@@ -743,13 +743,13 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
                 <div key={index} className="mb-8">
                   {/* Scene Illustration */}
                   {showSceneIllustration && (
-                    <div className="mb-6 max-w-lg mx-auto">
+                    <div className="mb-6 max-w-2xl mx-auto">
                       <IllustrationSlot
                         status={sceneIllustration.status}
                         tempUrl={sceneIllustration.tempUrl}
                         imageUrl={sceneIllustration.imageUrl}
                         alt={`Illustration for paragraph ${index + 1}`}
-                        size="medium"
+                        size="large"
                       />
                     </div>
                   )}

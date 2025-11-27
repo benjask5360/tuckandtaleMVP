@@ -69,6 +69,9 @@ RULES:
 - For humans: ALWAYS include ethnicity/background at the START of the description (before hair color)
 - For humans: ALWAYS include "{color} hair" and "{color} eyes" (full words, not just colors)
 - Keep clothing/appearance IDENTICAL across ALL prompts for each character
+- NEVER use vague clothing terms like: colorful, striped, patterned, bright
+- ALWAYS specify exact colors: "red t-shirt with yellow star" not "colorful t-shirt"
+- ALWAYS specify stripe colors: "blue and white striped shirt" not "striped shirt"
 - SETTING: 1 short sentence maximum
 - ACTIONS: 2-3 brief bullet points with character name and action
 - NO adjectives like: magical, wonderful, beautiful, cozy, warm, bright, golden
@@ -81,10 +84,10 @@ RULES:
 ## EXAMPLE OUTPUT
 For a story with a child (Zaier) and a magical creature (Flicker the firefly):
 {
-  "coverPrompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build; Flicker: tiny yellow firefly with bright wings . SETTING : Sunny meadow with colorful flowers . ACTIONS : - Zaier stands in grass looking up - Flicker hovers nearby glowing . STYLE : Disney pixar",
+  "coverPrompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build; Flicker: tiny yellow firefly with orange wings . SETTING : Sunny meadow with purple flowers . ACTIONS : - Zaier stands in grass looking up - Flicker hovers nearby glowing . STYLE : Disney pixar",
   "scenePrompts": [
-    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build . SETTING : Bedroom with morning sunlight . ACTIONS : - Zaier wakes up in bed - Zaier stretches arms . STYLE : Disney pixar" },
-    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build; Flicker: tiny yellow firefly with bright wings . SETTING : Flower-filled meadow . ACTIONS : - Zaier walks through tall grass - Flicker flies beside . STYLE : Disney pixar" }
+    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build . SETTING : Bedroom with morning sunlight . ACTIONS : - Zaier wakes up in bed - Zaier stretches arms . STYLE : Disney pixar" },
+    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build; Flicker: tiny yellow firefly with orange wings . SETTING : Flower-filled meadow . ACTIONS : - Zaier walks through tall grass - Flicker flies beside . STYLE : Disney pixar" }
   ]
 }
 
