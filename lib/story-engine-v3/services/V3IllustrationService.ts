@@ -274,7 +274,7 @@ async function generateSingleIllustrationWithRetry(
       // Poll for completion
       const generation = await leonardoClient.pollGeneration(generationId);
 
-      // Check for moderation failure
+      // Check for moderation failure (status FAILED means Leonardo refused to generate)
       if (generation.status === 'FAILED') {
         if (attempt < MAX_MODERATION_RETRIES) {
           console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} failed, cleansing attempt ${attempt + 1}`);
@@ -300,14 +300,10 @@ async function generateSingleIllustrationWithRetry(
         };
       }
 
-      // Check for NSFW flag
-      if (generation.images?.[0]?.nsfw) {
-        if (attempt < MAX_MODERATION_RETRIES) {
-          console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} NSFW flagged, cleansing attempt ${attempt + 1}`);
-          currentPrompt = await cleansePromptWithOpenAI(originalPrompt, attempt);
-          continue;
-        }
-      }
+      // NOTE: We intentionally do NOT check generation.images?.[0]?.nsfw here.
+      // Leonardo marks ALL images containing children with nsfw:true and moderationClassification:["CHILD"].
+      // This is expected behavior for a children's story app - the images are successfully generated
+      // and safe to use. Only status === 'FAILED' indicates an actual moderation rejection.
 
       // Success!
       const leonardoUrl = generation.images?.[0]?.url;

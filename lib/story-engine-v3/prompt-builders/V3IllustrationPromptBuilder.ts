@@ -13,18 +13,6 @@ import type {
 } from '../types';
 
 /**
- * Character details needed for illustration prompts
- */
-interface IllustrationCharacterDetails {
-  name: string;
-  hairColor: string;
-  eyeColor: string;
-  age: number;
-  clothing: string;
-  build: string;
-}
-
-/**
  * Build the OpenAI prompt for generating all illustration prompts at once
  */
 export function buildIllustrationPromptsPrompt(
@@ -32,15 +20,14 @@ export function buildIllustrationPromptsPrompt(
   paragraphs: V3Paragraph[],
   characters: V3CharacterInfo[]
 ): string {
-  // Extract character details from appearance descriptions
-  const characterDetails = characters.map(extractCharacterDetails);
-
   const paragraphsList = paragraphs
     .map((p, i) => `${i + 1}. ${p.text}`)
     .join('\n');
 
-  const charactersList = characterDetails
-    .map(c => `${c.name}: ${c.hairColor}, ${c.eyeColor}, ${c.age}-year-old, ${c.clothing}, ${c.build}`)
+  // Pass the full appearance description directly - let OpenAI format it correctly
+  // Include characterType so OpenAI knows if it's a pet, child, magical creature, etc.
+  const charactersList = characters
+    .map(c => `- ${c.name} (${c.characterType}${c.age ? `, age ${c.age}` : ''}): ${c.appearanceDescription}`)
     .join('\n');
 
   return `You are creating illustration prompts for a children's bedtime story.
@@ -59,103 +46,54 @@ Create Disney Pixar-style illustration prompts for:
 - 1 illustration per paragraph (${paragraphs.length} total)
 
 ## ILLUSTRATION PROMPT FORMAT (CRITICAL)
-Each prompt must follow this exact format as a SINGLE-LINE STRING:
+Each prompt must follow this EXACT format as a SINGLE-LINE STRING. Note the spaces around colons in section headers:
 
-Disney pixar illustration. CHARACTERS: {Name}: {hair color}, {eye color}, {age}-year-old, {clothing}, {build}. SETTING: {brief location, 1 short sentence}. ACTIONS: - {action1} - {action2}. STYLE: Disney pixar
+Disney pixar illustration. CHARACTERS: {Name1}: {description}; {Name2}: {description} . SETTING : {brief location} . ACTIONS : - {Name1} {action} - {Name2} {action} . STYLE : Disney pixar
+
+CHARACTER DESCRIPTION FORMATS (use based on character type):
+- For children/people: "{Name}: {color} hair, {color} eyes, {age}-year-old, {clothing description}, {build}"
+  Example: "Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build"
+- For pets: "{Name}: {color} {species/breed} with {eye color} eyes"
+  Example: "Penny: orange and white Corgi with brown eyes"
+- For magical creatures: "{Name}: {color} {creature type} with {distinctive features}"
+  Example: "Sparkle: purple dragon with golden eyes and shimmering scales"
 
 RULES:
+- ALWAYS start with "Disney pixar illustration."
+- Use semicolons (;) to separate multiple characters in CHARACTERS section
+- Use spaces around colons in section headers: " SETTING : " not "SETTING:"
 - Keep each prompt under 150 words
-- ALWAYS include hair color and eye color for EVERY character in EVERY scene
-- Keep clothing IDENTICAL across ALL prompts for each character
-- SETTING: 1 short sentence maximum (e.g., "Forest clearing, oak trees")
-- ACTIONS: 2-3 brief bullet points maximum - just the action, no adverbs
+- For humans: ALWAYS include "{color} hair" and "{color} eyes" (full words, not just colors)
+- Keep clothing/appearance IDENTICAL across ALL prompts for each character
+- SETTING: 1 short sentence maximum
+- ACTIONS: 2-3 brief bullet points with character name and action
 - NO adjectives like: magical, wonderful, beautiful, cozy, warm, bright, golden
 - NO emotional descriptors like: excited, happy, worried, confidently, eagerly, joyfully
 - Describe ONLY what is visible - no feelings, emotions, or atmosphere
 - DO NOT use actual line breaks in the prompt string
-- Start cover prompt with "Disney pixar illustration" (NOT "book cover")
-- End all prompts with "STYLE: Disney pixar" (NOT "storybook cover")
+- ALWAYS end with " . STYLE : Disney pixar"
+
+## EXAMPLE OUTPUT
+For a story with a child (Lewis) and a pet (Penny the Corgi):
+{
+  "coverPrompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build; Penny: orange and white Corgi with brown eyes . SETTING : Sunny backyard with green grass and wooden fence . ACTIONS : - Lewis sits on grass holding a red ball - Penny stands beside wagging tail . STYLE : Disney pixar",
+  "scenePrompts": [
+    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build . SETTING : Bedroom with morning sunlight . ACTIONS : - Lewis wakes up in bed - Lewis stretches arms . STYLE : Disney pixar" },
+    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build; Penny: orange and white Corgi with brown eyes . SETTING : Kitchen with breakfast table . ACTIONS : - Lewis pours cereal into bowl - Penny sits by chair looking up . STYLE : Disney pixar" }
+  ]
+}
 
 ## OUTPUT FORMAT
 Return valid JSON with this exact structure:
 {
-  "coverPrompt": "Disney pixar illustration. CHARACTERS: ...",
+  "coverPrompt": "Disney pixar illustration. CHARACTERS: ... . SETTING : ... . ACTIONS : ... . STYLE : Disney pixar",
   "scenePrompts": [
-    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: ..." },
-    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: ..." }
+    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: ... . SETTING : ... . ACTIONS : ... . STYLE : Disney pixar" },
+    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: ... . SETTING : ... . ACTIONS : ... . STYLE : Disney pixar" }
   ]
 }
 
 Important: scenePrompts array must have exactly ${paragraphs.length} items, one for each paragraph, with paragraphIndex matching the paragraph number (0-indexed).`;
-}
-
-/**
- * Extract character details from the appearance description
- */
-function extractCharacterDetails(character: V3CharacterInfo): IllustrationCharacterDetails {
-  const desc = character.appearanceDescription || '';
-
-  // Default values
-  let hairColor = 'brown hair';
-  let eyeColor = 'brown eyes';
-  let clothing = 'casual clothes';
-  let build = 'average build';
-
-  // Try to extract hair color
-  const hairMatch = desc.match(/(\w+(?:\s+\w+)?)\s+hair/i);
-  if (hairMatch) {
-    hairColor = `${hairMatch[1]} hair`;
-  }
-
-  // Try to extract eye color
-  const eyeMatch = desc.match(/(\w+)\s+eyes/i);
-  if (eyeMatch) {
-    eyeColor = `${eyeMatch[1]} eyes`;
-  }
-
-  // Try to extract clothing
-  const clothingPatterns = [
-    /wearing\s+(?:a\s+)?([^,.]+)/i,
-    /dressed\s+in\s+(?:a\s+)?([^,.]+)/i,
-    /in\s+(?:a\s+)?([^,.]+(?:dress|shirt|pajamas|outfit|clothes))/i,
-  ];
-
-  for (const pattern of clothingPatterns) {
-    const match = desc.match(pattern);
-    if (match) {
-      clothing = match[1].trim();
-      break;
-    }
-  }
-
-  // Try to extract build
-  const buildPatterns = [
-    /(small|petite|tiny|average|medium|large|tall|short)\s+(?:build|frame|stature)/i,
-    /(slim|slender|athletic|stocky|chubby)/i,
-  ];
-
-  for (const pattern of buildPatterns) {
-    const match = desc.match(pattern);
-    if (match) {
-      build = `${match[1]} build`;
-      break;
-    }
-  }
-
-  // Determine build from age if not explicitly stated
-  const age = character.age || 6;
-  if (build === 'average build' && age < 10) {
-    build = 'small build';
-  }
-
-  return {
-    name: character.name,
-    hairColor,
-    eyeColor,
-    age,
-    clothing,
-    build,
-  };
 }
 
 /**
