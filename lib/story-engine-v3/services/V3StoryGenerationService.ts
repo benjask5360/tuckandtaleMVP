@@ -312,6 +312,7 @@ export class V3StoryGenerationService {
         characterType: heroProfile.character_type,
         appearanceDescription: heroProfile.appearance_description || '',
         age: heroProfile.attributes?.age,
+        background: heroProfile.attributes?.background,
         role: 'hero',
       });
     }
@@ -326,6 +327,7 @@ export class V3StoryGenerationService {
           characterType: profile.character_type,
           appearanceDescription: profile.appearance_description || '',
           age: profile.attributes?.age,
+          background: profile.attributes?.background,
           role: this.inferRole(profile.character_type),
         });
       }

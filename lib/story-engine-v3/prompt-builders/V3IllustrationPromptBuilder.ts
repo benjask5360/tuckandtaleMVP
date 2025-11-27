@@ -25,9 +25,12 @@ export function buildIllustrationPromptsPrompt(
     .join('\n');
 
   // Pass the full appearance description directly - let OpenAI format it correctly
-  // Include characterType so OpenAI knows if it's a pet, child, magical creature, etc.
+  // Include characterType and background so OpenAI knows ethnicity, pet vs child, etc.
   const charactersList = characters
-    .map(c => `- ${c.name} (${c.characterType}${c.age ? `, age ${c.age}` : ''}): ${c.appearanceDescription}`)
+    .map(c => {
+      const bgPrefix = c.background ? `${c.background} ` : '';
+      return `- ${c.name} (${bgPrefix}${c.characterType}${c.age ? `, age ${c.age}` : ''}): ${c.appearanceDescription}`;
+    })
     .join('\n');
 
   return `You are creating illustration prompts for a children's bedtime story.

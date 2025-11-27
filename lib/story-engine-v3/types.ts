@@ -69,6 +69,7 @@ export interface V3CharacterInfo {
   age?: number;
   role?: 'hero' | 'sidekick' | 'friend' | 'family' | 'pet';
   relationship?: string; // e.g., "Emma's brother"
+  background?: string; // e.g., "Asian", "Black or African American" - from rich_description
 }
 
 /**
