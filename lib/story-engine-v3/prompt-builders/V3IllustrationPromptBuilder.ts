@@ -53,20 +53,21 @@ Each prompt must follow this EXACT format as a SINGLE-LINE STRING. Note the spac
 
 Disney pixar illustration. CHARACTERS: {Name1}: {description}; {Name2}: {description} . SETTING : {brief location} . ACTIONS : - {Name1} {action} - {Name2} {action} . STYLE : Disney pixar
 
-CHARACTER DESCRIPTION FORMATS (use based on character type):
-- For children/people: "{Name}: {ethnicity}, {color} hair, {color} eyes, {age}-year-old, {clothing description}, {build}"
-  Example: "Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build"
-- For pets: "{Name}: {color} {species/breed} with {eye color} eyes"
-  Example: "Penny: orange and white Corgi with brown eyes"
-- For magical creatures: "{Name}: {color} {creature type} with {distinctive features}"
-  Example: "Sparkle: purple dragon with golden eyes and shimmering scales"
+CHARACTER DESCRIPTION FORMATS (use natural language based on character type):
+- For children/people: "{Name}: A {age}-year-old {ethnicity} {boy/girl/man/woman} with {color} hair, {color} eyes, and {build} build, wearing {clothing}."
+  Example: "Zaier: A 3-year-old African American boy with brown hair, brown eyes, and average build, wearing a red t-shirt with yellow star and blue shorts."
+- For pets: "{Name}: A {color} {species/breed} with {eye color} eyes."
+  Example: "Penny: An orange and white Corgi with brown eyes."
+- For magical creatures: "{Name}: A {color} {creature type} with {distinctive features}."
+  Example: "Flicker: A tiny yellow firefly with orange wings."
 
 RULES:
 - ALWAYS start with "Disney pixar illustration."
 - Use semicolons (;) to separate multiple characters in CHARACTERS section
 - Use spaces around colons in section headers: " SETTING : " not "SETTING:"
 - Keep each prompt under 150 words
-- For humans: ALWAYS include ethnicity/background at the START of the description (before hair color)
+- For humans: Use natural language with age-appropriate gender terms (boy/girl for children under 18, man/woman for adults, child/person for non-binary)
+- For humans: ALWAYS include ethnicity/background after the age (e.g., "A 3-year-old African American boy")
 - For humans: ALWAYS include "{color} hair" and "{color} eyes" (full words, not just colors)
 - Keep clothing/appearance IDENTICAL across ALL prompts for each character
 - NEVER use vague clothing terms like: colorful, striped, patterned, bright
@@ -84,10 +85,10 @@ RULES:
 ## EXAMPLE OUTPUT
 For a story with a child (Zaier) and a magical creature (Flicker the firefly):
 {
-  "coverPrompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build; Flicker: tiny yellow firefly with orange wings . SETTING : Sunny meadow with purple flowers . ACTIONS : - Zaier stands in grass looking up - Flicker hovers nearby glowing . STYLE : Disney pixar",
+  "coverPrompt": "Disney pixar illustration. CHARACTERS: Zaier: A 3-year-old African American boy with brown hair, brown eyes, and average build, wearing a red t-shirt with yellow star and blue shorts; Flicker: A tiny yellow firefly with orange wings . SETTING : Sunny meadow with purple flowers . ACTIONS : - Zaier stands in grass looking up - Flicker hovers nearby glowing . STYLE : Disney pixar",
   "scenePrompts": [
-    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build . SETTING : Bedroom with morning sunlight . ACTIONS : - Zaier wakes up in bed - Zaier stretches arms . STYLE : Disney pixar" },
-    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, red t-shirt with yellow star and blue shorts, average build; Flicker: tiny yellow firefly with orange wings . SETTING : Flower-filled meadow . ACTIONS : - Zaier walks through tall grass - Flicker flies beside . STYLE : Disney pixar" }
+    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: A 3-year-old African American boy with brown hair, brown eyes, and average build, wearing a red t-shirt with yellow star and blue shorts . SETTING : Bedroom with morning sunlight . ACTIONS : - Zaier wakes up in bed - Zaier stretches arms . STYLE : Disney pixar" },
+    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: A 3-year-old African American boy with brown hair, brown eyes, and average build, wearing a red t-shirt with yellow star and blue shorts; Flicker: A tiny yellow firefly with orange wings . SETTING : Flower-filled meadow . ACTIONS : - Zaier walks through tall grass - Flicker flies beside . STYLE : Disney pixar" }
   ]
 }
 
