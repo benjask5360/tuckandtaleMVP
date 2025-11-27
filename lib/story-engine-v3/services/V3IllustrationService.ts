@@ -376,8 +376,9 @@ async function generateSingleIllustration(
 
     } catch (error: any) {
       // Check if it's a moderation-related error
+      // Note: Leonardo uses "moderated" not "moderation", so we check for the root "moderat"
       const isModerationError =
-        error.message?.toLowerCase().includes('moderation') ||
+        error.message?.toLowerCase().includes('moderat') ||
         error.message?.toLowerCase().includes('content policy') ||
         error.message?.toLowerCase().includes('nsfw');
 
