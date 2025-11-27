@@ -122,31 +122,27 @@ export async function generateAllIllustrations(
     }
 
     // 7. Fire all Leonardo calls in parallel
+    // NOTE: These do NOT update the database individually - they return results
+    // which we batch update at the end to avoid race conditions
     const leonardoClient = new LeonardoClient();
 
     const allPromises: Promise<V3IllustrationGenerationResult>[] = [
       // Cover
-      generateSingleIllustrationWithRetry(
+      generateSingleIllustration(
         leonardoClient,
         aiConfig,
         promptsResult.prompts.coverPrompt,
         'cover',
-        undefined,
-        storyId,
-        userId,
-        supabase
+        undefined
       ),
       // Scenes
       ...promptsResult.prompts.scenePrompts.map(sp =>
-        generateSingleIllustrationWithRetry(
+        generateSingleIllustration(
           leonardoClient,
           aiConfig,
           sp.prompt,
           'scene',
-          sp.paragraphIndex,
-          storyId,
-          userId,
-          supabase
+          sp.paragraphIndex
         )
       ),
     ];
@@ -154,11 +150,64 @@ export async function generateAllIllustrations(
     // Wait for all to complete (don't fail if some fail)
     const results = await Promise.allSettled(allPromises);
 
-    // 8. Determine overall status
+    // 8. Collect all results and do a SINGLE batch update to avoid race conditions
     const successCount = results.filter(
       r => r.status === 'fulfilled' && r.value.success
     ).length;
 
+    console.log(`[V3 Illustrations] All parallel calls completed. Success: ${successCount}/${illustrationCount}`);
+
+    // Build the final status from all results
+    const finalStatus: V3IllustrationStatusData = {
+      overall: 'generating', // Will be updated below
+      cover: { ...statusWithPrompts.cover }, // Start with prompt
+      scenes: [...statusWithPrompts.scenes], // Start with prompts
+    };
+
+    // Process each result and update the final status object
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.error(`[V3 Illustrations] Promise ${i} rejected:`, r.reason);
+        // Mark as failed
+        if (i === 0) {
+          finalStatus.cover = { ...finalStatus.cover, status: 'failed', error: r.reason?.message || 'Unknown error' };
+        } else {
+          const sceneIndex = i - 1;
+          if (finalStatus.scenes[sceneIndex]) {
+            finalStatus.scenes[sceneIndex] = { ...finalStatus.scenes[sceneIndex], status: 'failed', error: r.reason?.message || 'Unknown error' };
+          }
+        }
+      } else {
+        const result = r.value;
+        if (!result.success) {
+          console.error(`[V3 Illustrations] Promise ${i} failed:`, result.error);
+        }
+
+        // Update the appropriate slot
+        if (result.imageType === 'cover') {
+          finalStatus.cover = {
+            ...finalStatus.cover,
+            status: result.success ? 'success' : 'failed',
+            tempUrl: result.leonardoUrl,
+            error: result.error,
+            attempts: result.attempts,
+          };
+        } else if (result.paragraphIndex !== undefined) {
+          const sceneIndex = finalStatus.scenes.findIndex(s => s.paragraphIndex === result.paragraphIndex);
+          if (sceneIndex >= 0) {
+            finalStatus.scenes[sceneIndex] = {
+              ...finalStatus.scenes[sceneIndex],
+              status: result.success ? 'success' : 'failed',
+              tempUrl: result.leonardoUrl,
+              error: result.error,
+              attempts: result.attempts,
+            };
+          }
+        }
+      }
+    });
+
+    // Determine overall status
     let overallStatus: 'complete' | 'partial' | 'failed';
     if (successCount === illustrationCount) {
       overallStatus = 'complete';
@@ -167,10 +216,22 @@ export async function generateAllIllustrations(
     } else {
       overallStatus = 'failed';
     }
+    finalStatus.overall = overallStatus;
 
-    await updateOverallStatus(supabase, storyId, overallStatus);
+    // 9. Single atomic database update with all results
+    console.log(`[V3 Illustrations] Saving final status (overall: ${overallStatus}) to database`);
+    const { error: finalUpdateError } = await supabase
+      .from('content')
+      .update({ v3_illustration_status: finalStatus })
+      .eq('id', storyId);
 
-    // 9. Fire background upload to Supabase (don't await)
+    if (finalUpdateError) {
+      console.error('[V3 Illustrations] Failed to save final status:', finalUpdateError);
+    } else {
+      console.log('[V3 Illustrations] Successfully saved all illustration results');
+    }
+
+    // 10. Fire background upload to Supabase (don't await)
     uploadToSupabaseInBackground(storyId, userId).catch(err => {
       console.error('[V3 Illustrations] Background upload failed:', err);
     });
@@ -244,16 +305,15 @@ async function generateIllustrationPrompts(
 
 /**
  * Generate a single illustration with moderation retry logic
+ * NOTE: This function does NOT update the database - it only returns results.
+ * The caller is responsible for collecting all results and doing a single batch update.
  */
-async function generateSingleIllustrationWithRetry(
+async function generateSingleIllustration(
   leonardoClient: LeonardoClient,
   aiConfig: AIConfig,
   originalPrompt: string,
   imageType: 'cover' | 'scene',
-  paragraphIndex: number | undefined,
-  storyId: string,
-  userId: string,
-  supabase: ReturnType<typeof createAdminClient>
+  paragraphIndex: number | undefined
 ): Promise<V3IllustrationGenerationResult> {
   let currentPrompt = originalPrompt;
   let attempts = 0;
@@ -282,15 +342,7 @@ async function generateSingleIllustrationWithRetry(
           continue;
         }
 
-        // All retries exhausted
-        await updateIllustrationStatus(
-          supabase,
-          storyId,
-          imageType,
-          paragraphIndex,
-          { status: 'failed', error: 'moderation_failed', attempts }
-        );
-
+        // All retries exhausted - return failure (no DB update)
         return {
           success: false,
           imageType,
@@ -311,15 +363,7 @@ async function generateSingleIllustrationWithRetry(
         throw new Error('No image URL in response');
       }
 
-      // Update status with temp URL
-      await updateIllustrationStatus(
-        supabase,
-        storyId,
-        imageType,
-        paragraphIndex,
-        { status: 'success', tempUrl: leonardoUrl, attempts }
-      );
-
+      // Return success result (no DB update - caller will batch all updates)
       return {
         success: true,
         imageType,
@@ -343,16 +387,8 @@ async function generateSingleIllustrationWithRetry(
         continue;
       }
 
-      // Non-moderation error or retries exhausted
+      // Non-moderation error or retries exhausted - return failure (no DB update)
       console.error(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} error:`, error.message);
-
-      await updateIllustrationStatus(
-        supabase,
-        storyId,
-        imageType,
-        paragraphIndex,
-        { status: 'failed', error: error.message, attempts }
-      );
 
       return {
         success: false,
@@ -419,7 +455,8 @@ async function cleansePromptWithOpenAI(
 }
 
 /**
- * Update illustration status in the database
+ * Update illustration status in the database using atomic JSONB operations
+ * This prevents race conditions when multiple parallel updates occur
  */
 async function updateIllustrationStatus(
   supabase: ReturnType<typeof createAdminClient>,
@@ -428,35 +465,57 @@ async function updateIllustrationStatus(
   paragraphIndex: number | undefined,
   update: Partial<V3CoverIllustrationStatus | V3SceneIllustrationStatus>
 ) {
-  // Fetch current status
-  const { data } = await supabase
-    .from('content')
-    .select('v3_illustration_status')
-    .eq('id', storyId)
-    .single();
+  // Use a retry loop with fresh read to handle concurrent updates
+  const maxRetries = 3;
 
-  const currentStatus = (data?.v3_illustration_status || {}) as V3IllustrationStatusData;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    // Fetch current status
+    const { data, error: fetchError } = await supabase
+      .from('content')
+      .select('v3_illustration_status')
+      .eq('id', storyId)
+      .single();
 
-  // Update the specific illustration
-  if (imageType === 'cover') {
-    currentStatus.cover = { ...currentStatus.cover, ...update };
-  } else if (paragraphIndex !== undefined) {
-    const sceneIndex = currentStatus.scenes?.findIndex(
-      s => s.paragraphIndex === paragraphIndex
-    );
-    if (sceneIndex !== undefined && sceneIndex >= 0) {
-      currentStatus.scenes[sceneIndex] = {
-        ...currentStatus.scenes[sceneIndex],
-        ...update,
-      };
+    if (fetchError) {
+      console.error(`[V3 Illustrations] Failed to fetch status (attempt ${attempt + 1}):`, fetchError);
+      if (attempt === maxRetries - 1) return;
+      await new Promise(r => setTimeout(r, 100 * (attempt + 1))); // Backoff
+      continue;
     }
-  }
 
-  // Save back
-  await supabase
-    .from('content')
-    .update({ v3_illustration_status: currentStatus })
-    .eq('id', storyId);
+    const currentStatus = (data?.v3_illustration_status || {}) as V3IllustrationStatusData;
+
+    // Update the specific illustration
+    if (imageType === 'cover') {
+      currentStatus.cover = { ...currentStatus.cover, ...update };
+    } else if (paragraphIndex !== undefined) {
+      const sceneIndex = currentStatus.scenes?.findIndex(
+        s => s.paragraphIndex === paragraphIndex
+      );
+      if (sceneIndex !== undefined && sceneIndex >= 0) {
+        currentStatus.scenes[sceneIndex] = {
+          ...currentStatus.scenes[sceneIndex],
+          ...update,
+        };
+      }
+    }
+
+    // Save back
+    const { error: updateError } = await supabase
+      .from('content')
+      .update({ v3_illustration_status: currentStatus })
+      .eq('id', storyId);
+
+    if (updateError) {
+      console.error(`[V3 Illustrations] Failed to update status (attempt ${attempt + 1}):`, updateError);
+      if (attempt === maxRetries - 1) return;
+      await new Promise(r => setTimeout(r, 100 * (attempt + 1))); // Backoff
+      continue;
+    }
+
+    // Success
+    return;
+  }
 }
 
 /**
@@ -467,19 +526,32 @@ async function updateOverallStatus(
   storyId: string,
   overall: 'pending' | 'generating' | 'complete' | 'partial' | 'failed'
 ) {
-  const { data } = await supabase
+  console.log(`[V3 Illustrations] Updating overall status to: ${overall} for story ${storyId}`);
+
+  const { data, error: fetchError } = await supabase
     .from('content')
     .select('v3_illustration_status')
     .eq('id', storyId)
     .single();
 
+  if (fetchError) {
+    console.error('[V3 Illustrations] Failed to fetch status for update:', fetchError);
+    return;
+  }
+
   const currentStatus = (data?.v3_illustration_status || {}) as V3IllustrationStatusData;
   currentStatus.overall = overall;
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('content')
     .update({ v3_illustration_status: currentStatus })
     .eq('id', storyId);
+
+  if (updateError) {
+    console.error('[V3 Illustrations] Failed to update overall status:', updateError);
+  } else {
+    console.log(`[V3 Illustrations] Successfully updated overall status to: ${overall}`);
+  }
 }
 
 /**

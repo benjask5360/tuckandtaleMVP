@@ -87,6 +87,19 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
           // Stop polling if complete or failed
           if (status.overall === 'complete' || status.overall === 'failed') {
             clearInterval(pollInterval)
+            return
+          }
+
+          // Fallback: If all images have URLs but overall is still generating,
+          // consider it complete (handles race condition where overall status update failed)
+          const coverDone = status.cover?.tempUrl || status.cover?.imageUrl || status.cover?.status === 'failed'
+          const allScenesDone = status.scenes?.length > 0 && status.scenes.every(
+            (s: any) => s.tempUrl || s.imageUrl || s.status === 'failed'
+          )
+          if (coverDone && allScenesDone && status.overall === 'generating') {
+            console.log('All illustrations have URLs but overall still generating - treating as complete')
+            setIllustrationStatus({ ...status, overall: 'complete' })
+            clearInterval(pollInterval)
           }
         }
       } catch (err) {
