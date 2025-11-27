@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X, ImageOff } from 'lucide-react'
+import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X, ImageOff, RefreshCw } from 'lucide-react'
+import Image from 'next/image'
 import ReviewRequestModal from '@/components/ReviewRequestModal'
-import type { V3GenerationMetadata } from '@/lib/story-engine-v3/types'
+import type { V3GenerationMetadata, V3IllustrationStatusData } from '@/lib/story-engine-v3/types'
 
 interface V3StoryData {
   id: string
@@ -17,6 +18,7 @@ interface V3StoryData {
   engine_version: 'v3'
   generation_status: 'generating' | 'text_complete' | 'complete' | 'error'
   generation_metadata: V3GenerationMetadata
+  v3_illustration_status?: V3IllustrationStatusData
 }
 
 export default function V3StoryViewerPage({ params }: { params: { id: string } }) {
@@ -33,10 +35,99 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
   const [editedMoral, setEditedMoral] = useState('')
   const [showReviewModal, setShowReviewModal] = useState(false)
 
+  // Illustration state
+  const [illustrationStatus, setIllustrationStatus] = useState<V3IllustrationStatusData | null>(null)
+  const [illustrationError, setIllustrationError] = useState<string | null>(null)
+  const [triggeringIllustrations, setTriggeringIllustrations] = useState(false)
+
   useEffect(() => {
     loadStory()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id])
+
+  // Effect to trigger illustration generation when story loads
+  useEffect(() => {
+    if (!story) return
+
+    // Only trigger if:
+    // - illustrations are enabled
+    // - story text is complete
+    // - not already triggering
+    // - no existing illustration status OR status is pending/failed (allow retry)
+    const existingStatus = illustrationStatus?.overall
+    const shouldTrigger =
+      story.generation_metadata?.include_illustrations === true &&
+      story.generation_status === 'text_complete' &&
+      !triggeringIllustrations &&
+      (!existingStatus || existingStatus === 'pending')
+
+    if (shouldTrigger) {
+      triggerIllustrationGeneration()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story?.id, story?.generation_status, story?.generation_metadata?.include_illustrations])
+
+  // Polling effect for illustration status
+  useEffect(() => {
+    if (!story) return
+    if (!story.generation_metadata?.include_illustrations) return
+
+    // Don't poll if we haven't triggered yet or if complete/failed
+    const overallStatus = illustrationStatus?.overall
+    if (!overallStatus) return
+    if (overallStatus === 'complete' || overallStatus === 'failed') return
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/story-engine/v3/illustrations/status?storyId=${story.id}`)
+        if (response.ok) {
+          const status = await response.json()
+          setIllustrationStatus(status)
+
+          // Stop polling if complete or failed
+          if (status.overall === 'complete' || status.overall === 'failed') {
+            clearInterval(pollInterval)
+          }
+        }
+      } catch (err) {
+        console.error('Error polling illustration status:', err)
+      }
+    }, 2000) // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval)
+  }, [story?.id, story?.generation_metadata?.include_illustrations, illustrationStatus?.overall])
+
+  const triggerIllustrationGeneration = async () => {
+    if (!story) return
+
+    setTriggeringIllustrations(true)
+    setIllustrationError(null)
+
+    try {
+      const response = await fetch('/api/story-engine/v3/illustrations/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storyId: story.id })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to start illustration generation')
+      }
+
+      // Set initial status to trigger polling
+      setIllustrationStatus({
+        overall: 'generating',
+        cover: { status: 'pending' },
+        scenes: []
+      })
+    } catch (err: any) {
+      console.error('Error triggering illustration generation:', err)
+      setIllustrationError(err.message)
+    } finally {
+      setTriggeringIllustrations(false)
+    }
+  }
 
   const loadStory = async () => {
     try {
@@ -60,6 +151,11 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
       }
 
       setStory(storyData as V3StoryData)
+
+      // Load existing illustration status if available
+      if (storyData.v3_illustration_status) {
+        setIllustrationStatus(storyData.v3_illustration_status as V3IllustrationStatusData)
+      }
 
       // Check for unsaved edits in localStorage
       const savedEdit = localStorage.getItem(`story-edit-${params.id}`)
@@ -303,6 +399,77 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
 
   const paragraphs = getParagraphs()
 
+  // Helper component to render illustration slot
+  const IllustrationSlot = ({
+    status,
+    tempUrl,
+    imageUrl,
+    alt,
+    size = 'large'
+  }: {
+    status?: 'pending' | 'generating' | 'success' | 'failed'
+    tempUrl?: string
+    imageUrl?: string
+    alt: string
+    size?: 'large' | 'medium'
+  }) => {
+    const url = imageUrl || tempUrl
+    const isLoading = status === 'pending' || status === 'generating'
+    const isFailed = status === 'failed'
+    const sizeClasses = size === 'large' ? 'aspect-square' : 'aspect-[4/3]'
+
+    if (isFailed) {
+      return (
+        <div className={`relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-red-50 to-pink-50 border-2 border-dashed border-red-200 ${sizeClasses}`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+            <ImageOff className="w-12 h-12 text-red-300 mb-3" />
+            <p className="text-red-600 font-medium text-sm">Illustration failed</p>
+            <p className="text-red-400 text-xs mt-1">Could not generate this image</p>
+          </div>
+        </div>
+      )
+    }
+
+    if (isLoading || !url) {
+      return (
+        <div className={`relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-dashed border-purple-200 ${sizeClasses}`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+            <div className="relative">
+              <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+              <Sparkles className="w-5 h-5 text-purple-500 absolute -top-1 -right-1 animate-pulse" />
+            </div>
+            <p className="text-purple-600 font-medium mt-3 text-sm">
+              {status === 'generating' ? 'Creating illustration...' : 'Preparing...'}
+            </p>
+            <p className="text-purple-400 text-xs mt-1">This may take a moment</p>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className={`relative w-full rounded-2xl overflow-hidden ${sizeClasses}`}>
+        <Image
+          src={url}
+          alt={alt}
+          fill
+          className="object-cover"
+          sizes={size === 'large' ? '(max-width: 768px) 100vw, 672px' : '(max-width: 768px) 100vw, 400px'}
+        />
+      </div>
+    )
+  }
+
+  // Get scene illustration for a paragraph index
+  const getSceneIllustration = (paragraphIndex: number) => {
+    if (!illustrationStatus?.scenes) return null
+    return illustrationStatus.scenes.find(s => s.paragraphIndex === paragraphIndex)
+  }
+
+  // Check if illustrations are enabled and in progress or complete
+  const hasIllustrations = story?.generation_metadata?.include_illustrations === true
+  const showIllustrationUI = hasIllustrations && (illustrationStatus || triggeringIllustrations || illustrationError)
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6">
@@ -325,7 +492,17 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
             <Sparkles className="w-3 h-3" />
             V3 Engine
           </span>
-          <span className="text-xs text-gray-500">Text-only (illustrations coming soon)</span>
+          {hasIllustrations ? (
+            <span className="text-xs text-gray-500">
+              {illustrationStatus?.overall === 'complete' ? 'With illustrations' :
+               illustrationStatus?.overall === 'generating' || triggeringIllustrations ? 'Generating illustrations...' :
+               illustrationStatus?.overall === 'partial' ? 'Partial illustrations' :
+               illustrationStatus?.overall === 'failed' ? 'Illustration generation failed' :
+               'Preparing illustrations...'}
+            </span>
+          ) : (
+            <span className="text-xs text-gray-500">Text-only</span>
+          )}
         </div>
 
         {/* Header */}
@@ -452,16 +629,58 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
             {/* Divider */}
             <div className="border-t border-gray-200 mb-6"></div>
 
-            {/* Illustration Placeholder for V3 Phase 1 */}
-            <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-dashed border-purple-200">
-              <div className="aspect-square flex flex-col items-center justify-center p-8 text-center">
-                <ImageOff className="w-16 h-16 text-purple-300 mb-4" />
-                <p className="text-purple-600 font-medium mb-2">Illustrations Coming Soon</p>
-                <p className="text-purple-400 text-sm max-w-xs">
-                  V3 Engine is currently text-only. Beautiful illustrations will be available in Phase 2!
-                </p>
+            {/* Cover Illustration */}
+            {showIllustrationUI ? (
+              <div className="max-w-2xl mx-auto">
+                {illustrationError ? (
+                  <div className="relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-red-50 to-pink-50 border-2 border-dashed border-red-200 aspect-square">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                      <ImageOff className="w-16 h-16 text-red-300 mb-4" />
+                      <p className="text-red-600 font-medium mb-2">Failed to generate illustrations</p>
+                      <p className="text-red-400 text-sm max-w-xs mb-4">{illustrationError}</p>
+                      <button
+                        onClick={triggerIllustrationGeneration}
+                        disabled={triggeringIllustrations}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${triggeringIllustrations ? 'animate-spin' : ''}`} />
+                        Retry
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <IllustrationSlot
+                    status={illustrationStatus?.cover?.status}
+                    tempUrl={illustrationStatus?.cover?.tempUrl}
+                    imageUrl={illustrationStatus?.cover?.imageUrl}
+                    alt={`Cover illustration for ${story.title}`}
+                    size="large"
+                  />
+                )}
               </div>
-            </div>
+            ) : hasIllustrations ? (
+              // Illustrations enabled but not yet triggered - show loading
+              <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-dashed border-purple-200 aspect-square">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <Loader2 className="w-16 h-16 text-purple-400 animate-spin mb-4" />
+                  <p className="text-purple-600 font-medium mb-2">Preparing illustrations...</p>
+                  <p className="text-purple-400 text-sm max-w-xs">
+                    Your beautiful illustrations will appear here shortly
+                  </p>
+                </div>
+              </div>
+            ) : (
+              // No illustrations - show placeholder
+              <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-dashed border-gray-200 aspect-square">
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
+                  <ImageOff className="w-16 h-16 text-gray-300 mb-4" />
+                  <p className="text-gray-500 font-medium mb-2">Text-only Story</p>
+                  <p className="text-gray-400 text-sm max-w-xs">
+                    This story was created without illustrations
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Starring Row */}
             {story.generation_metadata?.characters && story.generation_metadata.characters.length > 0 && (
@@ -485,23 +704,42 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
         {/* Story Content */}
         <div className="card p-6 md:p-8 lg:p-12">
           <div className="max-w-none">
-            {(isEditMode ? editedParagraphs : paragraphs).map((paragraph, index) => (
-              <div key={index}>
-                {isEditMode ? (
-                  <textarea
-                    value={paragraph}
-                    onChange={(e) => handleParagraphChange(index, e.target.value)}
-                    className="w-full text-gray-800 leading-relaxed mb-6 text-base md:text-lg border-2 border-primary-200 rounded-lg p-4 focus:outline-none focus:border-primary-500 min-h-[120px]"
-                    style={{ lineHeight: '1.8' }}
-                    placeholder={`Paragraph ${index + 1}...`}
-                  />
-                ) : (
-                  <p className="text-gray-800 leading-relaxed mb-6 text-base md:text-lg" style={{ lineHeight: '1.8' }}>
-                    {paragraph}
-                  </p>
-                )}
-              </div>
-            ))}
+            {(isEditMode ? editedParagraphs : paragraphs).map((paragraph, index) => {
+              const sceneIllustration = getSceneIllustration(index)
+              const showSceneIllustration = showIllustrationUI && sceneIllustration
+
+              return (
+                <div key={index} className="mb-8">
+                  {/* Scene Illustration */}
+                  {showSceneIllustration && (
+                    <div className="mb-6 max-w-lg mx-auto">
+                      <IllustrationSlot
+                        status={sceneIllustration.status}
+                        tempUrl={sceneIllustration.tempUrl}
+                        imageUrl={sceneIllustration.imageUrl}
+                        alt={`Illustration for paragraph ${index + 1}`}
+                        size="medium"
+                      />
+                    </div>
+                  )}
+
+                  {/* Paragraph Text */}
+                  {isEditMode ? (
+                    <textarea
+                      value={paragraph}
+                      onChange={(e) => handleParagraphChange(index, e.target.value)}
+                      className="w-full text-gray-800 leading-relaxed text-base md:text-lg border-2 border-primary-200 rounded-lg p-4 focus:outline-none focus:border-primary-500 min-h-[120px]"
+                      style={{ lineHeight: '1.8' }}
+                      placeholder={`Paragraph ${index + 1}...`}
+                    />
+                  ) : (
+                    <p className="text-gray-800 leading-relaxed text-base md:text-lg" style={{ lineHeight: '1.8' }}>
+                      {paragraph}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
 
             {/* Moral Section */}
             {(story.generation_metadata?.moral || isEditMode) && (

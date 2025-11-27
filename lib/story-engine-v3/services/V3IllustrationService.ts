@@ -1,179 +1,615 @@
 /**
- * V3 Illustration Service - Stub for Phase 2
- *
- * This module will handle illustration generation for V3 stories.
- * Currently a placeholder with type definitions ready for implementation.
- *
- * Phase 2 will implement:
- * - Cover illustration generation
- * - Scene illustrations (one per paragraph)
- * - Prompt generation for Disney Pixar style
- * - Leonardo AI integration
- * - Background upload to Supabase storage
- */
-
-import type {
-  V3Story,
-  V3IllustrationPlan,
-  V3CoverIllustration,
-  V3SceneIllustration,
-  V3CharacterInfo,
-  V3IllustrationStatus,
-} from '../types';
-
-/**
- * Configuration for illustration generation
- */
-export interface V3IllustrationConfig {
-  style: 'disney_pixar' | 'watercolor' | 'storybook';
-  aspectRatio: '1:1' | '16:9' | '4:3';
-  quality: 'standard' | 'high';
-}
-
-/**
- * Input for generating an illustration plan
- */
-export interface V3IllustrationPlanInput {
-  story: V3Story;
-  characters: V3CharacterInfo[];
-  genre: string;
-  tone: string;
-  config?: Partial<V3IllustrationConfig>;
-}
-
-/**
- * Result from generating illustration prompts
- */
-export interface V3IllustrationPromptsResult {
-  coverPrompt: string;
-  scenePrompts: { paragraphId: string; prompt: string }[];
-}
-
-/**
  * V3 Illustration Service
  *
- * Handles all illustration-related operations for V3 stories.
- * Phase 1: Stub implementation with TODO markers
- * Phase 2: Full Leonardo AI integration
+ * Orchestrates illustration generation for V3 stories:
+ * 1. Generates illustration prompts via OpenAI (one call for all prompts)
+ * 2. Fires all Leonardo calls in parallel
+ * 3. Handles moderation failures with progressive cleansing (up to 5 attempts)
+ * 4. Updates database as each image completes
+ * 5. Uploads to Supabase storage in background
  */
-export class V3IllustrationService {
-  /**
-   * Check if illustrations are enabled for V3
-   * Phase 1: Always returns false
-   */
-  public static isEnabled(): boolean {
-    // TODO: Phase 2 - Check feature flag or configuration
-    return false;
-  }
 
-  /**
-   * Generate illustration prompts for a story
-   * Phase 1: Returns empty result
-   */
-  public static async generatePrompts(
-    _input: V3IllustrationPlanInput
-  ): Promise<V3IllustrationPromptsResult> {
-    // TODO: Phase 2 - Implement prompt generation
-    // Will use character descriptions, story context, and scene content
-    // to generate Disney Pixar style prompts
-    console.log('[V3IllustrationService] generatePrompts: Not implemented in Phase 1');
+import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { LeonardoClient } from '@/lib/leonardo/client';
+import { AIConfigService, type AIConfig } from '@/lib/services/ai-config';
+import { withRetry } from '@/lib/utils/retry';
+import {
+  buildIllustrationPromptsPrompt,
+  validateIllustrationPromptsResponse,
+  buildCleansePrompt,
+} from '../prompt-builders/V3IllustrationPromptBuilder';
+import type {
+  V3CharacterInfo,
+  V3IllustrationStatusData,
+  V3IllustrationPromptsResponse,
+  V3IllustrationGenerationResult,
+  V3CoverIllustrationStatus,
+  V3SceneIllustrationStatus,
+  V3Paragraph,
+} from '../types';
+
+const MAX_MODERATION_RETRIES = 5;
+
+/**
+ * Main entry point - generate all illustrations for a V3 story
+ */
+export async function generateAllIllustrations(
+  storyId: string,
+  userId: string
+): Promise<{ success: boolean; illustrationCount: number; error?: string }> {
+  const supabase = createAdminClient();
+
+  try {
+    // 1. Fetch story data
+    const { data: story, error: storyError } = await supabase
+      .from('content')
+      .select('id, title, generation_metadata, v3_illustration_status')
+      .eq('id', storyId)
+      .eq('user_id', userId)
+      .single();
+
+    if (storyError || !story) {
+      return { success: false, illustrationCount: 0, error: 'Story not found' };
+    }
+
+    // Check if already generating
+    const currentStatus = story.v3_illustration_status as V3IllustrationStatusData | null;
+    if (currentStatus?.overall === 'generating') {
+      return { success: false, illustrationCount: 0, error: 'Illustrations already generating' };
+    }
+
+    // 2. Extract story data
+    const metadata = story.generation_metadata as any;
+    const v3Story = metadata?.v3_story;
+    const characters = metadata?.characters as V3CharacterInfo[] || [];
+
+    if (!v3Story?.paragraphs || !v3Story?.title) {
+      return { success: false, illustrationCount: 0, error: 'Invalid story structure' };
+    }
+
+    const paragraphs = v3Story.paragraphs as V3Paragraph[];
+    const illustrationCount = paragraphs.length + 1; // scenes + cover
+
+    // 3. Initialize status tracking
+    const initialStatus: V3IllustrationStatusData = {
+      overall: 'generating',
+      cover: { status: 'pending' },
+      scenes: paragraphs.map((_, i) => ({
+        paragraphIndex: i,
+        status: 'pending',
+      })),
+    };
+
+    await supabase
+      .from('content')
+      .update({ v3_illustration_status: initialStatus })
+      .eq('id', storyId);
+
+    // 4. Generate illustration prompts via OpenAI
+    const promptsResult = await generateIllustrationPrompts(
+      v3Story.title,
+      paragraphs,
+      characters
+    );
+
+    if (!promptsResult.success || !promptsResult.prompts) {
+      await updateOverallStatus(supabase, storyId, 'failed');
+      return { success: false, illustrationCount: 0, error: promptsResult.error || 'Failed to generate prompts' };
+    }
+
+    // 5. Update status with prompts
+    const statusWithPrompts: V3IllustrationStatusData = {
+      overall: 'generating',
+      cover: { status: 'generating', prompt: promptsResult.prompts.coverPrompt },
+      scenes: promptsResult.prompts.scenePrompts.map(sp => ({
+        paragraphIndex: sp.paragraphIndex,
+        status: 'generating' as const,
+        prompt: sp.prompt,
+      })),
+    };
+
+    await supabase
+      .from('content')
+      .update({ v3_illustration_status: statusWithPrompts })
+      .eq('id', storyId);
+
+    // 6. Get Leonardo config
+    const aiConfig = await AIConfigService.getBetaIllustrationConfig();
+    if (!aiConfig) {
+      await updateOverallStatus(supabase, storyId, 'failed');
+      return { success: false, illustrationCount: 0, error: 'Leonardo config not found' };
+    }
+
+    // 7. Fire all Leonardo calls in parallel
+    const leonardoClient = new LeonardoClient();
+
+    const allPromises: Promise<V3IllustrationGenerationResult>[] = [
+      // Cover
+      generateSingleIllustrationWithRetry(
+        leonardoClient,
+        aiConfig,
+        promptsResult.prompts.coverPrompt,
+        'cover',
+        undefined,
+        storyId,
+        userId,
+        supabase
+      ),
+      // Scenes
+      ...promptsResult.prompts.scenePrompts.map(sp =>
+        generateSingleIllustrationWithRetry(
+          leonardoClient,
+          aiConfig,
+          sp.prompt,
+          'scene',
+          sp.paragraphIndex,
+          storyId,
+          userId,
+          supabase
+        )
+      ),
+    ];
+
+    // Wait for all to complete (don't fail if some fail)
+    const results = await Promise.allSettled(allPromises);
+
+    // 8. Determine overall status
+    const successCount = results.filter(
+      r => r.status === 'fulfilled' && r.value.success
+    ).length;
+
+    let overallStatus: 'complete' | 'partial' | 'failed';
+    if (successCount === illustrationCount) {
+      overallStatus = 'complete';
+    } else if (successCount > 0) {
+      overallStatus = 'partial';
+    } else {
+      overallStatus = 'failed';
+    }
+
+    await updateOverallStatus(supabase, storyId, overallStatus);
+
+    // 9. Fire background upload to Supabase (don't await)
+    uploadToSupabaseInBackground(storyId, userId).catch(err => {
+      console.error('[V3 Illustrations] Background upload failed:', err);
+    });
 
     return {
-      coverPrompt: '',
-      scenePrompts: [],
-    };
-  }
-
-  /**
-   * Create an illustration plan for a V3 story
-   * Phase 1: Returns plan with all items in 'pending' status
-   */
-  public static async createPlan(
-    story: V3Story,
-    _characters: V3CharacterInfo[]
-  ): Promise<V3IllustrationPlan> {
-    // TODO: Phase 2 - Generate actual prompts
-    console.log('[V3IllustrationService] createPlan: Not implemented in Phase 1');
-
-    const cover: V3CoverIllustration = {
-      prompt: '',
-      status: 'pending' as V3IllustrationStatus,
+      success: overallStatus !== 'failed',
+      illustrationCount: successCount,
     };
 
-    const scenes: V3SceneIllustration[] = story.paragraphs.map((paragraph) => ({
-      paragraphId: paragraph.id,
-      prompt: '',
-      status: 'pending' as V3IllustrationStatus,
-    }));
-
-    return { cover, scenes };
-  }
-
-  /**
-   * Generate a single illustration
-   * Phase 1: Returns undefined (not implemented)
-   */
-  public static async generateIllustration(
-    _prompt: string,
-    _config?: V3IllustrationConfig
-  ): Promise<string | undefined> {
-    // TODO: Phase 2 - Call Leonardo AI API
-    // - Generate image from prompt
-    // - Upload to Supabase storage
-    // - Return permanent URL
-    console.log('[V3IllustrationService] generateIllustration: Not implemented in Phase 1');
-    return undefined;
-  }
-
-  /**
-   * Generate all illustrations for a story
-   * Phase 1: Does nothing
-   */
-  public static async generateAllIllustrations(
-    _storyId: string,
-    _plan: V3IllustrationPlan
-  ): Promise<void> {
-    // TODO: Phase 2 - Implement batch generation
-    // - Generate cover first
-    // - Generate scenes in parallel (with rate limiting)
-    // - Update database with URLs as each completes
-    // - Handle failures gracefully with retry logic
-    console.log('[V3IllustrationService] generateAllIllustrations: Not implemented in Phase 1');
-  }
-
-  /**
-   * Build a Disney Pixar style prompt for a scene
-   * Phase 1: Returns empty string
-   */
-  public static buildScenePrompt(
-    _sceneText: string,
-    _characters: V3CharacterInfo[],
-    _genre: string
-  ): string {
-    // TODO: Phase 2 - Implement prompt building
-    // Template: "Disney Pixar style illustration of [scene description],
-    // featuring [character descriptions], [genre atmosphere],
-    // vibrant colors, soft lighting, family-friendly"
-    return '';
-  }
-
-  /**
-   * Build a cover illustration prompt
-   * Phase 1: Returns empty string
-   */
-  public static buildCoverPrompt(
-    _storyTitle: string,
-    _characters: V3CharacterInfo[],
-    _genre: string,
-    _tone: string
-  ): string {
-    // TODO: Phase 2 - Implement cover prompt building
-    // Should be more dramatic/eye-catching than scene prompts
-    return '';
+  } catch (error: any) {
+    console.error('[V3 Illustrations] Error:', error);
+    await updateOverallStatus(supabase, storyId, 'failed');
+    return { success: false, illustrationCount: 0, error: error.message };
   }
 }
 
 /**
- * Export default instance for convenience
+ * Generate illustration prompts via OpenAI
  */
+async function generateIllustrationPrompts(
+  title: string,
+  paragraphs: V3Paragraph[],
+  characters: V3CharacterInfo[]
+): Promise<{ success: boolean; prompts?: V3IllustrationPromptsResponse; error?: string }> {
+  try {
+    const prompt = buildIllustrationPromptsPrompt(title, paragraphs, characters);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        response_format: { type: 'json_object' },
+        max_tokens: 4000,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('[V3 Illustrations] OpenAI error:', error);
+      return { success: false, error: 'Failed to generate illustration prompts' };
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) {
+      return { success: false, error: 'No content in OpenAI response' };
+    }
+
+    const parsed = JSON.parse(content);
+    const validation = validateIllustrationPromptsResponse(parsed, paragraphs.length);
+
+    if (!validation.isValid) {
+      console.error('[V3 Illustrations] Validation errors:', validation.errors);
+      return { success: false, error: validation.errors.join(', ') };
+    }
+
+    return { success: true, prompts: validation.data };
+
+  } catch (error: any) {
+    console.error('[V3 Illustrations] Prompt generation error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Generate a single illustration with moderation retry logic
+ */
+async function generateSingleIllustrationWithRetry(
+  leonardoClient: LeonardoClient,
+  aiConfig: AIConfig,
+  originalPrompt: string,
+  imageType: 'cover' | 'scene',
+  paragraphIndex: number | undefined,
+  storyId: string,
+  userId: string,
+  supabase: ReturnType<typeof createAdminClient>
+): Promise<V3IllustrationGenerationResult> {
+  let currentPrompt = originalPrompt;
+  let attempts = 0;
+
+  for (let attempt = 0; attempt <= MAX_MODERATION_RETRIES; attempt++) {
+    attempts = attempt + 1;
+
+    try {
+      // Build Leonardo config
+      const leonardoConfig = AIConfigService.buildLeonardoConfig(aiConfig, currentPrompt);
+
+      // Generate image with retry for transient errors
+      const { generationId, apiCreditCost } = await withRetry(
+        () => leonardoClient.generateImage(leonardoConfig),
+        { maxRetries: 2 }
+      );
+
+      // Poll for completion
+      const generation = await leonardoClient.pollGeneration(generationId);
+
+      // Check for moderation failure
+      if (generation.status === 'FAILED') {
+        if (attempt < MAX_MODERATION_RETRIES) {
+          console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} failed, cleansing attempt ${attempt + 1}`);
+          currentPrompt = await cleansePromptWithOpenAI(originalPrompt, attempt);
+          continue;
+        }
+
+        // All retries exhausted
+        await updateIllustrationStatus(
+          supabase,
+          storyId,
+          imageType,
+          paragraphIndex,
+          { status: 'failed', error: 'moderation_failed', attempts }
+        );
+
+        return {
+          success: false,
+          imageType,
+          paragraphIndex,
+          error: 'moderation_failed',
+          attempts,
+        };
+      }
+
+      // Check for NSFW flag
+      if (generation.images?.[0]?.nsfw) {
+        if (attempt < MAX_MODERATION_RETRIES) {
+          console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} NSFW flagged, cleansing attempt ${attempt + 1}`);
+          currentPrompt = await cleansePromptWithOpenAI(originalPrompt, attempt);
+          continue;
+        }
+      }
+
+      // Success!
+      const leonardoUrl = generation.images?.[0]?.url;
+      if (!leonardoUrl) {
+        throw new Error('No image URL in response');
+      }
+
+      // Update status with temp URL
+      await updateIllustrationStatus(
+        supabase,
+        storyId,
+        imageType,
+        paragraphIndex,
+        { status: 'success', tempUrl: leonardoUrl, attempts }
+      );
+
+      return {
+        success: true,
+        imageType,
+        paragraphIndex,
+        leonardoUrl,
+        generationId,
+        creditsUsed: apiCreditCost,
+        attempts,
+      };
+
+    } catch (error: any) {
+      // Check if it's a moderation-related error
+      const isModerationError =
+        error.message?.toLowerCase().includes('moderation') ||
+        error.message?.toLowerCase().includes('content policy') ||
+        error.message?.toLowerCase().includes('nsfw');
+
+      if (isModerationError && attempt < MAX_MODERATION_RETRIES) {
+        console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} moderation error, cleansing attempt ${attempt + 1}`);
+        currentPrompt = await cleansePromptWithOpenAI(originalPrompt, attempt);
+        continue;
+      }
+
+      // Non-moderation error or retries exhausted
+      console.error(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} error:`, error.message);
+
+      await updateIllustrationStatus(
+        supabase,
+        storyId,
+        imageType,
+        paragraphIndex,
+        { status: 'failed', error: error.message, attempts }
+      );
+
+      return {
+        success: false,
+        imageType,
+        paragraphIndex,
+        error: error.message,
+        attempts,
+      };
+    }
+  }
+
+  // Should never reach here, but handle it
+  return {
+    success: false,
+    imageType,
+    paragraphIndex,
+    error: 'Unknown error',
+    attempts,
+  };
+}
+
+/**
+ * Cleanse a prompt using OpenAI
+ */
+async function cleansePromptWithOpenAI(
+  originalPrompt: string,
+  attemptIndex: number
+): Promise<string> {
+  try {
+    const cleansePrompt = buildCleansePrompt(originalPrompt, attemptIndex);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: cleansePrompt }],
+        max_tokens: 500,
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[V3 Illustrations] Cleanse API error');
+      return originalPrompt; // Fall back to original
+    }
+
+    const data = await response.json();
+    const cleansed = data.choices?.[0]?.message?.content?.trim();
+
+    if (cleansed && cleansed.length > 20) {
+      return cleansed;
+    }
+
+    return originalPrompt;
+
+  } catch (error) {
+    console.error('[V3 Illustrations] Cleanse error:', error);
+    return originalPrompt;
+  }
+}
+
+/**
+ * Update illustration status in the database
+ */
+async function updateIllustrationStatus(
+  supabase: ReturnType<typeof createAdminClient>,
+  storyId: string,
+  imageType: 'cover' | 'scene',
+  paragraphIndex: number | undefined,
+  update: Partial<V3CoverIllustrationStatus | V3SceneIllustrationStatus>
+) {
+  // Fetch current status
+  const { data } = await supabase
+    .from('content')
+    .select('v3_illustration_status')
+    .eq('id', storyId)
+    .single();
+
+  const currentStatus = (data?.v3_illustration_status || {}) as V3IllustrationStatusData;
+
+  // Update the specific illustration
+  if (imageType === 'cover') {
+    currentStatus.cover = { ...currentStatus.cover, ...update };
+  } else if (paragraphIndex !== undefined) {
+    const sceneIndex = currentStatus.scenes?.findIndex(
+      s => s.paragraphIndex === paragraphIndex
+    );
+    if (sceneIndex !== undefined && sceneIndex >= 0) {
+      currentStatus.scenes[sceneIndex] = {
+        ...currentStatus.scenes[sceneIndex],
+        ...update,
+      };
+    }
+  }
+
+  // Save back
+  await supabase
+    .from('content')
+    .update({ v3_illustration_status: currentStatus })
+    .eq('id', storyId);
+}
+
+/**
+ * Update overall illustration status
+ */
+async function updateOverallStatus(
+  supabase: ReturnType<typeof createAdminClient>,
+  storyId: string,
+  overall: 'pending' | 'generating' | 'complete' | 'partial' | 'failed'
+) {
+  const { data } = await supabase
+    .from('content')
+    .select('v3_illustration_status')
+    .eq('id', storyId)
+    .single();
+
+  const currentStatus = (data?.v3_illustration_status || {}) as V3IllustrationStatusData;
+  currentStatus.overall = overall;
+
+  await supabase
+    .from('content')
+    .update({ v3_illustration_status: currentStatus })
+    .eq('id', storyId);
+}
+
+/**
+ * Background upload to Supabase storage
+ */
+async function uploadToSupabaseInBackground(
+  storyId: string,
+  userId: string
+): Promise<void> {
+  const supabase = createAdminClient();
+
+  // Fetch current status
+  const { data } = await supabase
+    .from('content')
+    .select('v3_illustration_status')
+    .eq('id', storyId)
+    .single();
+
+  const status = data?.v3_illustration_status as V3IllustrationStatusData;
+  if (!status) return;
+
+  const timestamp = Date.now();
+  const basePath = `${userId}/stories/${timestamp}_${storyId}`;
+
+  // Upload cover if successful
+  if (status.cover?.status === 'success' && status.cover.tempUrl && !status.cover.imageUrl) {
+    try {
+      const permanentUrl = await uploadImage(
+        supabase,
+        status.cover.tempUrl,
+        `${basePath}/cover.png`
+      );
+
+      await updateIllustrationStatus(supabase, storyId, 'cover', undefined, {
+        imageUrl: permanentUrl,
+      });
+    } catch (error) {
+      console.error('[V3 Illustrations] Cover upload failed:', error);
+    }
+  }
+
+  // Upload scenes
+  for (const scene of status.scenes || []) {
+    if (scene.status === 'success' && scene.tempUrl && !scene.imageUrl) {
+      try {
+        const permanentUrl = await uploadImage(
+          supabase,
+          scene.tempUrl,
+          `${basePath}/scene_${scene.paragraphIndex}.png`
+        );
+
+        await updateIllustrationStatus(supabase, storyId, 'scene', scene.paragraphIndex, {
+          imageUrl: permanentUrl,
+        });
+      } catch (error) {
+        console.error(`[V3 Illustrations] Scene ${scene.paragraphIndex} upload failed:`, error);
+      }
+    }
+  }
+}
+
+/**
+ * Upload a single image to Supabase storage
+ */
+async function uploadImage(
+  supabase: ReturnType<typeof createAdminClient>,
+  sourceUrl: string,
+  destinationPath: string
+): Promise<string> {
+  // Download from Leonardo
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to download image: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const buffer = Buffer.from(await blob.arrayBuffer());
+
+  // Upload to Supabase
+  const { error: uploadError } = await supabase.storage
+    .from('illustrations')
+    .upload(destinationPath, buffer, {
+      contentType: 'image/png',
+      upsert: true,
+    });
+
+  if (uploadError) {
+    throw new Error(`Upload failed: ${uploadError.message}`);
+  }
+
+  // Get public URL
+  const { data: publicUrlData } = supabase.storage
+    .from('illustrations')
+    .getPublicUrl(destinationPath);
+
+  return publicUrlData.publicUrl;
+}
+
+/**
+ * Get illustration status for a story (used by polling endpoint)
+ */
+export async function getIllustrationStatus(
+  storyId: string,
+  userId: string
+): Promise<V3IllustrationStatusData | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('content')
+    .select('v3_illustration_status')
+    .eq('id', storyId)
+    .eq('user_id', userId)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data.v3_illustration_status as V3IllustrationStatusData | null;
+}
+
+// Legacy exports for backward compatibility
+export class V3IllustrationService {
+  static isEnabled(): boolean {
+    return true; // Phase 2 enabled
+  }
+}
+
 export default V3IllustrationService;

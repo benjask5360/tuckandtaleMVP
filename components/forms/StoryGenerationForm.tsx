@@ -290,8 +290,8 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         requestBody.customInstructions = customInstructions.trim()
       }
 
-      // Add includeIllustrations flag (disabled for V3)
-      requestBody.includeIllustrations = useV3Engine ? false : includeIllustrations
+      // Add includeIllustrations flag
+      requestBody.includeIllustrations = includeIllustrations
 
       // V3 uses streaming viewer, V2 uses standard API
       if (useV3Engine) {
@@ -388,10 +388,6 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       <div
         onClick={() => {
           setUseV3Engine(!useV3Engine)
-          // When V3 is enabled, disable illustrations
-          if (!useV3Engine) {
-            setIncludeIllustrations(false)
-          }
         }}
         className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
           useV3Engine
@@ -419,9 +415,6 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
                 onClick={(e) => {
                   e.stopPropagation();
                   setUseV3Engine(!useV3Engine);
-                  if (!useV3Engine) {
-                    setIncludeIllustrations(false)
-                  }
                 }}
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
                   useV3Engine ? 'bg-purple-600' : 'bg-gray-300'
@@ -450,20 +443,19 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       {/* Include Illustrations Toggle */}
       <div
         onClick={() => {
-          if (useV3Engine) return; // Disabled when V3 is enabled
           setIncludeIllustrations(!includeIllustrations)
           setCharacterLimitMessage(null)
         }}
-        className={`${useV3Engine ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'} p-4 rounded-xl border-2 transition-all ${
-          includeIllustrations && !useV3Engine
+        className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
+          includeIllustrations
             ? 'border-primary-600 bg-primary-50'
             : 'border-gray-300 bg-white hover:border-primary-300'
-        } ${useV3Engine ? 'hover:border-gray-300' : ''}`}
+        }`}
       >
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              includeIllustrations && !useV3Engine ? 'bg-primary-100' : 'bg-gray-100'
+              includeIllustrations ? 'bg-primary-100' : 'bg-gray-100'
             }`}>
               <span className="text-2xl">🎨</span>
             </div>
@@ -471,17 +463,14 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <h3 className={`text-base font-semibold ${
-                includeIllustrations && !useV3Engine ? 'text-primary-900' : 'text-gray-900'
+                includeIllustrations ? 'text-primary-900' : 'text-gray-900'
               }`}>
                 Include Illustrations
-                {useV3Engine && <span className="ml-2 text-xs font-normal text-gray-500">(Coming soon for V3)</span>}
               </h3>
               <button
                 type="button"
-                disabled={useV3Engine}
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (useV3Engine) return;
                   setIncludeIllustrations(!includeIllustrations);
                   setCharacterLimitMessage(null);
                 }}

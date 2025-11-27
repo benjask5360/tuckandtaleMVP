@@ -265,7 +265,7 @@ export async function POST(request: Request) {
             try {
               // Transform and save story
               const v3Story = transformToV3Story(fullJson, generationRequest!.length.name);
-              const storyId = await saveStory(userId!, v3Story, fullJson, generationRequest!, prompt!);
+              const storyId = await saveStory(userId!, v3Story, fullJson, generationRequest!, prompt!, params.includeIllustrations ?? false);
 
               // Update cost log
               if (costLogId) {
@@ -660,7 +660,8 @@ async function saveStory(
   v3Story: V3Story,
   rawResponse: V3StoryOpenAIResponse,
   request: V3GenerationRequest,
-  prompt: string
+  prompt: string,
+  includeIllustrations: boolean
 ): Promise<string> {
   const supabase = createAdminClient();
 
@@ -682,8 +683,13 @@ async function saveStory(
     moral: rawResponse.moral,
     paragraphs: v3Story.paragraphs.map(p => p.text),
     characters: request.characters,
+    include_illustrations: includeIllustrations,
     ai_config_name: 'v3_generation_stream',
   };
+
+  // If illustrations are enabled, status is 'text_complete' (waiting for illustrations)
+  // Otherwise status is 'complete'
+  const generationStatus = includeIllustrations ? 'text_complete' : 'complete';
 
   const { data, error } = await supabase
     .from('content')
@@ -696,9 +702,9 @@ async function saveStory(
       age_appropriate_for: ageAppropriateFor,
       generation_prompt: prompt,
       generation_metadata: generationMetadata,
-      include_illustrations: false,
+      include_illustrations: includeIllustrations,
       engine_version: 'v3',
-      generation_status: 'complete',
+      generation_status: generationStatus,
     })
     .select('id')
     .single();

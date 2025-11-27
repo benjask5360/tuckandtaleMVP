@@ -55,6 +55,7 @@ export interface V3StoryGenerationParams {
   growthTopicId?: string;
   moralLessonId?: string;
   customInstructions?: string;
+  includeIllustrations?: boolean;
 }
 
 /**
@@ -137,46 +138,106 @@ export interface V3GenerationMetadata {
   paragraphs: string[]; // Flat array for compatibility
   characters: V3CharacterInfo[];
 
+  // Illustration settings
+  include_illustrations?: boolean;
+
   // Generation tracking
   ai_config_name?: string;
 }
 
 // =============================================================================
-// Illustration Types (Future Phases - Types Only)
+// Illustration Types (Phase 2)
 // =============================================================================
 
 /**
- * Status of an illustration generation
+ * Status of an individual illustration generation
  */
-export type V3IllustrationStatus = 'pending' | 'generating' | 'success' | 'failed';
+export type V3IllustrationItemStatus = 'pending' | 'generating' | 'success' | 'failed';
 
 /**
- * A single scene illustration (one per paragraph)
+ * Overall status of illustration generation for a story
  */
+export type V3IllustrationOverallStatus = 'pending' | 'generating' | 'complete' | 'partial' | 'failed';
+
+/**
+ * Cover illustration status (stored in v3_illustration_status.cover)
+ */
+export interface V3CoverIllustrationStatus {
+  status: V3IllustrationItemStatus;
+  prompt?: string;
+  tempUrl?: string;        // Leonardo CDN URL (temporary, 24h)
+  imageUrl?: string;       // Supabase permanent URL
+  error?: string;
+  attempts?: number;
+}
+
+/**
+ * Scene illustration status (stored in v3_illustration_status.scenes[])
+ */
+export interface V3SceneIllustrationStatus {
+  paragraphIndex: number;
+  status: V3IllustrationItemStatus;
+  prompt?: string;
+  tempUrl?: string;        // Leonardo CDN URL (temporary, 24h)
+  imageUrl?: string;       // Supabase permanent URL
+  error?: string;
+  attempts?: number;
+}
+
+/**
+ * Complete illustration status stored in content.v3_illustration_status JSONB
+ */
+export interface V3IllustrationStatusData {
+  overall: V3IllustrationOverallStatus;
+  cover: V3CoverIllustrationStatus;
+  scenes: V3SceneIllustrationStatus[];
+}
+
+/**
+ * OpenAI response format for illustration prompt generation
+ */
+export interface V3IllustrationPromptsResponse {
+  coverPrompt: string;
+  scenePrompts: Array<{
+    paragraphIndex: number;
+    prompt: string;
+  }>;
+}
+
+/**
+ * Result of generating a single illustration (with moderation retry)
+ */
+export interface V3IllustrationGenerationResult {
+  success: boolean;
+  imageType: 'cover' | 'scene';
+  paragraphIndex?: number;
+  leonardoUrl?: string;
+  generationId?: string;
+  creditsUsed?: number;
+  error?: string;
+  attempts: number;
+}
+
+// Legacy types for backward compatibility
+export type V3IllustrationStatus = V3IllustrationItemStatus;
+
 export interface V3SceneIllustration {
   paragraphId: string;
   prompt: string;
-  status: V3IllustrationStatus;
+  status: V3IllustrationItemStatus;
   imageUrl?: string;
   tempUrl?: string;
   errorMessage?: string;
 }
 
-/**
- * Cover illustration structure
- */
 export interface V3CoverIllustration {
   prompt: string;
-  status: V3IllustrationStatus;
+  status: V3IllustrationItemStatus;
   imageUrl?: string;
   tempUrl?: string;
   errorMessage?: string;
 }
 
-/**
- * Complete illustration plan for a V3 story
- * One cover + one illustration per paragraph
- */
 export interface V3IllustrationPlan {
   cover: V3CoverIllustration;
   scenes: V3SceneIllustration[];
