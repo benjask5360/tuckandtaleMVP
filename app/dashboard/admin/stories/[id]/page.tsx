@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BookOpen, User, Calendar, Code, Image as ImageIcon, FileText } from 'lucide-react';
 import Image from 'next/image';
 import CopyButton from './CopyButton';
+import StoryNavDropdown from './StoryNavDropdown';
 
 // V2 Scene format (from story_scenes column)
 interface Scene {
@@ -92,6 +93,28 @@ export default async function AdminStoryInspectionPage({
     .eq('id', story.user_id)
     .single();
 
+  // Fetch all stories for dropdown navigation
+  const { data: allStories } = await adminSupabase
+    .from('content')
+    .select('id, title, created_at, user_id')
+    .eq('content_type', 'story')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(200);
+
+  // Fetch user profiles for dropdown display
+  let storyUserProfiles: Record<string, { full_name: string | null; email: string }> = {};
+  if (allStories && allStories.length > 0) {
+    const userIds = [...new Set(allStories.map(s => s.user_id))];
+    const { data: profiles } = await adminSupabase
+      .from('user_profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+    if (profiles) {
+      storyUserProfiles = Object.fromEntries(profiles.map(p => [p.id, p]));
+    }
+  }
+
   const metadata = story.generation_metadata as any;
   const scenes = story.story_scenes as Scene[] | null;
 
@@ -107,12 +130,24 @@ export default async function AdminStoryInspectionPage({
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <Link
-            href="/dashboard/admin/stories"
-            className="text-purple-600 hover:text-purple-700 mb-4 inline-flex items-center gap-2 text-sm"
-          >
-            ← Back to Story Inspector
-          </Link>
+          <div className="flex items-center justify-between mb-4">
+            <Link
+              href="/dashboard/admin/stories"
+              className="text-purple-600 hover:text-purple-700 inline-flex items-center gap-2 text-sm"
+            >
+              ← Back to Story Inspector
+            </Link>
+            {allStories && allStories.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Jump to:</span>
+                <StoryNavDropdown
+                  stories={allStories}
+                  currentStoryId={params.id}
+                  userProfiles={storyUserProfiles}
+                />
+              </div>
+            )}
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {story.title || 'Untitled Story'}
           </h1>

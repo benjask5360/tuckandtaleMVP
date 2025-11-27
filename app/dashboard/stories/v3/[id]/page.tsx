@@ -53,19 +53,21 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
     // - illustrations are enabled
     // - story text is complete
     // - not already triggering
-    // - no existing illustration status OR status is pending/failed (allow retry)
-    const existingStatus = illustrationStatus?.overall
+    // - no existing DB illustration status OR status is pending (allow retry)
+    // IMPORTANT: Check DATABASE status (story.v3_illustration_status), not React state (illustrationStatus)
+    // React state is null on initial mount which would incorrectly re-trigger generation
+    const dbStatus = story.v3_illustration_status?.overall
     const shouldTrigger =
       story.generation_metadata?.include_illustrations === true &&
       story.generation_status === 'text_complete' &&
       !triggeringIllustrations &&
-      (!existingStatus || existingStatus === 'pending')
+      (!dbStatus || dbStatus === 'pending')
 
     if (shouldTrigger) {
       triggerIllustrationGeneration()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [story?.id, story?.generation_status, story?.generation_metadata?.include_illustrations])
+  }, [story?.id, story?.generation_status, story?.generation_metadata?.include_illustrations, story?.v3_illustration_status?.overall])
 
   // Polling effect for illustration status
   useEffect(() => {

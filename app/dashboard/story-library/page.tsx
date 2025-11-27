@@ -39,9 +39,16 @@ interface Story {
       }
     }
   }>
-  // Beta Engine fields
-  engine_version?: 'legacy' | 'beta'
+  // Engine-specific fields
+  engine_version?: 'legacy' | 'beta' | 'v3'
   cover_illustration_url?: string
+  // V3 illustration status
+  v3_illustration_status?: {
+    cover?: {
+      imageUrl?: string
+      tempUrl?: string
+    }
+  }
 }
 
 function StoryQuotaDisplay() {
@@ -200,6 +207,7 @@ export default function StoryLibraryPage() {
           generation_metadata,
           engine_version,
           cover_illustration_url,
+          v3_illustration_status,
           content_characters (
             character_profiles (
               id,
