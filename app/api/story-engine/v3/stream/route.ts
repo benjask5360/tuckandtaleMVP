@@ -7,6 +7,10 @@
  * Uses Server-Sent Events (SSE) to send content as it's generated.
  */
 
+// Force Node.js runtime for streaming support
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { V3StoryPromptBuilder } from '@/lib/story-engine-v3/prompt-builders/V3StoryPromptBuilder';
@@ -36,6 +40,64 @@ interface StreamCallbacks {
 export async function POST(request: Request) {
   const encoder = new TextEncoder();
 
+  // Parse request body BEFORE creating stream (body can only be read once)
+  let params: V3StoryGenerationParams;
+  try {
+    // Read the body stream manually to handle chunked requests properly
+    if (request.body) {
+      const reader = request.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let done = false;
+
+      while (!done) {
+        const result = await reader.read();
+        done = result.done;
+        if (result.value) {
+          chunks.push(result.value);
+        }
+      }
+
+      const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+
+      if (totalLength === 0) {
+        return new Response(JSON.stringify({ error: 'Empty request body' }), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Combine chunks and decode
+      const combined = new Uint8Array(totalLength);
+      let offset = 0;
+      for (const chunk of chunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+
+      const bodyText = new TextDecoder().decode(combined);
+      params = JSON.parse(bodyText);
+    } else {
+      return new Response(JSON.stringify({ error: 'No request body' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+  } catch (parseError: any) {
+    console.error('[V3 Stream] JSON parse error:', parseError.message);
+    return new Response(JSON.stringify({ error: 'Invalid request format' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Validate required fields early
+  if (!params.heroId || !params.mode || !params.genreId || !params.toneId || !params.lengthId) {
+    return new Response(JSON.stringify({ error: 'Missing required fields' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // Helper to send SSE events
   const sendEvent = (controller: ReadableStreamDefaultController, data: object) => {
     controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
@@ -64,23 +126,6 @@ export async function POST(request: Request) {
         }
 
         userId = user.id;
-
-        // Parse request body
-        let params: V3StoryGenerationParams;
-        try {
-          params = await request.json();
-        } catch {
-          sendEvent(controller, { type: 'error', message: 'Invalid request format' });
-          controller.close();
-          return;
-        }
-
-        // Validate required fields
-        if (!params.heroId || !params.mode || !params.genreId || !params.toneId || !params.lengthId) {
-          sendEvent(controller, { type: 'error', message: 'Missing required fields' });
-          controller.close();
-          return;
-        }
 
         // Get user's tier for feature validation
         const tier = await SubscriptionTierService.getUserTier(user.id);

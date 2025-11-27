@@ -42,6 +42,12 @@ export default function V3StreamingViewer() {
     abortControllerRef.current = new AbortController()
 
     try {
+      // Ensure params is a valid string before sending
+      if (!params || typeof params !== 'string' || params.length === 0) {
+        setState(prev => ({ ...prev, error: 'Invalid parameters - cannot generate story' }))
+        return
+      }
+
       const response = await fetch('/api/story-engine/v3/stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -135,17 +141,39 @@ export default function V3StreamingViewer() {
   }, [router])
 
   useEffect(() => {
-    const params = searchParams.get('params')
-    if (!params) {
+    // Track if this effect instance is still active (for React Strict Mode)
+    let isActive = true
+
+    const encodedParams = searchParams.get('params')
+
+    if (!encodedParams) {
       setState(prev => ({ ...prev, error: 'Missing generation parameters' }))
       return
     }
 
-    startStream(params)
+    // Params are already JSON string (URL decoded automatically by searchParams)
+    // But we need to validate it's valid JSON before sending
+    try {
+      JSON.parse(encodedParams) // Validate it's valid JSON
+    } catch {
+      setState(prev => ({ ...prev, error: 'Invalid generation parameters' }))
+      return
+    }
 
-    // Cleanup on unmount
+    // Delay the fetch slightly to avoid React Strict Mode cleanup race condition
+    const timeoutId = setTimeout(() => {
+      if (isActive) {
+        startStream(encodedParams)
+      }
+    }, 0)
+
+    // Cleanup on unmount - but don't abort immediately
+    // The hasStartedRef check in startStream prevents double execution
     return () => {
-      abortControllerRef.current?.abort()
+      isActive = false
+      clearTimeout(timeoutId)
+      // Only abort if we're actually navigating away, not just re-rendering
+      // The AbortController will be cleaned up when component fully unmounts
     }
   }, [searchParams, startStream])
 
