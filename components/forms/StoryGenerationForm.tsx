@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Target, Lock, Plus } from 'lucide-react'
+import { Loader2, Sparkles, Target, Lock, Plus, Beaker } from 'lucide-react'
 import FeatureGate from '@/components/subscription/FeatureGate'
 import UpgradeModal from '@/components/subscription/UpgradeModal'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -201,6 +201,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [customInstructions, setCustomInstructions] = useState<string>('')
   const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(false)
   const [characterLimitMessage, setCharacterLimitMessage] = useState<string | null>(null)
+  const [useV3Engine, setUseV3Engine] = useState<boolean>(false)
 
   // Data state
   const [parameters, setParameters] = useState<GroupedParameters>({})
@@ -289,10 +290,18 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
         requestBody.customInstructions = customInstructions.trim()
       }
 
-      // Add includeIllustrations flag
-      requestBody.includeIllustrations = includeIllustrations
+      // Add includeIllustrations flag (disabled for V3)
+      requestBody.includeIllustrations = useV3Engine ? false : includeIllustrations
 
-      // Use text story generation API endpoint
+      // V3 uses streaming viewer, V2 uses standard API
+      if (useV3Engine) {
+        // For V3, redirect to streaming viewer which will call the streaming API
+        const params = encodeURIComponent(JSON.stringify(requestBody))
+        router.push(`/dashboard/stories/v3/stream?params=${params}`)
+        return // Exit early - streaming viewer handles the rest
+      }
+
+      // V2 uses standard API endpoint
       const endpoint = '/api/stories/generate'
 
       const response = await fetch(endpoint, {
@@ -355,6 +364,7 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       if (!storyId) {
         throw new Error('No story ID returned from server')
       }
+      // V2 stories go to standard viewer (V3 already redirected to streaming viewer)
       router.push(`/dashboard/stories/${storyId}`)
     } catch (err: any) {
       console.error('Error generating story:', err)
@@ -374,22 +384,86 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Include Illustrations Toggle */}
+      {/* V3 Engine Toggle */}
       <div
         onClick={() => {
-          setIncludeIllustrations(!includeIllustrations)
-          setCharacterLimitMessage(null)
+          setUseV3Engine(!useV3Engine)
+          // When V3 is enabled, disable illustrations
+          if (!useV3Engine) {
+            setIncludeIllustrations(false)
+          }
         }}
         className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
-          includeIllustrations
-            ? 'border-primary-600 bg-primary-50'
-            : 'border-gray-300 bg-white hover:border-primary-300'
+          useV3Engine
+            ? 'border-purple-600 bg-purple-50'
+            : 'border-gray-300 bg-white hover:border-purple-300'
         }`}
       >
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0">
             <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              includeIllustrations ? 'bg-primary-100' : 'bg-gray-100'
+              useV3Engine ? 'bg-purple-100' : 'bg-gray-100'
+            }`}>
+              <Beaker className={`w-6 h-6 ${useV3Engine ? 'text-purple-600' : 'text-gray-400'}`} />
+            </div>
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className={`text-base font-semibold ${
+                useV3Engine ? 'text-purple-900' : 'text-gray-900'
+              }`}>
+                Use StoryEngine V3 (beta)
+              </h3>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setUseV3Engine(!useV3Engine);
+                  if (!useV3Engine) {
+                    setIncludeIllustrations(false)
+                  }
+                }}
+                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
+                  useV3Engine ? 'bg-purple-600' : 'bg-gray-300'
+                }`}
+              >
+                <span className="sr-only">Use V3 Engine</span>
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${
+                    useV3Engine ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+            <p className={`text-sm ${
+              useV3Engine ? 'text-purple-700' : 'text-gray-600'
+            }`}>
+              {useV3Engine
+                ? 'Using the new faster story engine with improved quality.'
+                : 'Try our new story engine with faster generation.'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Include Illustrations Toggle */}
+      <div
+        onClick={() => {
+          if (useV3Engine) return; // Disabled when V3 is enabled
+          setIncludeIllustrations(!includeIllustrations)
+          setCharacterLimitMessage(null)
+        }}
+        className={`${useV3Engine ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'} p-4 rounded-xl border-2 transition-all ${
+          includeIllustrations && !useV3Engine
+            ? 'border-primary-600 bg-primary-50'
+            : 'border-gray-300 bg-white hover:border-primary-300'
+        } ${useV3Engine ? 'hover:border-gray-300' : ''}`}
+      >
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              includeIllustrations && !useV3Engine ? 'bg-primary-100' : 'bg-gray-100'
             }`}>
               <span className="text-2xl">🎨</span>
             </div>
@@ -397,14 +471,17 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
           <div className="flex-1">
             <div className="flex items-center justify-between mb-1">
               <h3 className={`text-base font-semibold ${
-                includeIllustrations ? 'text-primary-900' : 'text-gray-900'
+                includeIllustrations && !useV3Engine ? 'text-primary-900' : 'text-gray-900'
               }`}>
                 Include Illustrations
+                {useV3Engine && <span className="ml-2 text-xs font-normal text-gray-500">(Coming soon for V3)</span>}
               </h3>
               <button
                 type="button"
+                disabled={useV3Engine}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (useV3Engine) return;
                   setIncludeIllustrations(!includeIllustrations);
                   setCharacterLimitMessage(null);
                 }}
