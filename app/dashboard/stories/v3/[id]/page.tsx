@@ -444,17 +444,33 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
     }
 
     if (isLoading || !url) {
-      return (
-        <div className={`relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-dashed border-purple-200 ${sizeClasses}`}>
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-            <div className="relative">
-              <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
-              <Sparkles className="w-5 h-5 text-purple-500 absolute -top-1 -right-1 animate-pulse" />
+      // For cover (large), show a smaller banner instead of giant square
+      if (size === 'large') {
+        return (
+          <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 py-4 px-6">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+                <Sparkles className="w-4 h-4 text-purple-500 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-purple-600 font-medium text-sm">
+                  {status === 'generating' ? 'Creating cover illustration...' : 'Preparing cover...'}
+                </p>
+                <p className="text-purple-400 text-xs">This may take a moment</p>
+              </div>
             </div>
-            <p className="text-purple-600 font-medium mt-3 text-sm">
+          </div>
+        )
+      }
+      // For scenes (medium), keep smaller horizontal placeholder
+      return (
+        <div className="w-full rounded-xl overflow-hidden bg-gradient-to-r from-purple-50 to-indigo-50 border border-dashed border-purple-200 py-3 px-4">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+            <p className="text-purple-600 font-medium text-xs">
               {status === 'generating' ? 'Creating illustration...' : 'Preparing...'}
             </p>
-            <p className="text-purple-400 text-xs mt-1">This may take a moment</p>
           </div>
         </div>
       )
@@ -466,7 +482,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
           src={url}
           alt={alt}
           fill
-          className="object-cover"
+          className="object-contain"
           sizes={size === 'large' ? '(max-width: 768px) 100vw, 672px' : '(max-width: 768px) 100vw, 400px'}
         />
       </div>

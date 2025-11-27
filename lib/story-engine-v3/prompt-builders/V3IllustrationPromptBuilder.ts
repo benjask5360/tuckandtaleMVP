@@ -54,8 +54,8 @@ Each prompt must follow this EXACT format as a SINGLE-LINE STRING. Note the spac
 Disney pixar illustration. CHARACTERS: {Name1}: {description}; {Name2}: {description} . SETTING : {brief location} . ACTIONS : - {Name1} {action} - {Name2} {action} . STYLE : Disney pixar
 
 CHARACTER DESCRIPTION FORMATS (use based on character type):
-- For children/people: "{Name}: {color} hair, {color} eyes, {age}-year-old, {clothing description}, {build}"
-  Example: "Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build"
+- For children/people: "{Name}: {ethnicity}, {color} hair, {color} eyes, {age}-year-old, {clothing description}, {build}"
+  Example: "Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build"
 - For pets: "{Name}: {color} {species/breed} with {eye color} eyes"
   Example: "Penny: orange and white Corgi with brown eyes"
 - For magical creatures: "{Name}: {color} {creature type} with {distinctive features}"
@@ -66,6 +66,7 @@ RULES:
 - Use semicolons (;) to separate multiple characters in CHARACTERS section
 - Use spaces around colons in section headers: " SETTING : " not "SETTING:"
 - Keep each prompt under 150 words
+- For humans: ALWAYS include ethnicity/background at the START of the description (before hair color)
 - For humans: ALWAYS include "{color} hair" and "{color} eyes" (full words, not just colors)
 - Keep clothing/appearance IDENTICAL across ALL prompts for each character
 - SETTING: 1 short sentence maximum
@@ -77,12 +78,12 @@ RULES:
 - ALWAYS end with " . STYLE : Disney pixar"
 
 ## EXAMPLE OUTPUT
-For a story with a child (Lewis) and a pet (Penny the Corgi):
+For a story with a child (Zaier) and a magical creature (Flicker the firefly):
 {
-  "coverPrompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build; Penny: orange and white Corgi with brown eyes . SETTING : Sunny backyard with green grass and wooden fence . ACTIONS : - Lewis sits on grass holding a red ball - Penny stands beside wagging tail . STYLE : Disney pixar",
+  "coverPrompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build; Flicker: tiny yellow firefly with bright wings . SETTING : Sunny meadow with colorful flowers . ACTIONS : - Zaier stands in grass looking up - Flicker hovers nearby glowing . STYLE : Disney pixar",
   "scenePrompts": [
-    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build . SETTING : Bedroom with morning sunlight . ACTIONS : - Lewis wakes up in bed - Lewis stretches arms . STYLE : Disney pixar" },
-    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Lewis: blonde hair, blue eyes, 3-year-old, light blue overalls with white t-shirt, small build; Penny: orange and white Corgi with brown eyes . SETTING : Kitchen with breakfast table . ACTIONS : - Lewis pours cereal into bowl - Penny sits by chair looking up . STYLE : Disney pixar" }
+    { "paragraphIndex": 0, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build . SETTING : Bedroom with morning sunlight . ACTIONS : - Zaier wakes up in bed - Zaier stretches arms . STYLE : Disney pixar" },
+    { "paragraphIndex": 1, "prompt": "Disney pixar illustration. CHARACTERS: Zaier: African American, brown hair, brown eyes, 3-year-old, colorful t-shirt and shorts, average build; Flicker: tiny yellow firefly with bright wings . SETTING : Flower-filled meadow . ACTIONS : - Zaier walks through tall grass - Flicker flies beside . STYLE : Disney pixar" }
   ]
 }
 

@@ -6,11 +6,32 @@ import { BookOpen, User, Calendar, Code, Image as ImageIcon, FileText } from 'lu
 import Image from 'next/image';
 import CopyButton from './CopyButton';
 
+// V2 Scene format (from story_scenes column)
 interface Scene {
   paragraph: string;
   charactersInScene: string[];
   illustrationPrompt: string;
   illustrationUrl?: string;
+}
+
+// V3 Illustration Status format (from v3_illustration_status column)
+interface V3IllustrationStatus {
+  overall: 'pending' | 'generating' | 'complete' | 'partial' | 'failed';
+  cover: {
+    status: string;
+    prompt?: string;
+    tempUrl?: string;
+    imageUrl?: string;
+    error?: string;
+  };
+  scenes: Array<{
+    paragraphIndex: number;
+    status: string;
+    prompt?: string;
+    tempUrl?: string;
+    imageUrl?: string;
+    error?: string;
+  }>;
 }
 
 export default async function AdminStoryInspectionPage({
@@ -73,6 +94,13 @@ export default async function AdminStoryInspectionPage({
 
   const metadata = story.generation_metadata as any;
   const scenes = story.story_scenes as Scene[] | null;
+
+  // V3 support: check engine version and extract v3_illustration_status
+  const isV3 = story.engine_version === 'v3';
+  const v3Status = story.v3_illustration_status as V3IllustrationStatus | null;
+
+  // For V3 stories, get paragraphs from generation_metadata.paragraphs
+  const v3Paragraphs = metadata?.paragraphs as string[] | undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-8 px-4">
@@ -178,10 +206,21 @@ export default async function AdminStoryInspectionPage({
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-purple-600" />
-            Story Content (8 Paragraphs)
+            Story Content ({isV3 && v3Paragraphs ? v3Paragraphs.length : scenes?.length || metadata?.paragraphs?.length || 0} Paragraphs)
           </h2>
           <div className="space-y-6">
-            {scenes && scenes.length > 0 ? (
+            {/* V3 stories: use metadata.paragraphs */}
+            {isV3 && v3Paragraphs && v3Paragraphs.length > 0 ? (
+              v3Paragraphs.map((paragraph: string, index: number) => (
+                <div key={index} className="border-l-4 border-purple-300 pl-4">
+                  <div className="font-semibold text-purple-700 mb-2 text-sm">
+                    Paragraph {index + 1}
+                  </div>
+                  <p className="text-gray-800 leading-relaxed">{paragraph}</p>
+                </div>
+              ))
+            ) : scenes && scenes.length > 0 ? (
+              /* V2 stories: use story_scenes */
               scenes.map((scene, index) => (
                 <div key={index} className="border-l-4 border-purple-300 pl-4">
                   <div className="font-semibold text-purple-700 mb-2 text-sm">
@@ -196,6 +235,7 @@ export default async function AdminStoryInspectionPage({
                 </div>
               ))
             ) : metadata?.paragraphs && Array.isArray(metadata.paragraphs) ? (
+              /* Fallback: use metadata.paragraphs */
               metadata.paragraphs.map((paragraph: string, index: number) => (
                 <div key={index} className="border-l-4 border-purple-300 pl-4">
                   <div className="font-semibold text-purple-700 mb-2 text-sm">
@@ -210,83 +250,209 @@ export default async function AdminStoryInspectionPage({
           </div>
         </div>
 
-        {/* All 9 Illustrations */}
+        {/* All Illustrations */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-purple-600" />
-            All Illustrations (9 Total: 1 Cover + 8 Scenes)
+            All Illustrations {isV3 && v3Status ? `(${1 + (v3Status.scenes?.length || 0)} Total: 1 Cover + ${v3Status.scenes?.length || 0} Scenes)` : '(9 Total: 1 Cover + 8 Scenes)'}
+            {isV3 && v3Status && (
+              <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                v3Status.overall === 'complete' ? 'bg-green-100 text-green-800' :
+                v3Status.overall === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                v3Status.overall === 'failed' ? 'bg-red-100 text-red-800' :
+                v3Status.overall === 'generating' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {v3Status.overall}
+              </span>
+            )}
           </h2>
 
-          {/* Cover Illustration */}
-          {story.cover_illustration_url && (
-            <div className="mb-8 pb-8 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-purple-700 mb-4">Cover Illustration</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                  <Image
-                    src={story.cover_illustration_url}
-                    alt="Cover illustration"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-gray-900">Cover Illustration Prompt</h4>
-                    <CopyButton text={story.cover_illustration_prompt || ''} />
+          {/* V3 Cover Illustration */}
+          {isV3 && v3Status ? (
+            <>
+              <div className="mb-8 pb-8 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-purple-700 mb-4">
+                  Cover Illustration
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                    v3Status.cover.status === 'success' ? 'bg-green-100 text-green-800' :
+                    v3Status.cover.status === 'failed' ? 'bg-red-100 text-red-800' :
+                    v3Status.cover.status === 'generating' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {v3Status.cover.status}
+                  </span>
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    {(v3Status.cover.imageUrl || v3Status.cover.tempUrl) ? (
+                      <Image
+                        src={v3Status.cover.imageUrl || v3Status.cover.tempUrl || ''}
+                        alt="Cover illustration"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                        <div className="text-center">
+                          <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+                          <p className="text-sm">{v3Status.cover.error || 'No illustration available'}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                      {story.cover_illustration_prompt || 'No prompt available'}
-                    </pre>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900">Cover Illustration Prompt</h4>
+                      <CopyButton text={v3Status.cover.prompt || ''} />
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                        {v3Status.cover.prompt || 'No prompt available'}
+                      </pre>
+                    </div>
+                    {v3Status.cover.error && (
+                      <div className="mt-2 bg-red-50 rounded-lg p-4">
+                        <p className="text-sm text-red-800">Error: {v3Status.cover.error}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Scene Illustrations */}
-          {scenes && scenes.length > 0 ? (
-            <div className="space-y-8">
-              <h3 className="text-lg font-semibold text-purple-700">Scene Illustrations (8)</h3>
-              {scenes.map((scene, index) => (
-                <div key={index} className="pb-8 border-b border-gray-200 last:border-b-0">
-                  <h4 className="font-semibold text-gray-900 mb-4">Scene {index + 1}</h4>
+              {/* V3 Scene Illustrations */}
+              <div className="space-y-8">
+                <h3 className="text-lg font-semibold text-purple-700">Scene Illustrations ({v3Status.scenes?.length || 0})</h3>
+                {v3Status.scenes && v3Status.scenes.length > 0 ? (
+                  v3Status.scenes.map((scene, index) => (
+                    <div key={index} className="pb-8 border-b border-gray-200 last:border-b-0">
+                      <h4 className="font-semibold text-gray-900 mb-4">
+                        Scene {scene.paragraphIndex + 1}
+                        <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                          scene.status === 'success' ? 'bg-green-100 text-green-800' :
+                          scene.status === 'failed' ? 'bg-red-100 text-red-800' :
+                          scene.status === 'generating' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {scene.status}
+                        </span>
+                      </h4>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                          {(scene.imageUrl || scene.tempUrl) ? (
+                            <Image
+                              src={scene.imageUrl || scene.tempUrl || ''}
+                              alt={`Scene ${scene.paragraphIndex + 1} illustration`}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                              <div className="text-center">
+                                <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+                                <p className="text-sm">{scene.error || 'No illustration available'}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="font-semibold text-gray-900">Illustration Prompt</h5>
+                            <CopyButton text={scene.prompt || ''} />
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                              {scene.prompt || 'No prompt available'}
+                            </pre>
+                          </div>
+                          {scene.error && (
+                            <div className="mt-2 bg-red-50 rounded-lg p-4">
+                              <p className="text-sm text-red-800">Error: {scene.error}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-gray-500 italic">No scene illustrations available.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            /* V2 Cover Illustration */
+            <>
+              {story.cover_illustration_url && (
+                <div className="mb-8 pb-8 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-purple-700 mb-4">Cover Illustration</h3>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                      {scene.illustrationUrl ? (
-                        <Image
-                          src={scene.illustrationUrl}
-                          alt={`Scene ${index + 1} illustration`}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                          <div className="text-center">
-                            <ImageIcon className="w-12 h-12 mx-auto mb-2" />
-                            <p className="text-sm">No illustration available</p>
-                          </div>
-                        </div>
-                      )}
+                      <Image
+                        src={story.cover_illustration_url}
+                        alt="Cover illustration"
+                        fill
+                        className="object-cover"
+                      />
                     </div>
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold text-gray-900">Illustration Prompt</h5>
-                        <CopyButton text={scene.illustrationPrompt || ''} />
+                        <h4 className="font-semibold text-gray-900">Cover Illustration Prompt</h4>
+                        <CopyButton text={story.cover_illustration_prompt || ''} />
                       </div>
                       <div className="bg-gray-50 rounded-lg p-4">
                         <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                          {scene.illustrationPrompt || 'No prompt available'}
+                          {story.cover_illustration_prompt || 'No prompt available'}
                         </pre>
                       </div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 italic">No scene illustrations available.</p>
+              )}
+
+              {/* V2 Scene Illustrations */}
+              {scenes && scenes.length > 0 ? (
+                <div className="space-y-8">
+                  <h3 className="text-lg font-semibold text-purple-700">Scene Illustrations ({scenes.length})</h3>
+                  {scenes.map((scene, index) => (
+                    <div key={index} className="pb-8 border-b border-gray-200 last:border-b-0">
+                      <h4 className="font-semibold text-gray-900 mb-4">Scene {index + 1}</h4>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                          {scene.illustrationUrl ? (
+                            <Image
+                              src={scene.illustrationUrl}
+                              alt={`Scene ${index + 1} illustration`}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                              <div className="text-center">
+                                <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+                                <p className="text-sm">No illustration available</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h5 className="font-semibold text-gray-900">Illustration Prompt</h5>
+                            <CopyButton text={scene.illustrationPrompt || ''} />
+                          </div>
+                          <div className="bg-gray-50 rounded-lg p-4">
+                            <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                              {scene.illustrationPrompt || 'No prompt available'}
+                            </pre>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No scene illustrations available.</p>
+              )}
+            </>
           )}
         </div>
       </div>
