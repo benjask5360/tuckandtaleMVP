@@ -33,9 +33,6 @@ interface StoryCardProps {
         }
       }
     }>
-    // Engine-specific fields
-    engine_version?: 'legacy' | 'beta' | 'v3'
-    cover_illustration_url?: string
     // V3 illustration status
     v3_illustration_status?: {
       cover?: {
@@ -49,15 +46,8 @@ interface StoryCardProps {
 }
 
 export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCardProps) {
-  // Extract cover image based on engine version
-  // V3: use v3_illustration_status.cover (prefer permanent imageUrl over temp)
-  // Beta: use cover_illustration_url
-  // Legacy: use Scene 0 from story_illustrations
-  const coverUrl = story.engine_version === 'v3'
-    ? (story.v3_illustration_status?.cover?.imageUrl || story.v3_illustration_status?.cover?.tempUrl)
-    : story.engine_version === 'beta'
-      ? story.cover_illustration_url
-      : story.story_illustrations?.find(ill => ill.type === 'scene_0')?.url
+  // Extract cover image from V3 illustration status
+  const coverUrl = story.v3_illustration_status?.cover?.imageUrl || story.v3_illustration_status?.cover?.tempUrl
 
   // Get hero character (first character)
   // Use generation_metadata.characters if available, fallback to content_characters for backward compatibility
@@ -71,10 +61,8 @@ export default function StoryCard({ story, onDelete, onFavoriteToggle }: StoryCa
     year: 'numeric'
   })
 
-  // Story route - V3 stories go to V3 viewer
-  const storyRoute = story.engine_version === 'v3'
-    ? `/dashboard/stories/v3/${story.id}`
-    : `/dashboard/stories/${story.id}`
+  // All stories use V3 viewer
+  const storyRoute = `/dashboard/stories/v3/${story.id}`
 
   return (
     <div className="relative card p-6 md:p-8 active:shadow-card-hover active:scale-[0.98] md:hover:shadow-card-hover md:hover:-translate-y-1 transition-all duration-300">

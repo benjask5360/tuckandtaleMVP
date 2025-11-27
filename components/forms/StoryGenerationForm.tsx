@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2, Sparkles, Target, Lock, Plus, Beaker } from 'lucide-react'
+import { Loader2, Sparkles, Target, Lock, Plus } from 'lucide-react'
 import FeatureGate from '@/components/subscription/FeatureGate'
 import UpgradeModal from '@/components/subscription/UpgradeModal'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -201,7 +201,6 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
   const [customInstructions, setCustomInstructions] = useState<string>('')
   const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(false)
   const [characterLimitMessage, setCharacterLimitMessage] = useState<string | null>(null)
-  const [useV3Engine, setUseV3Engine] = useState<boolean>(false)
 
   // Data state
   const [parameters, setParameters] = useState<GroupedParameters>({})
@@ -293,79 +292,9 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
       // Add includeIllustrations flag
       requestBody.includeIllustrations = includeIllustrations
 
-      // V3 uses streaming viewer, V2 uses standard API
-      if (useV3Engine) {
-        // For V3, redirect to streaming viewer which will call the streaming API
-        const params = encodeURIComponent(JSON.stringify(requestBody))
-        router.push(`/dashboard/stories/v3/stream?params=${params}`)
-        return // Exit early - streaming viewer handles the rest
-      }
-
-      // V2 uses standard API endpoint
-      const endpoint = '/api/stories/generate'
-
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      })
-
-      // Check if response is JSON before trying to parse
-      const contentType = response.headers.get('content-type')
-      let data: any = {}
-
-      if (contentType && contentType.includes('application/json')) {
-        try {
-          data = await response.json()
-        } catch (jsonError) {
-          console.error('Failed to parse response JSON:', jsonError)
-          // If JSON parsing fails, create a generic error message
-          data = {
-            error: 'The server response was invalid. Please try again.',
-            type: 'json_response_error'
-          }
-        }
-      } else {
-        // Non-JSON response (might be HTML error page)
-        const text = await response.text()
-        console.error('Non-JSON response received:', text.substring(0, 500))
-        data = {
-          error: 'An unexpected server error occurred. Please try again later.',
-          type: 'non_json_response'
-        }
-      }
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error(`You've reached your story generation limit. ${data.error || 'Please try again later.'}`)
-        }
-
-        // Handle JSON parsing errors specifically
-        if (data.type === 'json_parsing_error') {
-          throw new Error('The story generation had formatting issues. Please try generating again.')
-        }
-
-        // Handle validation errors
-        if (data.type === 'validation_error') {
-          throw new Error('The generated story did not meet quality standards. Please try again with different settings.')
-        }
-
-        // Handle parsing errors
-        if (data.type === 'parsing_error') {
-          throw new Error('Failed to process the story. Please try again or adjust your story settings.')
-        }
-
-        throw new Error(data.error || 'Failed to generate story. Please try again.')
-      }
-
-      // Success! Redirect to the story viewer
-      // New format returns storyId directly for instant redirect
-      const storyId = data.storyId || data.story?.id
-      if (!storyId) {
-        throw new Error('No story ID returned from server')
-      }
-      // V2 stories go to standard viewer (V3 already redirected to streaming viewer)
-      router.push(`/dashboard/stories/${storyId}`)
+      // Redirect to streaming viewer which calls the V3 streaming API
+      const params = encodeURIComponent(JSON.stringify(requestBody))
+      router.push(`/dashboard/stories/v3/stream?params=${params}`)
     } catch (err: any) {
       console.error('Error generating story:', err)
       setError(err.message)
@@ -384,62 +313,6 @@ export default function StoryGenerationForm({ childProfiles }: StoryGenerationFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* V3 Engine Toggle */}
-      <div
-        onClick={() => {
-          setUseV3Engine(!useV3Engine)
-        }}
-        className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
-          useV3Engine
-            ? 'border-purple-600 bg-purple-50'
-            : 'border-gray-300 bg-white hover:border-purple-300'
-        }`}
-      >
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              useV3Engine ? 'bg-purple-100' : 'bg-gray-100'
-            }`}>
-              <Beaker className={`w-6 h-6 ${useV3Engine ? 'text-purple-600' : 'text-gray-400'}`} />
-            </div>
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-1">
-              <h3 className={`text-base font-semibold ${
-                useV3Engine ? 'text-purple-900' : 'text-gray-900'
-              }`}>
-                Use StoryEngine V3 (beta)
-              </h3>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setUseV3Engine(!useV3Engine);
-                }}
-                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-                  useV3Engine ? 'bg-purple-600' : 'bg-gray-300'
-                }`}
-              >
-                <span className="sr-only">Use V3 Engine</span>
-                <span
-                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform shadow-sm ${
-                    useV3Engine ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-            <p className={`text-sm ${
-              useV3Engine ? 'text-purple-700' : 'text-gray-600'
-            }`}>
-              {useV3Engine
-                ? 'Using the new faster story engine with improved quality.'
-                : 'Try our new story engine with faster generation.'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Include Illustrations Toggle */}
       <div
         onClick={() => {
