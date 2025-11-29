@@ -162,6 +162,7 @@ interface StoryPDFTemplateProps {
     title: string;
     body: string;
     created_at: string;
+    engine_version?: string;
     // Database fields for both Beta and Legacy stories
     story_text?: string;
     paragraphs?: string[];
@@ -175,9 +176,23 @@ interface StoryPDFTemplateProps {
       moral?: string;
       paragraphs?: string[];
       characters?: Array<{
-        character_profile_id: string | null;
-        character_name: string;
-        profile_type: string | null;
+        character_profile_id?: string | null;
+        character_name?: string;
+        name?: string;
+        profile_type?: string | null;
+      }>;
+    };
+    // V3 illustration status
+    v3_illustration_status?: {
+      overall: string;
+      cover: {
+        status: string;
+        imageUrl?: string;
+      };
+      scenes: Array<{
+        paragraphIndex: number;
+        status: string;
+        imageUrl?: string;
       }>;
     };
     story_illustrations?: Array<{
@@ -200,21 +215,33 @@ interface StoryPDFTemplateProps {
 }
 
 export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => {
-  // Check if this is a Beta story (has story_scenes)
-  const isBetaStory = story.story_scenes && Array.isArray(story.story_scenes);
+  // Check story type
+  const isV3Story = story.engine_version === 'v3' || !!story.v3_illustration_status;
+  const isBetaStory = !isV3Story && story.story_scenes && Array.isArray(story.story_scenes);
 
-  // Get paragraphs - handle both Beta and Legacy formats
-  const paragraphs = isBetaStory
-    ? story.story_scenes?.map((scene: any) => scene.paragraph) || []
-    : (story.paragraphs || story.story_text?.split('\n\n').filter((p: string) => p.trim()) || []);
+  // Get paragraphs - handle V3, Beta, and Legacy formats
+  const paragraphs = story.generation_metadata?.paragraphs ||
+    (isBetaStory ? story.story_scenes?.map((scene: any) => scene.paragraph) : null) ||
+    story.paragraphs ||
+    story.story_text?.split('\n\n').filter((p: string) => p.trim()) ||
+    [];
 
-  // Get cover illustration - handle both formats
-  const coverIllustration = isBetaStory
-    ? (story.cover_illustration_url ? { url: story.cover_illustration_url, type: 'cover' } : null)
-    : story.story_illustrations?.find(ill => ill.type === 'scene_0');
+  // Get cover illustration - handle V3, Beta, and Legacy formats
+  const coverIllustration = isV3Story && story.v3_illustration_status?.cover?.imageUrl
+    ? { url: story.v3_illustration_status.cover.imageUrl, type: 'cover' }
+    : isBetaStory && story.cover_illustration_url
+    ? { url: story.cover_illustration_url, type: 'cover' }
+    : story.story_illustrations?.find(ill => ill.type === 'scene_0') || null;
 
-  // Get scene illustrations - handle both formats
-  const sceneIllustrations = isBetaStory
+  // Get scene illustrations - handle V3, Beta, and Legacy formats
+  const sceneIllustrations = isV3Story && story.v3_illustration_status?.scenes
+    ? story.v3_illustration_status.scenes
+        .filter(scene => scene.imageUrl)
+        .map(scene => ({
+          type: `scene_${scene.paragraphIndex + 1}`,
+          url: scene.imageUrl!
+        }))
+    : isBetaStory
     ? story.story_scenes
         ?.filter((scene: any) => scene.illustrationUrl)
         .map((scene: any, index: number) => ({
@@ -224,7 +251,7 @@ export const StoryPDFTemplate: React.FC<StoryPDFTemplateProps> = ({ story }) => 
     : (story.story_illustrations?.filter(ill => ill.type !== 'scene_0') || []);
 
   // Get character names - use generation_metadata.characters if available, fallback to content_characters
-  const characters = story.generation_metadata?.characters?.map((c: any) => c.character_name) ||
+  const characters = story.generation_metadata?.characters?.map((c: any) => c.character_name || c.name) ||
     story.content_characters?.map((cc: any) => cc.character_profiles.name) ||
     [];
 

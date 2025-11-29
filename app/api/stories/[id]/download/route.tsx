@@ -26,25 +26,10 @@ export async function GET(
 
     const storyId = params.id;
 
-    // Fetch story with all related data using the stories view
+    // Fetch story from content table (V3 stories)
     const { data: story, error: storyError } = await supabase
-      .from('stories')
-      .select(`
-        *,
-        story_illustrations,
-        content_characters (
-          character_profile_id,
-          role,
-          character_name_in_content,
-          character_profiles (
-            id,
-            name,
-            character_type,
-            attributes,
-            appearance_description
-          )
-        )
-      `)
+      .from('content')
+      .select('*')
       .eq('id', storyId)
       .eq('user_id', user.id)
       .single();
@@ -56,8 +41,6 @@ export async function GET(
       );
     }
 
-    // User ownership is already verified by the query (.eq('user_id', user.id))
-
     // Transform the data to match PDF template expectations
     const pdfStory = {
       ...story,
@@ -65,12 +48,6 @@ export async function GET(
       body: story.body || story.generation_metadata?.paragraphs?.join('\n\n') || '',
       // Extract moral from generation_metadata if it exists
       moral: story.generation_metadata?.moral,
-      // Map content_characters for compatibility
-      content_characters: story.content_characters?.map((cc: any) => ({
-        character_profiles: Array.isArray(cc.character_profiles)
-          ? cc.character_profiles[0]
-          : cc.character_profiles
-      }))
     };
 
     // Generate PDF

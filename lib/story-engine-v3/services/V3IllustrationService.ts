@@ -256,51 +256,72 @@ async function generateIllustrationPrompts(
   paragraphs: V3Paragraph[],
   characters: V3CharacterInfo[]
 ): Promise<{ success: boolean; prompts?: V3IllustrationPromptsResponse; error?: string }> {
-  try {
-    const prompt = buildIllustrationPromptsPrompt(title, paragraphs, characters);
+  const MAX_RETRIES = 2;
+  const prompt = buildIllustrationPromptsPrompt(title, paragraphs, characters);
+  let lastError = '';
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        max_tokens: 4000,
-        temperature: 0.7,
-      }),
-    });
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          response_format: { type: 'json_object' },
+          max_tokens: 4000,
+          temperature: 0.7,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('[V3 Illustrations] OpenAI error:', error);
-      return { success: false, error: 'Failed to generate illustration prompts' };
+      if (!response.ok) {
+        const error = await response.text();
+        console.error(`[V3 Illustrations] OpenAI error (attempt ${attempt}/${MAX_RETRIES}):`, error);
+        lastError = 'Failed to generate illustration prompts';
+        continue;
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+      const finishReason = data.choices?.[0]?.finish_reason;
+
+      if (!content) {
+        console.warn(`[V3 Illustrations] No content in response (attempt ${attempt}/${MAX_RETRIES})`);
+        lastError = 'No content in OpenAI response';
+        continue;
+      }
+
+      // Check if response was truncated
+      if (finishReason === 'length') {
+        console.warn(`[V3 Illustrations] Response truncated (attempt ${attempt}/${MAX_RETRIES})`);
+        lastError = 'Response was truncated';
+        continue;
+      }
+
+      const parsed = JSON.parse(content);
+      const validation = validateIllustrationPromptsResponse(parsed, paragraphs.length);
+
+      if (!validation.isValid) {
+        console.error(`[V3 Illustrations] Validation errors (attempt ${attempt}/${MAX_RETRIES}):`, validation.errors);
+        lastError = validation.errors.join(', ');
+        continue;
+      }
+
+      return { success: true, prompts: validation.data };
+
+    } catch (error: any) {
+      console.error(`[V3 Illustrations] Prompt generation error (attempt ${attempt}/${MAX_RETRIES}):`, error);
+      lastError = error.message;
+      // Continue to next attempt
     }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
-
-    if (!content) {
-      return { success: false, error: 'No content in OpenAI response' };
-    }
-
-    const parsed = JSON.parse(content);
-    const validation = validateIllustrationPromptsResponse(parsed, paragraphs.length);
-
-    if (!validation.isValid) {
-      console.error('[V3 Illustrations] Validation errors:', validation.errors);
-      return { success: false, error: validation.errors.join(', ') };
-    }
-
-    return { success: true, prompts: validation.data };
-
-  } catch (error: any) {
-    console.error('[V3 Illustrations] Prompt generation error:', error);
-    return { success: false, error: error.message };
   }
+
+  // All retries exhausted
+  console.error('[V3 Illustrations] All retries exhausted');
+  return { success: false, error: lastError || 'Failed after multiple attempts' };
 }
 
 /**

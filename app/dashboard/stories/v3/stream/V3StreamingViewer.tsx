@@ -195,34 +195,20 @@ export default function V3StreamingViewer() {
           </Link>
         )}
 
-        {/* V3 Streaming Badge */}
-        <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
-            <Sparkles className="w-3 h-3" />
-            V3 Engine
-          </span>
-          {!state.error && !state.isComplete && (
-            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium animate-pulse">
-              <Loader2 className="w-3 h-3 animate-spin" />
-              Streaming
-            </span>
-          )}
-        </div>
-
         {/* Progress indicator */}
         {!state.isComplete && !state.error && (
-          <div className="mb-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-purple-600 animate-spin flex-shrink-0" />
+              <Loader2 className="w-5 h-5 text-blue-600 animate-spin flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-purple-800 font-medium">
+                <p className="text-blue-800 font-medium">
                   {!state.started
                     ? 'Preparing your story...'
                     : !state.title
                     ? 'Creating your story...'
                     : `Writing your story... ${state.paragraphs.length > 0 ? `(${state.paragraphs.length} paragraphs)` : ''}`}
                 </p>
-                <p className="text-purple-600 text-sm mt-1">
+                <p className="text-blue-600 text-sm mt-1">
                   Your story will appear below as it's being written
                 </p>
               </div>
@@ -251,12 +237,12 @@ export default function V3StreamingViewer() {
 
         {/* Success message */}
         {state.isComplete && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center gap-3">
-              <Sparkles className="w-5 h-5 text-green-600" />
+              <Sparkles className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-green-800 font-medium">Story Complete!</p>
-                <p className="text-green-600 text-sm">Redirecting to your story...</p>
+                <p className="text-blue-800 font-medium">Story Complete!</p>
+                <p className="text-blue-600 text-sm">Redirecting to your story...</p>
               </div>
             </div>
           </div>
@@ -317,8 +303,8 @@ export default function V3StreamingViewer() {
         {/* Empty state while waiting */}
         {!state.title && !state.error && state.started && (
           <div className="card p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-purple-100 flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-purple-600 animate-pulse" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-blue-600 animate-pulse" />
             </div>
             <p className="text-gray-600 mb-2">Your story is being crafted...</p>
             <p className="text-gray-400 text-sm">The title will appear here shortly</p>

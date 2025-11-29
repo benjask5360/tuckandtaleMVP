@@ -449,17 +449,17 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
       // For cover (large), show a smaller banner instead of giant square
       if (size === 'large') {
         return (
-          <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 py-4 px-6">
+          <div className="w-full rounded-2xl overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 py-4 px-6">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                <Sparkles className="w-4 h-4 text-purple-500 absolute -top-1 -right-1 animate-pulse" />
+                <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+                <Sparkles className="w-4 h-4 text-blue-500 absolute -top-1 -right-1 animate-pulse" />
               </div>
               <div>
-                <p className="text-purple-600 font-medium text-sm">
-                  {status === 'generating' ? 'Creating cover illustration...' : 'Preparing cover...'}
+                <p className="text-blue-600 font-medium text-sm">
+                  Preparing your personalized illustrations...
                 </p>
-                <p className="text-purple-400 text-xs">This may take a moment</p>
+                <p className="text-blue-400 text-xs">This may take a moment</p>
               </div>
             </div>
           </div>
@@ -467,11 +467,11 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
       }
       // For scenes (medium), keep smaller horizontal placeholder
       return (
-        <div className="w-full rounded-xl overflow-hidden bg-gradient-to-r from-purple-50 to-indigo-50 border border-dashed border-purple-200 py-3 px-4">
+        <div className="w-full rounded-xl overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 border border-dashed border-blue-200 py-3 px-4">
           <div className="flex items-center gap-3">
-            <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
-            <p className="text-purple-600 font-medium text-xs">
-              {status === 'generating' ? 'Creating illustration...' : 'Preparing...'}
+            <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+            <p className="text-blue-600 font-medium text-xs">
+              Preparing your personalized illustrations...
             </p>
           </div>
         </div>
@@ -516,25 +516,6 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
             </p>
           </div>
         )}
-
-        {/* V3 Engine Badge */}
-        <div className="mb-4 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
-            <Sparkles className="w-3 h-3" />
-            V3 Engine
-          </span>
-          {hasIllustrations ? (
-            <span className="text-xs text-gray-500">
-              {illustrationStatus?.overall === 'complete' ? 'With illustrations' :
-               illustrationStatus?.overall === 'generating' || triggeringIllustrations ? 'Generating illustrations...' :
-               illustrationStatus?.overall === 'partial' ? 'Partial illustrations' :
-               illustrationStatus?.overall === 'failed' ? 'Illustration generation failed' :
-               'Preparing illustrations...'}
-            </span>
-          ) : (
-            <span className="text-xs text-gray-500">Text-only</span>
-          )}
-        </div>
 
         {/* Header */}
         <div className="mb-6 md:mb-8">
@@ -700,18 +681,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
                   </p>
                 </div>
               </div>
-            ) : (
-              // No illustrations - show placeholder
-              <div className="relative w-full max-w-2xl mx-auto rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-slate-50 border-2 border-dashed border-gray-200 aspect-square">
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  <ImageOff className="w-16 h-16 text-gray-300 mb-4" />
-                  <p className="text-gray-500 font-medium mb-2">Text-only Story</p>
-                  <p className="text-gray-400 text-sm max-w-xs">
-                    This story was created without illustrations
-                  </p>
-                </div>
-              </div>
-            )}
+            ) : null}
 
             {/* Starring Row */}
             {story.generation_metadata?.characters && story.generation_metadata.characters.length > 0 && (
