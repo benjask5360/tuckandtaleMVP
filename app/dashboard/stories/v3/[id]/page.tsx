@@ -446,6 +446,9 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
     }
 
     if (isLoading || !url) {
+      const { completed, total } = getProgressCount()
+      const progressText = total > 0 ? `Generating illustrations: ${completed} / ${total} complete` : 'Preparing your personalized illustrations...'
+
       // For cover (large), show a smaller banner instead of giant square
       if (size === 'large') {
         return (
@@ -457,7 +460,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
               </div>
               <div>
                 <p className="text-blue-600 font-medium text-sm">
-                  Preparing your personalized illustrations...
+                  {progressText}
                 </p>
                 <p className="text-blue-400 text-xs">This may take a moment</p>
               </div>
@@ -471,7 +474,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
           <div className="flex items-center gap-3">
             <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
             <p className="text-blue-600 font-medium text-xs">
-              Preparing your personalized illustrations...
+              {progressText}
             </p>
           </div>
         </div>
@@ -495,6 +498,18 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
   const getSceneIllustration = (paragraphIndex: number) => {
     if (!illustrationStatus?.scenes) return null
     return illustrationStatus.scenes.find(s => s.paragraphIndex === paragraphIndex)
+  }
+
+  // Calculate illustration progress
+  const getProgressCount = () => {
+    if (!illustrationStatus) return { completed: 0, total: 0 }
+
+    const total = 1 + (story?.generation_metadata?.v3_story?.paragraphs?.length || 0)
+    const coverComplete = illustrationStatus.cover?.status === 'success' ? 1 : 0
+    const scenesComplete = (illustrationStatus.scenes || []).filter(s => s.status === 'success').length
+    const completed = coverComplete + scenesComplete
+
+    return { completed, total }
   }
 
   // Check if illustrations are enabled and in progress or complete

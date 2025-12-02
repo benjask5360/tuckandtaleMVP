@@ -122,8 +122,8 @@ export async function generateAllIllustrations(
     }
 
     // 7. Fire all Leonardo calls in parallel
-    // NOTE: These do NOT update the database individually - they return results
-    // which we batch update at the end to avoid race conditions
+    // Progressive updates: Each illustration updates DB as it completes
+    // Batch update at end serves as consistency check/fallback
     const leonardoClient = new LeonardoClient();
 
     const allPromises: Promise<V3IllustrationGenerationResult>[] = [
@@ -133,7 +133,8 @@ export async function generateAllIllustrations(
         aiConfig,
         promptsResult.prompts.coverPrompt,
         'cover',
-        undefined
+        undefined,
+        storyId
       ),
       // Scenes
       ...promptsResult.prompts.scenePrompts.map(sp =>
@@ -142,7 +143,8 @@ export async function generateAllIllustrations(
           aiConfig,
           sp.prompt,
           'scene',
-          sp.paragraphIndex
+          sp.paragraphIndex,
+          storyId
         )
       ),
     ];
@@ -326,15 +328,15 @@ async function generateIllustrationPrompts(
 
 /**
  * Generate a single illustration with moderation retry logic
- * NOTE: This function does NOT update the database - it only returns results.
- * The caller is responsible for collecting all results and doing a single batch update.
+ * Updates database progressively as each illustration completes
  */
 async function generateSingleIllustration(
   leonardoClient: LeonardoClient,
   aiConfig: AIConfig,
   originalPrompt: string,
   imageType: 'cover' | 'scene',
-  paragraphIndex: number | undefined
+  paragraphIndex: number | undefined,
+  storyId?: string
 ): Promise<V3IllustrationGenerationResult> {
   let currentPrompt = originalPrompt;
   let attempts = 0;
@@ -363,7 +365,22 @@ async function generateSingleIllustration(
           continue;
         }
 
-        // All retries exhausted - return failure (no DB update)
+        // All retries exhausted - progressive DB update for failure
+        if (storyId) {
+          try {
+            await new Promise(resolve => setTimeout(resolve, 500)); // Debounce
+            const supabase = createAdminClient();
+            await updateIllustrationStatus(supabase, storyId, imageType, paragraphIndex, {
+              status: 'failed',
+              error: 'moderation_failed',
+              attempts,
+            } as any);
+            console.log(`[V3 Illustrations] Progressive update: ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} failed (moderation)`);
+          } catch (error) {
+            console.error(`[V3 Illustrations] Progressive update failed (non-fatal):`, error);
+          }
+        }
+
         return {
           success: false,
           imageType,
@@ -384,7 +401,24 @@ async function generateSingleIllustration(
         throw new Error('No image URL in response');
       }
 
-      // Return success result (no DB update - caller will batch all updates)
+      // Progressive DB update (if storyId provided)
+      if (storyId) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Debounce to reduce DB write frequency
+          const supabase = createAdminClient();
+          await updateIllustrationStatus(supabase, storyId, imageType, paragraphIndex, {
+            status: 'success',
+            tempUrl: leonardoUrl,
+            attempts,
+          } as any);
+          console.log(`[V3 Illustrations] Progressive update: ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} succeeded`);
+        } catch (error) {
+          console.error(`[V3 Illustrations] Progressive update failed (non-fatal):`, error);
+          // Don't throw - we'll handle this in the batch update
+        }
+      }
+
+      // Return success result
       return {
         success: true,
         imageType,
@@ -409,8 +443,23 @@ async function generateSingleIllustration(
         continue;
       }
 
-      // Non-moderation error or retries exhausted - return failure (no DB update)
+      // Non-moderation error or retries exhausted - progressive DB update for failure
       console.error(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} error:`, error.message);
+
+      if (storyId) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Debounce
+          const supabase = createAdminClient();
+          await updateIllustrationStatus(supabase, storyId, imageType, paragraphIndex, {
+            status: 'failed',
+            error: error.message,
+            attempts,
+          } as any);
+          console.log(`[V3 Illustrations] Progressive update: ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} failed (error)`);
+        } catch (updateError) {
+          console.error(`[V3 Illustrations] Progressive update failed (non-fatal):`, updateError);
+        }
+      }
 
       return {
         success: false,
