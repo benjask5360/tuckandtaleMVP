@@ -83,10 +83,10 @@ export default function PricingPage() {
         <div className="container-narrow px-4 md:px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl mb-4 md:mb-6 text-white">
-              Unlimited Storytelling
+              Personalized Bedtime Stories
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed">
-              Create personalized bedtime stories your children will love.
+              Create magical stories your children will love.
               Start with a free illustrated story!
             </p>
           </div>
