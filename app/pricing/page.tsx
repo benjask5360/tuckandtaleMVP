@@ -113,13 +113,23 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Free Trial Banner */}
+      {/* Free Trial CTA */}
       <section className="py-6 bg-gray-50">
         <div className="container-narrow">
-          <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
-            <p className="text-lg md:text-2xl font-bold text-white">
-              Your first illustrated story is completely FREE!
+          <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-6 text-center shadow-lg">
+            <p className="text-xl md:text-2xl font-bold text-white mb-3">
+              Your First Illustrated Story is FREE!
             </p>
+            <p className="text-white/90 mb-4 text-sm md:text-base">
+              No credit card required • Start creating in minutes
+            </p>
+            <Link
+              href="/auth/signup"
+              className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg"
+            >
+              Get Started Free
+              <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
