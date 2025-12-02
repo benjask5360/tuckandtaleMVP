@@ -57,7 +57,7 @@ export default async function DashboardPage() {
     const subscriptionStart = new Date(userProfile.subscription_starts_at)
     const anchorDay = subscriptionStart.getDate()
 
-    let cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+    const cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
     if (cycleStart > now) {
       cycleStart.setMonth(cycleStart.getMonth() - 1)
     }

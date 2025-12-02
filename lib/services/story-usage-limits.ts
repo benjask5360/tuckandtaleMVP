@@ -165,7 +165,7 @@ export class StoryUsageLimitsService {
 
     // If used a generation credit, deduct it
     if (usedCredit) {
-      await StoryCompletionService.useGenerationCredit(userId)
+      await StoryCompletionService.consumeGenerationCredit(userId)
     }
 
     // Determine if this story should be marked as requiring paywall

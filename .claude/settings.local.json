@@ -11,7 +11,15 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(node scripts/db-push-dedicated.js:*)",
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
+      "Bash(powershell:*)",
+      "Bash(netsh advfirewall firewall show rule:*)",
+      "Bash(findstr:*)",
+      "Bash(netsh advfirewall firewall add rule:*)",
+      "Bash(node -e:*)"
     ],
     "deny": [],
     "ask": []

@@ -228,7 +228,7 @@ export async function POST(request: Request) {
 
               // If used a generation credit, deduct it
               if (usingCredit) {
-                await StoryCompletionService.useGenerationCredit(userId!);
+                await StoryCompletionService.consumeGenerationCredit(userId!);
               }
 
               // If this is story #2 and user doesn't have subscription, mark as requiring paywall

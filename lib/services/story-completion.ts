@@ -129,10 +129,10 @@ export class StoryCompletionService {
   }
 
   /**
-   * Use one generation credit
+   * Use one generation credit (consume/deduct)
    * Returns true if successful, false if no credits available
    */
-  static async useGenerationCredit(userId: string): Promise<boolean> {
+  static async consumeGenerationCredit(userId: string): Promise<boolean> {
     const supabase = await createClient()
 
     const { data, error } = await supabase
