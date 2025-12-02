@@ -273,83 +273,51 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* What&apos;s Included Section */}
-      <section className="section-padding py-16 bg-white">
+      {/* What&apos;s Included Section - Condensed on mobile */}
+      <section className="section-padding py-12 md:py-16 bg-white">
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto">
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-8 text-center">
+            <h2 className="font-display font-bold text-2xl md:text-4xl text-gray-900 mb-6 md:mb-8 text-center">
               Every Story Includes
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">🎨</span>
-                </div>
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
+              <div className="flex items-start gap-3 p-3 md:p-4">
+                <span className="text-2xl flex-shrink-0">🎨</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Custom Illustrations</h3>
-                  <p className="text-gray-600 text-sm">
-                    Beautiful AI-generated artwork that brings your story to life
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Custom Illustrations</h3>
+                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                    Beautiful AI-generated artwork
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">👶</span>
-                </div>
+              <div className="flex items-start gap-3 p-3 md:p-4">
+                <span className="text-2xl flex-shrink-0">👶</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Personalized Characters</h3>
-                  <p className="text-gray-600 text-sm">
-                    Your child is the hero of every adventure
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Personalized Characters</h3>
+                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                    Your child is the hero
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">📚</span>
-                </div>
+              <div className="flex items-start gap-3 p-3 md:p-4">
+                <span className="text-2xl flex-shrink-0">📚</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Multiple Genres</h3>
-                  <p className="text-gray-600 text-sm">
-                    Adventure, fantasy, fairy tales, mystery, and more
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Multiple Genres</h3>
+                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                    Adventure, fantasy, fairy tales, and more
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">🌱</span>
-                </div>
+              <div className="flex items-start gap-3 p-3 md:p-4">
+                <span className="text-2xl flex-shrink-0">🌱</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Growth Stories</h3>
-                  <p className="text-gray-600 text-sm">
-                    Stories that teach valuable life lessons
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">✍️</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Writing Styles</h3>
-                  <p className="text-gray-600 text-sm">
-                    Classic bedtime, silly adventures, rhyming, and more
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4">
-                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xl">📖</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Story Library</h3>
-                  <p className="text-gray-600 text-sm">
-                    Save and re-read your favorite stories anytime
+                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Growth Stories</h3>
+                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                    Teach valuable life lessons
                   </p>
                 </div>
               </div>
