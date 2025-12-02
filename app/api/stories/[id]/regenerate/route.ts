@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { BetaStoryGenerationService } from '@/lib/story-engine-v2/services/BetaStoryGenerationService';
+import { V3StoryGenerationService } from '@/lib/story-engine-v3';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
 
 export async function PUT(
@@ -51,7 +51,7 @@ export async function PUT(
       .from('api_cost_logs')
       .select('generation_params')
       .eq('content_id', storyId)
-      .in('operation', ['story_fun', 'story_growth'])
+      .in('operation', ['story_generation_v3', 'story_fun', 'story_growth'])
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -81,8 +81,8 @@ export async function PUT(
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', storyId);
 
-    // Generate new story with same parameters using Beta engine
-    const newStory = await BetaStoryGenerationService.generateStory(
+    // Generate new story with same parameters using V3 engine
+    const result = await V3StoryGenerationService.generateStory(
       user.id,
       costLog.generation_params
     );
@@ -95,7 +95,8 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      story: newStory,
+      storyId: result.storyId,
+      story: result.story,
       usage: updatedUsage,
       message: 'Story regenerated successfully',
     });

@@ -139,7 +139,7 @@ export const characterTypes: CharacterTypeConfig[] = [
           {
             id: 'background',
             type: 'buttons',
-            label: 'Background',
+            label: 'Background (optional)',
             customOptions: true,
             options: [
               { value: 'white', label: 'White' },
@@ -333,7 +333,7 @@ export const characterTypes: CharacterTypeConfig[] = [
           {
             id: 'background',
             type: 'buttons',
-            label: 'Background',
+            label: 'Background (optional)',
             customOptions: true,
             options: [
               { value: 'white', label: 'White' },

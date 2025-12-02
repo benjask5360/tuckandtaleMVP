@@ -1,15 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat:*)",
+      "Bash(cd:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git checkout:*)",
-      "Bash(git pull:*)",
-      "Bash(git merge:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nImprove story generation feedback and fix network retry\n\n- Add rotating messages during story generation button\n- Show illustration completion count in progress banner\n- Fix mobile overflow for edit title input\n- Add network error retry for OpenAI API calls (ENOTFOUND, fetch failed)\n- Clean up IllustrationPending component (remove progress dots and scene count)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git fetch:*)"
+      "Bash(npx tsc:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "ask": []
