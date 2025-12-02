@@ -38,6 +38,7 @@ export async function generateAllIllustrations(
   storyId: string,
   userId: string
 ): Promise<{ success: boolean; illustrationCount: number; error?: string }> {
+  console.log(`[V3 Illustrations] Starting generation for story ${storyId}`);
   const supabase = createAdminClient();
 
   try {
@@ -87,6 +88,7 @@ export async function generateAllIllustrations(
       .eq('id', storyId);
 
     // 4. Generate illustration prompts via OpenAI
+    console.log(`[V3 Illustrations] Generating prompts for ${paragraphs.length} scenes + 1 cover...`);
     const promptsResult = await generateIllustrationPrompts(
       v3Story.title,
       paragraphs,
@@ -94,9 +96,11 @@ export async function generateAllIllustrations(
     );
 
     if (!promptsResult.success || !promptsResult.prompts) {
+      console.error('[V3 Illustrations] Failed to generate prompts:', promptsResult.error);
       await updateOverallStatus(supabase, storyId, 'failed');
       return { success: false, illustrationCount: 0, error: promptsResult.error || 'Failed to generate prompts' };
     }
+    console.log('[V3 Illustrations] Prompts generated successfully');
 
     // 5. Update status with prompts
     const statusWithPrompts: V3IllustrationStatusData = {
@@ -115,11 +119,14 @@ export async function generateAllIllustrations(
       .eq('id', storyId);
 
     // 6. Get Leonardo config
+    console.log('[V3 Illustrations] Fetching Leonardo AI config...');
     const aiConfig = await AIConfigService.getBetaIllustrationConfig();
     if (!aiConfig) {
+      console.error('[V3 Illustrations] No Leonardo AI config found! Check ai_configs table.');
       await updateOverallStatus(supabase, storyId, 'failed');
       return { success: false, illustrationCount: 0, error: 'Leonardo config not found' };
     }
+    console.log('[V3 Illustrations] Using AI config:', aiConfig.name, 'model:', aiConfig.model_id);
 
     // 7. Fire all Leonardo calls in parallel
     // Progressive updates: Each illustration updates DB as it completes
@@ -264,6 +271,12 @@ async function generateIllustrationPrompts(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
+      console.log(`[V3 Illustrations] OpenAI prompt generation attempt ${attempt}/${MAX_RETRIES}...`);
+
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -277,7 +290,10 @@ async function generateIllustrationPrompts(
           max_tokens: 4000,
           temperature: 0.7,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const error = await response.text();
@@ -312,6 +328,7 @@ async function generateIllustrationPrompts(
         continue;
       }
 
+      console.log(`[V3 Illustrations] OpenAI prompts validated successfully`);
       return { success: true, prompts: validation.data };
 
     } catch (error: any) {

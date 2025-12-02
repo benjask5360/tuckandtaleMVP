@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Shield, Users, FileText, BarChart3, Settings, Database } from 'lucide-react';
+import { Shield, Users, FileText, BarChart3, Settings, Database, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
@@ -108,6 +108,20 @@ export default async function AdminDashboardPage() {
             </p>
             <div className="text-sm text-gray-500 italic">Coming soon...</div>
           </div>
+
+          {/* Leonardo API Tester */}
+          <Link href="/dashboard/admin/leonardo-test" className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow block group">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-yellow-50 rounded-xl group-hover:bg-yellow-100 transition-colors">
+                <Sparkles className="w-6 h-6 text-yellow-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Leonardo Tester</h2>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Test Leonardo API directly with story illustration config. Benchmark performance.
+            </p>
+            <div className="text-sm text-yellow-600 font-medium">Test API →</div>
+          </Link>
 
           {/* Support */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow">

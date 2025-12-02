@@ -122,8 +122,14 @@ export default async function AdminStoryInspectionPage({
   const isV3 = story.engine_version === 'v3';
   const v3Status = story.v3_illustration_status as V3IllustrationStatus | null;
 
-  // For V3 stories, get paragraphs from generation_metadata.paragraphs
-  const v3Paragraphs = metadata?.paragraphs as string[] | undefined;
+  // For V3 stories, get paragraphs - try metadata.paragraphs first (string array),
+  // then fall back to metadata.v3_story.paragraphs (object array with .text)
+  let v3Paragraphs: string[] | undefined;
+  if (metadata?.paragraphs && Array.isArray(metadata.paragraphs)) {
+    v3Paragraphs = metadata.paragraphs;
+  } else if (metadata?.v3_story?.paragraphs && Array.isArray(metadata.v3_story.paragraphs)) {
+    v3Paragraphs = metadata.v3_story.paragraphs.map((p: { text: string }) => p.text);
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-8 px-4">
@@ -237,55 +243,7 @@ export default async function AdminStoryInspectionPage({
           </div>
         </div>
 
-        {/* Story Content */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-purple-600" />
-            Story Content ({isV3 && v3Paragraphs ? v3Paragraphs.length : scenes?.length || metadata?.paragraphs?.length || 0} Paragraphs)
-          </h2>
-          <div className="space-y-6">
-            {/* V3 stories: use metadata.paragraphs */}
-            {isV3 && v3Paragraphs && v3Paragraphs.length > 0 ? (
-              v3Paragraphs.map((paragraph: string, index: number) => (
-                <div key={index} className="border-l-4 border-purple-300 pl-4">
-                  <div className="font-semibold text-purple-700 mb-2 text-sm">
-                    Paragraph {index + 1}
-                  </div>
-                  <p className="text-gray-800 leading-relaxed">{paragraph}</p>
-                </div>
-              ))
-            ) : scenes && scenes.length > 0 ? (
-              /* V2 stories: use story_scenes */
-              scenes.map((scene, index) => (
-                <div key={index} className="border-l-4 border-purple-300 pl-4">
-                  <div className="font-semibold text-purple-700 mb-2 text-sm">
-                    Scene {index + 1}
-                    {scene.charactersInScene && scene.charactersInScene.length > 0 && (
-                      <span className="ml-2 text-gray-500 font-normal">
-                        ({scene.charactersInScene.join(', ')})
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-800 leading-relaxed">{scene.paragraph}</p>
-                </div>
-              ))
-            ) : metadata?.paragraphs && Array.isArray(metadata.paragraphs) ? (
-              /* Fallback: use metadata.paragraphs */
-              metadata.paragraphs.map((paragraph: string, index: number) => (
-                <div key={index} className="border-l-4 border-purple-300 pl-4">
-                  <div className="font-semibold text-purple-700 mb-2 text-sm">
-                    Paragraph {index + 1}
-                  </div>
-                  <p className="text-gray-800 leading-relaxed">{paragraph}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 italic">No story content available.</p>
-            )}
-          </div>
-        </div>
-
-        {/* All Illustrations */}
+        {/* Story Content & Illustrations */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-purple-600" />
@@ -355,60 +313,71 @@ export default async function AdminStoryInspectionPage({
                 </div>
               </div>
 
-              {/* V3 Scene Illustrations */}
+              {/* V3 Scene Illustrations with Paragraphs */}
               <div className="space-y-8">
-                <h3 className="text-lg font-semibold text-purple-700">Scene Illustrations ({v3Status.scenes?.length || 0})</h3>
+                <h3 className="text-lg font-semibold text-purple-700">Paragraphs & Illustrations ({v3Status.scenes?.length || 0})</h3>
                 {v3Status.scenes && v3Status.scenes.length > 0 ? (
-                  v3Status.scenes.map((scene, index) => (
-                    <div key={index} className="pb-8 border-b border-gray-200 last:border-b-0">
-                      <h4 className="font-semibold text-gray-900 mb-4">
-                        Scene {scene.paragraphIndex + 1}
-                        <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
-                          scene.status === 'success' ? 'bg-green-100 text-green-800' :
-                          scene.status === 'failed' ? 'bg-red-100 text-red-800' :
-                          scene.status === 'generating' ? 'bg-blue-100 text-blue-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {scene.status}
-                        </span>
-                      </h4>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                          {(scene.imageUrl || scene.tempUrl) ? (
-                            <Image
-                              src={scene.imageUrl || scene.tempUrl || ''}
-                              alt={`Scene ${scene.paragraphIndex + 1} illustration`}
-                              fill
-                              className="object-cover"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                              <div className="text-center">
-                                <ImageIcon className="w-12 h-12 mx-auto mb-2" />
-                                <p className="text-sm">{scene.error || 'No illustration available'}</p>
+                  v3Status.scenes.map((scene, index) => {
+                    const paragraphText = v3Paragraphs?.[scene.paragraphIndex] || null;
+                    return (
+                      <div key={index} className="pb-8 border-b border-gray-200 last:border-b-0">
+                        <h4 className="font-semibold text-gray-900 mb-4">
+                          Paragraph {scene.paragraphIndex + 1}
+                          <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                            scene.status === 'success' ? 'bg-green-100 text-green-800' :
+                            scene.status === 'failed' ? 'bg-red-100 text-red-800' :
+                            scene.status === 'generating' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {scene.status}
+                          </span>
+                        </h4>
+
+                        {/* Paragraph Text */}
+                        {paragraphText && (
+                          <div className="mb-4 border-l-4 border-purple-300 pl-4 bg-purple-50 rounded-r-lg py-3 pr-4">
+                            <p className="text-gray-800 leading-relaxed">{paragraphText}</p>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                            {(scene.imageUrl || scene.tempUrl) ? (
+                              <Image
+                                src={scene.imageUrl || scene.tempUrl || ''}
+                                alt={`Scene ${scene.paragraphIndex + 1} illustration`}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
+                                <div className="text-center">
+                                  <ImageIcon className="w-12 h-12 mx-auto mb-2" />
+                                  <p className="text-sm">{scene.error || 'No illustration available'}</p>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <h5 className="font-semibold text-gray-900">Illustration Prompt</h5>
-                            <CopyButton text={scene.prompt || ''} />
+                            )}
                           </div>
-                          <div className="bg-gray-50 rounded-lg p-4">
-                            <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                              {scene.prompt || 'No prompt available'}
-                            </pre>
-                          </div>
-                          {scene.error && (
-                            <div className="mt-2 bg-red-50 rounded-lg p-4">
-                              <p className="text-sm text-red-800">Error: {scene.error}</p>
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <h5 className="font-semibold text-gray-900">Illustration Prompt</h5>
+                              <CopyButton text={scene.prompt || ''} />
                             </div>
-                          )}
+                            <div className="bg-gray-50 rounded-lg p-4">
+                              <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                                {scene.prompt || 'No prompt available'}
+                              </pre>
+                            </div>
+                            {scene.error && (
+                              <div className="mt-2 bg-red-50 rounded-lg p-4">
+                                <p className="text-sm text-red-800">Error: {scene.error}</p>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <p className="text-gray-500 italic">No scene illustrations available.</p>
                 )}

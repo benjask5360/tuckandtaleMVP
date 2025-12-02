@@ -3,7 +3,6 @@
  * Manages AI model configurations for different purposes
  */
 
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export interface AIConfig {
@@ -38,7 +37,7 @@ export class AIConfigService {
   static async getDefaultConfig(
     purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_illustration_beta' | 'story_vignette_panorama' | 'story_vignette_narratives'
   ): Promise<AIConfig | null> {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data, error } = await supabase
       .from('ai_configs')
@@ -60,7 +59,7 @@ export class AIConfigService {
    * Get a specific AI configuration by name
    */
   static async getConfigByName(name: string): Promise<AIConfig | null> {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data, error } = await supabase
       .from('ai_configs')
@@ -83,7 +82,7 @@ export class AIConfigService {
   static async getAvailableConfigs(
     purpose: 'avatar_generation' | 'story_fun' | 'story_growth' | 'story_illustration' | 'story_illustration_beta'
   ): Promise<AIConfig[]> {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const { data, error } = await supabase
       .from('ai_configs')

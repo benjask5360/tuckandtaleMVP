@@ -33,6 +33,10 @@ export function buildIllustrationPromptsPrompt(
     })
     .join('\n');
 
+  // Find the hero character's background for ethnicity consistency
+  const heroCharacter = characters.find(c => c.role === 'hero');
+  const heroBackground = heroCharacter?.background;
+
   return `You are creating illustration prompts for a children's bedtime story.
 
 ## STORY
@@ -80,7 +84,10 @@ RULES:
 - NEVER use these action words (they trigger content filters): shooting, hitting, fighting, punching, kicking
 - Describe ONLY what is visible - no feelings, emotions, or atmosphere
 - DO NOT use actual line breaks in the prompt string
-- ALWAYS end with " . STYLE : Disney pixar"
+- ALWAYS end with " . STYLE : Disney pixar"${heroBackground ? `
+
+IMPORTANT - NEW CHARACTER ETHNICITY:
+When the story introduces NEW human characters not listed above (e.g., grandparents, teachers, friends, neighbors, shopkeepers), depict them as ${heroBackground} unless the story text explicitly describes them differently. This ensures visual consistency and family representation throughout the illustrations.` : ''}
 
 ## EXAMPLE OUTPUT
 For a story with a child (Zaier) and a magical creature (Flicker the firefly):
