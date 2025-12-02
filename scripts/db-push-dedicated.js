@@ -1,19 +1,32 @@
 #!/usr/bin/env node
 /**
- * Push migrations using DEDICATED POOLER
- * This bypasses the broken shared pooler
+ * Push migrations using DIRECT DATABASE CONNECTION
+ * Port 5432 = direct connection (works when 6543 is blocked)
+ * Port 6543 = dedicated pooler (may be blocked by firewalls)
  */
 
 const { Client } = require('pg');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config({ path: '.env.local' });
+
+// Load .env.local from project root (resolve relative to this script)
+const envPath = path.join(__dirname, '..', '.env.local');
+require('dotenv').config({ path: envPath });
 
 const password = process.env.SUPABASE_DB_PASSWORD;
+if (!password) {
+  console.error('❌ SUPABASE_DB_PASSWORD not found in .env.local');
+  console.error(`   Checked: ${envPath}`);
+  process.exit(1);
+}
 const projectRef = 'iolimejvugpcpnmruqww';
 
+// Use port 6543 (dedicated pooler)
+const PORT = process.env.SUPABASE_DB_PORT || 6543;
+
 async function pushMigrations() {
-  console.log('\n🚀 Pushing Migrations via Dedicated Pooler');
+  console.log('\n🚀 Pushing Migrations via Direct Connection');
+  console.log(`   Host: db.${projectRef}.supabase.co:${PORT}`);
   console.log('━'.repeat(50));
 
   const migrationsDir = path.join(__dirname, '..', 'supabase', 'migrations');
@@ -34,7 +47,7 @@ async function pushMigrations() {
 
   const client = new Client({
     host: `db.${projectRef}.supabase.co`,
-    port: 6543,
+    port: PORT,
     user: 'postgres',
     password: password,
     database: 'postgres',
@@ -43,7 +56,7 @@ async function pushMigrations() {
 
   try {
     await client.connect();
-    console.log('✅ Connected to dedicated pooler');
+    console.log('✅ Connected to database');
 
     // Get already applied migrations
     const { rows } = await client.query(

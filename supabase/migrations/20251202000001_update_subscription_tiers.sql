@@ -8,9 +8,10 @@
 -- =====================================================
 
 -- First, reset any users on old tiers to tier_free
+-- Note: subscription_status must be one of: 'free', 'active', 'cancelled', 'past_due', 'trialing'
 UPDATE user_profiles
 SET subscription_tier_id = 'tier_free',
-    subscription_status = 'inactive',
+    subscription_status = 'free',
     stripe_subscription_id = NULL,
     subscription_starts_at = NULL,
     subscription_ends_at = NULL,
