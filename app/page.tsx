@@ -11,8 +11,8 @@ export default function HomePage() {
         <div className="container-narrow section-padding relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="animate-fade-in-up text-center lg:text-left">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
-                Bedtime Stories Where<br />
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
+                Personalized Stories Where<br />
                 <span className="gradient-text">
                   YOUR Child
                 </span>{' '}
