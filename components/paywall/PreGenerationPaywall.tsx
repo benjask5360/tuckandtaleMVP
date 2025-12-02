@@ -98,7 +98,6 @@ export default function PreGenerationPaywall({
             Ready to Create Your Next Story?
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            You&apos;ve created {storyNumber - 1} {storyNumber - 1 === 1 ? 'story' : 'stories'} so far.
             Choose how you&apos;d like to continue your storytelling journey.
           </p>
         </div>
