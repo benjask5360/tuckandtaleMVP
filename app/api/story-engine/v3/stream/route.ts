@@ -151,8 +151,16 @@ export async function POST(request: Request) {
         const hasSubscription = usageCheck.paywallBehavior?.hasSubscription || false;
         const usingCredit = params.useCredit && (usageCheck.paywallBehavior?.hasCredits || false);
 
-        // Send initial event to indicate stream started
-        sendEvent(controller, { type: 'started' });
+        // Get story number for paywall display
+        const statusBefore = await StoryCompletionService.getUserStoryStatus(user.id);
+        const storyNumber = statusBefore.totalStoriesGenerated + 1;
+
+        // Send initial event with paywall info
+        sendEvent(controller, {
+          type: 'started',
+          storyNumber,
+          hasSubscription
+        });
 
         // Build generation request
         generationRequest = await buildGenerationRequest(params);

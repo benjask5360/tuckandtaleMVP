@@ -13,6 +13,8 @@ interface StreamingState {
   isComplete: boolean
   storyId: string | null
   started: boolean
+  storyNumber?: number
+  hasSubscription?: boolean
 }
 
 export default function V3StreamingViewer() {
@@ -87,7 +89,11 @@ export default function V3StreamingViewer() {
 
               switch (event.type) {
                 case 'started':
-                  // Stream started, already in loading state
+                  setState(prev => ({
+                    ...prev,
+                    storyNumber: event.storyNumber,
+                    hasSubscription: event.hasSubscription
+                  }))
                   break
 
                 case 'title':
@@ -261,15 +267,22 @@ export default function V3StreamingViewer() {
         {(state.paragraphs.length > 0 || (!state.error && state.started)) && (
           <div className="card p-6 md:p-8 lg:p-12">
             <div className="max-w-none space-y-6">
-              {state.paragraphs.map((text, index) => (
-                <p
-                  key={index}
-                  className="text-gray-800 leading-relaxed text-base md:text-lg animate-fadeIn"
-                  style={{ lineHeight: '1.8' }}
-                >
-                  {text}
-                </p>
-              ))}
+              {state.paragraphs.map((text, index) => {
+                // Blur paragraphs 4+ if this is story #2 without subscription
+                const shouldBlur = state.storyNumber === 2 && !state.hasSubscription && index >= 3
+
+                return (
+                  <p
+                    key={index}
+                    className={`text-gray-800 leading-relaxed text-base md:text-lg animate-fadeIn ${
+                      shouldBlur ? 'blur-sm opacity-50' : ''
+                    }`}
+                    style={{ lineHeight: '1.8' }}
+                  >
+                    {text}
+                  </p>
+                )
+              })}
 
               {/* Skeleton for next paragraph while streaming */}
               {!state.isComplete && !state.error && state.started && (
