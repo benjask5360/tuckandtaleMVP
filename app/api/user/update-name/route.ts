@@ -45,7 +45,9 @@ export async function PATCH(request: Request) {
 
     // Send welcome email (non-blocking)
     if (user.email) {
-      fetch(`${request.url.split('/api')[0]}/api/send-welcome`, {
+      const baseUrl = request.url.split('/api')[0]
+
+      fetch(`${baseUrl}/api/send-welcome`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -53,8 +55,20 @@ export async function PATCH(request: Request) {
           name: fullName
         })
       }).catch(error => {
-        // Log error but don't block the response
         console.error('Failed to send welcome email:', error)
+      })
+
+      // Notify admin of new signup (non-blocking)
+      fetch(`${baseUrl}/api/notify-admin-signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          name: fullName,
+          userId: user.id
+        })
+      }).catch(error => {
+        console.error('Failed to notify admin:', error)
       })
     }
 
