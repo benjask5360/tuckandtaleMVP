@@ -396,7 +396,7 @@ export class V3StoryGenerationService {
       max_tokens: aiConfig.settings.max_tokens || 3000, // Slightly less than V2 since no illustration prompts
       temperature: aiConfig.settings.temperature || 0.8,
       top_p: aiConfig.settings.top_p || 1.0,
-      frequency_penalty: aiConfig.settings.frequency_penalty || 0.3,
+      frequency_penalty: aiConfig.settings.frequency_penalty || 0.5, // Increased to reduce word repetition (e.g., "Giggleberries")
       presence_penalty: aiConfig.settings.presence_penalty || 0.3,
     };
 

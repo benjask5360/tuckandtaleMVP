@@ -75,74 +75,61 @@ export class V3StoryPromptBuilder {
   private getFunModeInstructions(): string {
     return `# ROLE: Creative Children's Story Writer
 
-You are an expert children's story writer specializing in imaginative, engaging bedtime stories.
+Write imaginative bedtime stories that feel FRESH and SPECIFIC.
 
-Your stories:
+**Be specific, not generic:**
+- Instead of "sparkled," write: "glowed orange like a sunset" or "shimmered like soap bubbles"
+- Instead of "magical forest," create: "a library where books whisper secrets" or "a backyard where shadows come alive at dusk"
+- Ground fantasy in real sensory details: smells, sounds, textures
 
-**Spark Wonder & Imagination**
-- Create magical moments and delightful surprises
-- Use vivid, sensory descriptions that bring scenes to life
-- Encourage children to dream big and explore their creativity
+**Avoid overused patterns:**
+- No made-up food names (Giggleberries, Laughlemons, Snugglefluff)
+- No generic quests (find magical item → meet wizard → return home)
+- No "everything sparkles/glows" — be precise about WHAT and HOW
 
-**Entertain & Engage**
-- Keep the pace lively and the plot engaging
-- Include moments of humor, excitement, or gentle suspense
-- Create memorable scenes that children will want to revisit
+**Keep it engaging and bedtime-ready:**
+- Lively pacing with clear scene breaks
+- Moments of humor, friendship, or gentle excitement
+- Calm, satisfying ending (no cliffhangers)
 
-**Warm & Heartfelt**
-- End on a positive, uplifting note
-- Show friendship, kindness, and courage naturally
-- Make children feel safe, happy, and inspired
+**Character descriptions:**
+- Do NOT describe character appearances (handled separately)
+- Simply refer to them by name
+- You MAY describe new characters you create in the story
 
-**Perfect for Bedtime**
-- Balance excitement with a gentle, calming conclusion
-- Create a satisfying story arc with a clear resolution
-- Leave children feeling content and ready for sweet dreams
-
-**Character Descriptions in Narrative**
-- Do NOT include detailed physical descriptions (hair color, eye color, body type, etc.) for the provided characters
-- Simply refer to them by name - physical details will be shown in illustrations later
-- You MAY describe new characters you create within the story (e.g., a wizard they meet)
-
-**Your mission:** Create a delightful story that entertains, inspires, and brings joy to young readers.`;
+Make it memorable. Make it specific. Make it theirs.`;
   }
 
   /**
    * System instructions for Growth mode
    */
   private getGrowthModeInstructions(): string {
-    return `# ROLE: Educational Children's Story Writer
+    return `# ROLE: Behavior Teaching Story Writer
 
-You are an expert children's story writer specializing in educational stories that help children learn and grow emotionally.
+Write clear, SHORT stories that teach one specific behavior through realistic examples.
 
-Your stories:
+**Show the exact behavior:**
+- If teaching "gentle hands," show the character stopping, taking a breath, and using soft touches
+- If teaching "sharing," show the character saying "You can have a turn for 5 minutes"
+- Use the child's NAME when demonstrating (e.g., "Emma took three deep breaths")
 
-**Teach & Guide**
-- Address the specified growth topic naturally within the story
-- Show the hero learning and growing through experience
-- Provide positive examples and gentle guidance
+**Use realistic situations:**
+- Playground arguments, bedtime struggles, sibling fights, grocery store tantrums
+- Show physical sensations: tight fists, racing heart, deep breaths, counting to 5
+- Make it feel like something that happened TODAY, not a fantasy adventure
 
-**Emotionally Supportive**
-- Validate the child's feelings and experiences
-- Show that challenges are normal and can be overcome
-- Build confidence and emotional intelligence
+**Keep it short and clear:**
+- One action or feeling per paragraph
+- Simple sentences (avoid: "sparkled with wonder," "filled her heart with joy")
+- Get to the behavior challenge by paragraph 2 — no long setups
 
-**Age-Appropriate Learning**
-- Use concepts and vocabulary suitable for the child's age
-- Break down complex emotions into understandable experiences
-- Provide practical examples children can relate to
+**Avoid these mistakes:**
+- Don't preach or explain lessons ("Emma learned that sharing is important")
+- Don't use generic advice ("be kind," "try your best")
+- Don't add fantasy elements unless directly related to the behavior
+- Don't describe character appearances (handled separately)
 
-**Engaging & Entertaining**
-- Make learning fun through an engaging story
-- Balance educational content with enjoyment
-- Create memorable characters children can learn from
-
-**Character Descriptions in Narrative**
-- Do NOT include detailed physical descriptions (hair color, eye color, body type, etc.) for the provided characters
-- Simply refer to them by name - physical details will be shown in illustrations later
-- You MAY describe new characters you create within the story (e.g., a wizard they meet)
-
-**Your mission:** Create an educational story that helps children learn important life skills while being entertained.`;
+The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
   }
 
   /**
@@ -242,10 +229,11 @@ Your stories:
 
     // Growth topic (if Growth mode)
     if (request.mode === 'growth' && request.growthTopic) {
-      params += `\n**Growth Topic:** ${request.growthTopic.displayName}\n`;
+      params += `\n**BEHAVIOR TO TEACH:** ${request.growthTopic.displayName}\n`;
       if (request.growthTopic.description) {
-        params += `(${request.growthTopic.description})\n`;
+        params += `${request.growthTopic.description}\n`;
       }
+      params += `\nShow this behavior in action 2-3 times. Use realistic situations the child actually faces.\n`;
     }
 
     // Moral lesson (if provided)
@@ -310,15 +298,15 @@ Your stories:
     instructions += '- Each paragraph should advance the story naturally\n';
     instructions += '- Create clear paragraph breaks - each paragraph is a distinct scene or moment\n\n';
 
-    instructions += '**STORY ARC:**\n';
+    instructions += '**STORY STRUCTURE:**\n';
     if (request.mode === 'growth') {
-      instructions += '- Opening paragraphs: Introduce the child and their situation\n';
-      instructions += '- Middle paragraphs: Present and work through the challenge\n';
-      instructions += '- Closing paragraphs: Resolution and reflection on what was learned\n\n';
+      instructions += '- Paragraphs 1-2: Child in realistic setting, challenge appears quickly\n';
+      instructions += '- Paragraphs 3-5: Show the new behavior 2-3 times with increasing success\n';
+      instructions += '- Final paragraphs: Natural resolution (no explaining, no "Emma learned that...")\n\n';
     } else {
-      instructions += '- Opening paragraphs: Setup and introduction\n';
-      instructions += '- Middle paragraphs: Adventure and excitement\n';
-      instructions += '- Closing paragraphs: Resolution and happy ending\n\n';
+      instructions += '- Opening: Introduce character and unique situation\n';
+      instructions += '- Middle: Story developments with specific details\n';
+      instructions += '- Ending: Satisfying, calming conclusion\n\n';
     }
 
     instructions += '**TITLE REQUIREMENTS:**\n';
@@ -326,10 +314,17 @@ Your stories:
     instructions += '- The title should capture the essence of the story\n';
     instructions += '- Avoid generic titles - make it memorable and specific to this story\n\n';
 
-    instructions += '**MORAL (optional but encouraged):**\n';
-    instructions += '- Include a brief moral or lesson that naturally fits the story\n';
-    instructions += '- Keep it positive and age-appropriate\n';
-    instructions += '- The moral should emerge from the story events, not feel forced\n';
+    if (request.mode === 'growth') {
+      instructions += '**IMPORTANT: Do NOT include a "moral" field.**\n';
+      instructions += 'The behavior demonstration is the lesson.\n';
+    } else if (request.moralLesson) {
+      instructions += '**MORAL (optional):**\n';
+      instructions += '- Include 1-2 sentence moral based on the lesson requested\n';
+      instructions += '- Make it natural, not preachy\n';
+    } else {
+      instructions += '**MORAL (optional):**\n';
+      instructions += '- You may include a brief moral if one naturally emerges\n';
+    }
 
     return instructions;
   }
