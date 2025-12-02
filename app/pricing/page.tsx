@@ -281,42 +281,42 @@ export default function PricingPage() {
               Every Story Includes
             </h2>
 
-            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
-              <div className="flex items-start gap-3 p-3 md:p-4">
-                <span className="text-2xl flex-shrink-0">🎨</span>
+            <div className="grid md:grid-cols-2 gap-5 md:gap-6">
+              <div className="flex items-start gap-4 p-4">
+                <span className="text-3xl md:text-2xl flex-shrink-0">🎨</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Custom Illustrations</h3>
-                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                  <h3 className="font-semibold text-gray-900 text-base md:text-lg">Custom Illustrations</h3>
+                  <p className="text-gray-600 text-sm md:text-base hidden md:block">
                     Beautiful AI-generated artwork
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 md:p-4">
-                <span className="text-2xl flex-shrink-0">👶</span>
+              <div className="flex items-start gap-4 p-4">
+                <span className="text-3xl md:text-2xl flex-shrink-0">👶</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Personalized Characters</h3>
-                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                  <h3 className="font-semibold text-gray-900 text-base md:text-lg">Personalized Characters</h3>
+                  <p className="text-gray-600 text-sm md:text-base hidden md:block">
                     Your child is the hero
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 md:p-4">
-                <span className="text-2xl flex-shrink-0">📚</span>
+              <div className="flex items-start gap-4 p-4">
+                <span className="text-3xl md:text-2xl flex-shrink-0">📚</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Multiple Genres</h3>
-                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                  <h3 className="font-semibold text-gray-900 text-base md:text-lg">Multiple Genres</h3>
+                  <p className="text-gray-600 text-sm md:text-base hidden md:block">
                     Adventure, fantasy, fairy tales, and more
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 md:p-4">
-                <span className="text-2xl flex-shrink-0">🌱</span>
+              <div className="flex items-start gap-4 p-4">
+                <span className="text-3xl md:text-2xl flex-shrink-0">🌱</span>
                 <div>
-                  <h3 className="font-semibold text-gray-900 text-sm md:text-base">Growth Stories</h3>
-                  <p className="text-gray-600 text-xs md:text-sm hidden md:block">
+                  <h3 className="font-semibold text-gray-900 text-base md:text-lg">Growth Stories</h3>
+                  <p className="text-gray-600 text-sm md:text-base hidden md:block">
                     Teach valuable life lessons
                   </p>
                 </div>
