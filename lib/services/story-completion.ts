@@ -192,6 +192,15 @@ export class StoryCompletionService {
       }
     }
 
+    console.log('[StoryCompletion] User status:', {
+      userId,
+      totalStories: data.total_stories_generated,
+      freeTrialUsed: data.free_trial_used,
+      credits: data.generation_credits,
+      status: data.subscription_status,
+      tier: data.subscription_tier_id
+    })
+
     const hasActiveSubscription =
       data.subscription_status === 'active' &&
       data.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
