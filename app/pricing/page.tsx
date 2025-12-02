@@ -118,7 +118,7 @@ export default function PricingPage() {
         <div className="container-narrow">
           <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-6 text-center shadow-lg">
             <p className="text-xl md:text-2xl font-bold text-white mb-3">
-              Your First Illustrated Story is FREE!
+              Get Your First Free Illustrated Story on Us!
             </p>
             <p className="text-white/90 mb-4 text-sm md:text-base">
               No credit card required • Start creating in minutes
