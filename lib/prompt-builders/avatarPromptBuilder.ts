@@ -60,7 +60,7 @@ export async function generateAvatarPrompt(
         } else if (selections.age === 1) {
           ageDescriptor = `one-year-old ${baseChar}`;
         } else {
-          ageDescriptor = `${ageNum}-year-old ${baseChar}`;
+          ageDescriptor = baseChar;
         }
       }
 
@@ -109,8 +109,8 @@ export async function generateAvatarPrompt(
         }
       }
 
-      // IMPORTANT: Eye color should be emphasized
-      if (enhanced.eyes) characteristics.push(`${enhanced.eyes} eyes (IMPORTANT: eyes must be ${enhanced.eyes})`);
+      // Eye color
+      if (enhanced.eyes) characteristics.push(`${enhanced.eyes} eyes`);
       if (enhanced.skin) characteristics.push(`${enhanced.skin} skin tone`);
       if (enhanced.body) characteristics.push(enhanced.body);  // Descriptor already includes "build"
       if (enhanced.glasses && enhanced.glasses.trim()) {
