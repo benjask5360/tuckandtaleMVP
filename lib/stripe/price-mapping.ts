@@ -9,10 +9,9 @@
 
 import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 
-// Environment variables for Stripe Price IDs
-// These should be set after creating the products in Stripe Dashboard
-const STORIES_PLUS_MONTHLY_PRICE_ID = process.env.STRIPE_PRICE_STORIES_PLUS_MONTHLY || ''
-const SINGLE_STORY_PRICE_ID = process.env.STRIPE_PRICE_SINGLE_STORY || ''
+// Stripe Price IDs
+const STORIES_PLUS_MONTHLY_PRICE_ID = process.env.STRIPE_PRICE_STORIES_PLUS_MONTHLY || 'price_1SZyKrBpMc7tEVZS7CdeGinl'
+const SINGLE_STORY_PRICE_ID = process.env.STRIPE_PRICE_SINGLE_STORY || 'price_1SZyJrBpMc7tEVZSc6hJCeo9'
 
 // Map of Stripe Price IDs to tier IDs
 const PRICE_TO_TIER_MAP: Record<string, string> = {
