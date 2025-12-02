@@ -9,6 +9,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { generateAllIllustrations } from '@/lib/story-engine-v3/services/V3IllustrationService';
+import { StoryCompletionService } from '@/lib/services/story-completion';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -74,6 +75,19 @@ export async function POST(request: Request) {
         { error: result.error || 'Failed to generate illustrations' },
         { status: 500 }
       );
+    }
+
+    // Mark free trial as used if this is the user's first illustrated story
+    // The free trial is only "used" when an illustrated story completes successfully
+    try {
+      const hasUsedTrial = await StoryCompletionService.hasUsedFreeTrial(user.id);
+      if (!hasUsedTrial) {
+        await StoryCompletionService.markFreeTrialUsed(user.id);
+        console.log(`[V3 Illustrations] Free trial marked as used for user ${user.id}`);
+      }
+    } catch (trialError) {
+      // Log but don't fail the request - illustrations were generated successfully
+      console.error('[V3 Illustrations] Error marking free trial as used:', trialError);
     }
 
     return Response.json({

@@ -56,6 +56,7 @@ export interface V3StoryGenerationParams {
   moralLessonId?: string;
   customInstructions?: string;
   includeIllustrations?: boolean;
+  useCredit?: boolean; // Whether to use a generation credit for this story
 }
 
 /**
@@ -113,8 +114,9 @@ export interface V3GenerationResult {
   storyId: string;
   story: V3Story;
   usage: {
-    monthlyRemaining: number;
+    storiesRemaining: number;
     monthlyLimit: number;
+    hasActiveSubscription: boolean;
   };
 }
 

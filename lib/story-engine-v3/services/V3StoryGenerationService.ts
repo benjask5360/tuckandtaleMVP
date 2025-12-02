@@ -651,17 +651,19 @@ export class V3StoryGenerationService {
    * Get usage stats for response
    */
   private static async getUsageStats(userId: string): Promise<{
-    monthlyRemaining: number;
+    storiesRemaining: number;
     monthlyLimit: number;
+    hasActiveSubscription: boolean;
   }> {
     // Import dynamically to avoid circular dependency
     const { StoryUsageLimitsService } = await import('@/lib/services/story-usage-limits');
 
-    const limits = await StoryUsageLimitsService.canGenerate(userId, false); // V3 is text-only
+    const stats = await StoryUsageLimitsService.getUsageStats(userId);
 
     return {
-      monthlyRemaining: limits.monthlyRemaining === Infinity ? -1 : limits.monthlyRemaining,
-      monthlyLimit: limits.monthlyLimit === null ? -1 : limits.monthlyLimit,
+      storiesRemaining: stats.storiesRemaining,
+      monthlyLimit: stats.monthlyLimit,
+      hasActiveSubscription: stats.hasActiveSubscription,
     };
   }
 }

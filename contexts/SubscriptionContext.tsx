@@ -1,189 +1,280 @@
-'use client';
+'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { SubscriptionTier } from '@/lib/types/subscription-types';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 
-export interface UsageStats {
-  illustrated: {
-    used: number;
-    limit: number | null;
-    lifetimeUsed: number;
-    lifetimeLimit: number | null;
-  };
-  text: {
-    used: number;
-    limit: number | null;
-  };
+/**
+ * Simplified subscription state for the new hybrid pricing model
+ */
+export interface SubscriptionState {
+  // Subscription status
+  hasActiveSubscription: boolean
+  subscriptionTier: 'free' | 'stories_plus'
+  subscriptionStatus: string | null
+
+  // Usage tracking (for subscribers)
+  storiesUsedThisMonth: number
+  storiesRemaining: number
+  monthlyLimit: number
+  daysUntilReset: number | null
+
+  // Paywall status (for non-subscribers)
+  totalStoriesGenerated: number
+  freeTrialUsed: boolean
+  generationCredits: number
+  storyNumber: number // Next story number
+
+  // Loading state
+  loading: boolean
+  error: string | null
 }
 
-interface SubscriptionContextType {
-  tier: SubscriptionTier | null;
-  usage: UsageStats | null;
-  loading: boolean;
-  error: string | null;
-  canUseFeature: (feature: keyof SubscriptionTier) => boolean;
-  getRemainingQuota: (type: 'illustrated' | 'text') => number | null;
-  isAtLimit: (type: 'illustrated' | 'text') => boolean;
-  refresh: () => Promise<void>;
+interface SubscriptionContextType extends SubscriptionState {
+  refresh: () => Promise<void>
+  canGenerateStory: () => boolean
+  getUsageMessage: () => string
 }
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+const defaultState: SubscriptionState = {
+  hasActiveSubscription: false,
+  subscriptionTier: 'free',
+  subscriptionStatus: null,
+  storiesUsedThisMonth: 0,
+  storiesRemaining: 0,
+  monthlyLimit: 0,
+  daysUntilReset: null,
+  totalStoriesGenerated: 0,
+  freeTrialUsed: false,
+  generationCredits: 0,
+  storyNumber: 1,
+  loading: true,
+  error: null,
+}
+
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined)
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
-  const [usage, setUsage] = useState<UsageStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<SubscriptionState>(defaultState)
 
   const fetchSubscriptionData = async () => {
     try {
-      setLoading(true);
-      setError(null);
+      setState(prev => ({ ...prev, loading: true, error: null }))
 
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        setTier(null);
-        setUsage(null);
-        return;
+        setState({ ...defaultState, loading: false })
+        return
       }
 
-      // Fetch tier data
-      const { data: userProfile, error: tierError } = await supabase
+      // Fetch user profile with subscription info
+      const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select(`
           subscription_tier_id,
-          subscription_tiers (
-            id,
-            name,
-            price_monthly,
-            price_yearly,
-            promo_active,
-            illustrated_limit_total,
-            illustrated_limit_month,
-            text_limit_month,
-            child_profiles,
-            other_character_profiles,
-            avatar_regenerations_month,
-            allow_pets,
-            allow_magical_creatures,
-            allow_fun_stories,
-            allow_growth_stories,
-            allow_growth_areas,
-            allow_genres,
-            allow_writing_styles,
-            allow_moral_lessons,
-            allow_special_requests,
-            allow_story_length,
-            allow_advanced_customization,
-            allow_library,
-            allow_favorites
-          )
+          subscription_status,
+          subscription_starts_at,
+          subscription_ends_at,
+          total_stories_generated,
+          free_trial_used,
+          generation_credits
         `)
         .eq('id', user.id)
-        .single();
+        .single()
 
-      if (tierError) throw tierError;
+      if (profileError) throw profileError
 
-      // Handle subscription_tiers being an array from the join
-      const tierData = Array.isArray(userProfile?.subscription_tiers)
-        ? userProfile.subscription_tiers[0]
-        : userProfile?.subscription_tiers;
+      const hasActiveSubscription =
+        profile?.subscription_status === 'active' &&
+        profile?.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
 
-      setTier(tierData as SubscriptionTier || null);
+      const subscriptionTier = hasActiveSubscription ? 'stories_plus' : 'free'
+      const totalStoriesGenerated = profile?.total_stories_generated || 0
+      const freeTrialUsed = profile?.free_trial_used || false
+      const generationCredits = profile?.generation_credits || 0
 
-      // Fetch usage stats
-      const response = await fetch('/api/subscription/usage');
-      if (response.ok) {
-        const usageData = await response.json();
-        setUsage(usageData);
+      // Calculate story number (next story to be created)
+      const storyNumber = totalStoriesGenerated + 1
+
+      // For subscribers, fetch billing cycle usage
+      let storiesUsedThisMonth = 0
+      let storiesRemaining = 0
+      let daysUntilReset: number | null = null
+
+      if (hasActiveSubscription && profile?.subscription_starts_at) {
+        // Calculate billing cycle
+        const cycleInfo = calculateBillingCycle(new Date(profile.subscription_starts_at))
+
+        // Count stories created in current billing cycle
+        const { count } = await supabase
+          .from('content')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('content_type', 'story')
+          .gte('created_at', cycleInfo.start.toISOString())
+          .lt('created_at', cycleInfo.end.toISOString())
+
+        storiesUsedThisMonth = count || 0
+        storiesRemaining = Math.max(0, PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT - storiesUsedThisMonth)
+        daysUntilReset = cycleInfo.daysRemaining
       }
+
+      setState({
+        hasActiveSubscription,
+        subscriptionTier,
+        subscriptionStatus: profile?.subscription_status || null,
+        storiesUsedThisMonth,
+        storiesRemaining,
+        monthlyLimit: hasActiveSubscription ? PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT : 0,
+        daysUntilReset,
+        totalStoriesGenerated,
+        freeTrialUsed,
+        generationCredits,
+        storyNumber,
+        loading: false,
+        error: null,
+      })
 
     } catch (err: any) {
-      console.error('Error fetching subscription data:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      console.error('Error fetching subscription data:', err)
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: err.message,
+      }))
     }
-  };
+  }
 
   useEffect(() => {
-    fetchSubscriptionData();
+    fetchSubscriptionData()
 
     // Set up auth state listener
-    const supabase = createClient();
+    const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        fetchSubscriptionData();
+        fetchSubscriptionData()
       } else if (event === 'SIGNED_OUT') {
-        setTier(null);
-        setUsage(null);
+        setState({ ...defaultState, loading: false })
       }
-    });
+    })
 
     return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const canUseFeature = (feature: keyof SubscriptionTier): boolean => {
-    if (!tier) return false;
-    const value = tier[feature];
-    return typeof value === 'boolean' ? value : false;
-  };
-
-  const getRemainingQuota = (type: 'illustrated' | 'text'): number | null => {
-    if (!tier || !usage) return null;
-
-    if (type === 'illustrated') {
-      const limit = tier.illustrated_limit_month;
-      if (limit === null) return null; // Unlimited
-      return Math.max(0, limit - usage.illustrated.used);
-    } else {
-      const limit = tier.text_limit_month;
-      if (limit === null) return null; // Unlimited
-      return Math.max(0, limit - usage.text.used);
+      subscription.unsubscribe()
     }
-  };
+  }, [])
 
-  const isAtLimit = (type: 'illustrated' | 'text'): boolean => {
-    if (!tier || !usage) return false;
+  const canGenerateStory = (): boolean => {
+    if (state.loading) return false
 
-    if (type === 'illustrated') {
-      const limit = tier.illustrated_limit_month;
-      if (limit === null) return false; // Unlimited
-      return usage.illustrated.used >= limit;
-    } else {
-      const limit = tier.text_limit_month;
-      if (limit === null) return false; // Unlimited
-      return usage.text.used >= limit;
+    // Subscribers can generate if they have remaining stories
+    if (state.hasActiveSubscription) {
+      return state.storiesRemaining > 0
     }
-  };
+
+    // Non-subscribers: check paywall rules
+    // Has generation credits
+    if (state.generationCredits > 0) return true
+
+    // Story #1 with unused trial
+    if (state.storyNumber === 1 && !state.freeTrialUsed) return true
+
+    // Story #2 (generate then paywall)
+    if (state.storyNumber === 2) return true
+
+    // Story #3+ requires payment
+    return false
+  }
+
+  const getUsageMessage = (): string => {
+    if (state.loading) return ''
+
+    if (state.hasActiveSubscription) {
+      if (state.storiesRemaining === 0) {
+        return `You've used all ${state.monthlyLimit} stories this month. Resets in ${state.daysUntilReset} days.`
+      }
+      return `${state.storiesRemaining} of ${state.monthlyLimit} stories remaining this month`
+    }
+
+    if (state.generationCredits > 0) {
+      return `${state.generationCredits} story credit${state.generationCredits === 1 ? '' : 's'} available`
+    }
+
+    if (state.totalStoriesGenerated === 0 && !state.freeTrialUsed) {
+      return 'Your first illustrated story is free!'
+    }
+
+    if (state.totalStoriesGenerated === 1) {
+      return 'Create one more story to try our service'
+    }
+
+    return 'Subscribe to create unlimited stories'
+  }
 
   const value: SubscriptionContextType = {
-    tier,
-    usage,
-    loading,
-    error,
-    canUseFeature,
-    getRemainingQuota,
-    isAtLimit,
+    ...state,
     refresh: fetchSubscriptionData,
-  };
+    canGenerateStory,
+    getUsageMessage,
+  }
 
   return (
     <SubscriptionContext.Provider value={value}>
       {children}
     </SubscriptionContext.Provider>
-  );
+  )
 }
 
 export function useSubscription() {
-  const context = useContext(SubscriptionContext);
+  const context = useContext(SubscriptionContext)
   if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
+    throw new Error('useSubscription must be used within a SubscriptionProvider')
   }
-  return context;
+  return context
+}
+
+/**
+ * Calculate billing cycle boundaries from subscription start date
+ */
+function calculateBillingCycle(subscriptionStartsAt: Date): {
+  start: Date
+  end: Date
+  daysRemaining: number
+} {
+  const now = new Date()
+  const anchorDay = subscriptionStartsAt.getDate()
+
+  // Find most recent occurrence of anchor day
+  let cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+
+  // If anchor day hasn't happened this month, go back one month
+  if (cycleStart > now) {
+    cycleStart.setMonth(cycleStart.getMonth() - 1)
+  }
+
+  // Handle months with fewer days (e.g., 31st in February)
+  if (cycleStart.getDate() !== anchorDay) {
+    // Roll to last day of intended month
+    cycleStart = new Date(cycleStart.getFullYear(), cycleStart.getMonth() + 1, 0)
+  }
+
+  // Cycle end is one month after start
+  const cycleEnd = new Date(cycleStart)
+  cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+
+  // Handle end-of-month edge cases
+  if (cycleEnd.getDate() !== anchorDay && anchorDay <= 28) {
+    cycleEnd.setDate(anchorDay)
+  }
+
+  // Calculate days remaining
+  const msPerDay = 24 * 60 * 60 * 1000
+  const daysRemaining = Math.ceil((cycleEnd.getTime() - now.getTime()) / msPerDay)
+
+  return {
+    start: cycleStart,
+    end: cycleEnd,
+    daysRemaining: Math.max(0, daysRemaining),
+  }
 }

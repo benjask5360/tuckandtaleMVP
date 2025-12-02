@@ -1,145 +1,88 @@
 /**
  * Stripe Price ID Mapping
- * Maps Stripe price IDs to subscription tiers
+ * Maps Stripe price IDs to subscription tiers for the new pricing model
+ *
+ * New model:
+ * - Stories Plus: $14.99/month subscription (30 stories)
+ * - Single Story: $4.99 one-time purchase
  */
 
-import type { BillingPeriod } from '@/lib/types/subscription-types';
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+
+// Environment variables for Stripe Price IDs
+// These should be set after creating the products in Stripe Dashboard
+const STORIES_PLUS_MONTHLY_PRICE_ID = process.env.STRIPE_PRICE_STORIES_PLUS_MONTHLY || ''
+const SINGLE_STORY_PRICE_ID = process.env.STRIPE_PRICE_SINGLE_STORY || ''
 
 // Map of Stripe Price IDs to tier IDs
 const PRICE_TO_TIER_MAP: Record<string, string> = {
-  // Starlight (tier_basic) - Monthly
-  'price_1SX6MBBpMc7tEVZSOYsd0oyJ': 'tier_basic', // Monthly regular
-  'price_1SX6OKBpMc7tEVZShz19EzuH': 'tier_basic', // Monthly promo
+  // Stories Plus - Monthly subscription
+  [STORIES_PLUS_MONTHLY_PRICE_ID]: PRICING_CONFIG.TIER_STORIES_PLUS,
+}
 
-  // Starlight (tier_basic) - Annual
-  'price_1SX6P8BpMc7tEVZSiJBXB6Jq': 'tier_basic', // Annual regular
-  'price_1SX6PNBpMc7tEVZSEb8ZtgKU': 'tier_basic', // Annual promo
-
-  // Supernova (tier_plus) - Monthly
-  'price_1SX6RLBpMc7tEVZSbcveXqnO': 'tier_plus', // Monthly regular
-  'price_1SX6S9BpMc7tEVZS1RWcsaLO': 'tier_plus', // Monthly promo
-
-  // Supernova (tier_plus) - Annual
-  'price_1SX6SABpMc7tEVZSwnfzAS2h': 'tier_plus', // Annual regular
-  'price_1SX6SABpMc7tEVZSQVJLZc1Q': 'tier_plus', // Annual promo
-};
-
-// Pricing details for reference
+// Pricing details for the new model
 export const STRIPE_PRICES = {
-  tier_basic: {
+  // Stories Plus subscription
+  stories_plus: {
     monthly: {
-      regular: {
-        id: 'price_1SX6MBBpMc7tEVZSOYsd0oyJ',
-        amount: 1995, // $19.95 in cents
-      },
-      promo: {
-        id: 'price_1SX6OKBpMc7tEVZShz19EzuH',
-        amount: 995, // $9.95 in cents
-      },
-    },
-    yearly: {
-      regular: {
-        id: 'price_1SX6P8BpMc7tEVZSiJBXB6Jq',
-        amount: 14995, // $149.95 in cents
-      },
-      promo: {
-        id: 'price_1SX6PNBpMc7tEVZSEb8ZtgKU',
-        amount: 9995, // $99.95 in cents
-      },
+      id: STORIES_PLUS_MONTHLY_PRICE_ID,
+      amount: PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS, // $14.99 in cents
     },
   },
-  tier_plus: {
-    monthly: {
-      regular: {
-        id: 'price_1SX6RLBpMc7tEVZSbcveXqnO',
-        amount: 2995, // $29.95 in cents
-      },
-      promo: {
-        id: 'price_1SX6S9BpMc7tEVZS1RWcsaLO',
-        amount: 1495, // $14.95 in cents
-      },
-    },
-    yearly: {
-      regular: {
-        id: 'price_1SX6SABpMc7tEVZSwnfzAS2h',
-        amount: 24995, // $249.95 in cents
-      },
-      promo: {
-        id: 'price_1SX6SABpMc7tEVZSQVJLZc1Q',
-        amount: 14995, // $149.95 in cents
-      },
-    },
+
+  // Single story one-time purchase
+  single_story: {
+    id: SINGLE_STORY_PRICE_ID,
+    amount: PRICING_CONFIG.SINGLE_STORY_PRICE_CENTS, // $4.99 in cents
   },
-} as const;
+} as const
 
 /**
  * Get tier ID from Stripe price ID
  */
 export function getTierFromPriceId(priceId: string): string | null {
-  return PRICE_TO_TIER_MAP[priceId] || null;
+  return PRICE_TO_TIER_MAP[priceId] || null
 }
 
 /**
- * Check if a price ID is valid
+ * Check if a price ID is for a subscription
+ */
+export function isSubscriptionPriceId(priceId: string): boolean {
+  return priceId === STRIPE_PRICES.stories_plus.monthly.id
+}
+
+/**
+ * Check if a price ID is for a single story purchase
+ */
+export function isSingleStoryPriceId(priceId: string): boolean {
+  return priceId === STRIPE_PRICES.single_story.id
+}
+
+/**
+ * Check if a price ID is valid (either subscription or single story)
  */
 export function isValidPriceId(priceId: string): boolean {
-  return priceId in PRICE_TO_TIER_MAP;
+  return isSubscriptionPriceId(priceId) || isSingleStoryPriceId(priceId)
 }
 
 /**
- * Get price ID for a tier
+ * Get the Stories Plus subscription price ID
  */
-export function getPriceIdForTier(
-  tierId: string,
-  period: BillingPeriod,
-  isPromo: boolean
-): string | null {
-  const tierPrices = STRIPE_PRICES[tierId as keyof typeof STRIPE_PRICES];
-  if (!tierPrices) return null;
-
-  const periodPrices = tierPrices[period];
-  if (!periodPrices) return null;
-
-  return isPromo ? periodPrices.promo.id : periodPrices.regular.id;
+export function getStoriesPlusPriceId(): string {
+  if (!STRIPE_PRICES.stories_plus.monthly.id) {
+    console.warn('STRIPE_PRICE_STORIES_PLUS_MONTHLY environment variable not set')
+  }
+  return STRIPE_PRICES.stories_plus.monthly.id
 }
 
 /**
- * Determine billing period from price ID
+ * Get the single story price ID
  */
-export function getBillingPeriodFromPriceId(priceId: string): BillingPeriod | null {
-  // Monthly price IDs
-  const monthlyPrices = [
-    'price_1SX6MBBpMc7tEVZSOYsd0oyJ', // tier_basic regular
-    'price_1SX6OKBpMc7tEVZShz19EzuH', // tier_basic promo
-    'price_1SX6RLBpMc7tEVZSbcveXqnO', // tier_plus regular
-    'price_1SX6S9BpMc7tEVZS1RWcsaLO', // tier_plus promo
-  ];
-
-  // Yearly price IDs
-  const yearlyPrices = [
-    'price_1SX6P8BpMc7tEVZSiJBXB6Jq', // tier_basic regular
-    'price_1SX6PNBpMc7tEVZSEb8ZtgKU', // tier_basic promo
-    'price_1SX6SABpMc7tEVZSwnfzAS2h', // tier_plus regular
-    'price_1SX6SABpMc7tEVZSQVJLZc1Q', // tier_plus promo
-  ];
-
-  if (monthlyPrices.includes(priceId)) return 'monthly';
-  if (yearlyPrices.includes(priceId)) return 'yearly';
-  return null;
-}
-
-/**
- * Check if price ID is promotional
- */
-export function isPromoPriceId(priceId: string): boolean {
-  const promoPrices = [
-    'price_1SX6OKBpMc7tEVZShz19EzuH', // tier_basic monthly promo
-    'price_1SX6PNBpMc7tEVZSEb8ZtgKU', // tier_basic yearly promo
-    'price_1SX6S9BpMc7tEVZS1RWcsaLO', // tier_plus monthly promo
-    'price_1SX6SABpMc7tEVZSQVJLZc1Q', // tier_plus yearly promo
-  ];
-
-  return promoPrices.includes(priceId);
+export function getSingleStoryPriceId(): string {
+  if (!STRIPE_PRICES.single_story.id) {
+    console.warn('STRIPE_PRICE_SINGLE_STORY environment variable not set')
+  }
+  return STRIPE_PRICES.single_story.id
 }
 
 /**
@@ -147,11 +90,19 @@ export function isPromoPriceId(priceId: string): boolean {
  */
 export function getTierDisplayName(tierId: string): string {
   const names: Record<string, string> = {
-    tier_free: 'Moonlight (Free)',
-    tier_basic: 'Starlight',
-    tier_plus: 'Supernova',
-    tier_premium: 'Premium',
-  };
+    [PRICING_CONFIG.TIER_FREE]: 'Free',
+    [PRICING_CONFIG.TIER_STORIES_PLUS]: 'Stories Plus',
+  }
 
-  return names[tierId] || tierId;
+  return names[tierId] || tierId
+}
+
+/**
+ * Get display price for a product
+ */
+export function getDisplayPrice(product: 'stories_plus' | 'single_story'): string {
+  if (product === 'stories_plus') {
+    return '$14.99/month'
+  }
+  return '$4.99'
 }

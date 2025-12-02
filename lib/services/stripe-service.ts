@@ -1,86 +1,88 @@
 /**
  * Stripe Service
- * Handles all Stripe-related operations for subscription management
+ * Handles all Stripe-related operations for the new pricing model
+ *
+ * New model:
+ * - Stories Plus: $14.99/month subscription
+ * - Single Story: $4.99 one-time purchase
  */
 
-import Stripe from 'stripe';
-import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
-import { SubscriptionTierService } from './subscription-tier';
-import { getTierFromPriceId, isValidPriceId, getBillingPeriodFromPriceId, STRIPE_PRICES } from '@/lib/stripe/price-mapping';
-import type { BillingPeriod, SubscriptionTier } from '@/lib/types/subscription-types';
+import Stripe from 'stripe'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  getTierFromPriceId,
+  isSubscriptionPriceId,
+  getStoriesPlusPriceId,
+} from '@/lib/stripe/price-mapping'
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+import { PaywallService } from './paywall-service'
+import { StoryCompletionService } from './story-completion'
 
-// Lazy initialization of Stripe client to avoid build-time errors
-let stripeInstance: Stripe | null = null;
+// Lazy initialization of Stripe client
+let stripeInstance: Stripe | null = null
 
 function getStripe(): Stripe {
   if (!stripeInstance) {
     if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('STRIPE_SECRET_KEY is not configured');
+      throw new Error('STRIPE_SECRET_KEY is not configured')
     }
     stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
       apiVersion: '2025-10-29.clover',
-    });
+    })
   }
-  return stripeInstance;
+  return stripeInstance
 }
 
 export class StripeService {
   /**
-   * Create a Stripe checkout session for subscription
+   * Create a Stripe checkout session for Stories Plus subscription
    */
-  static async createCheckoutSession({
+  static async createSubscriptionCheckout({
     userId,
-    tierId,
-    billingPeriod,
     successUrl,
     cancelUrl,
   }: {
-    userId: string;
-    tierId: string;
-    billingPeriod: BillingPeriod;
-    successUrl: string;
-    cancelUrl: string;
+    userId: string
+    successUrl: string
+    cancelUrl: string
   }) {
     try {
-      const supabase = await createClient();
+      const supabase = await createClient()
 
       // Get user profile
       const { data: userProfile, error: userError } = await supabase
         .from('user_profiles')
         .select('email, stripe_customer_id')
         .eq('id', userId)
-        .single();
+        .single()
 
       if (userError || !userProfile) {
-        throw new Error('User profile not found');
+        throw new Error('User profile not found')
       }
 
-      // Get subscription tier with price IDs
-      const tier = await SubscriptionTierService.getTierById(tierId);
-
-      // Select appropriate price ID based on promo status and billing period
-      const priceId = this.selectPriceId(tier, billingPeriod);
+      // Get Stories Plus price ID
+      const priceId = getStoriesPlusPriceId()
       if (!priceId) {
-        throw new Error(`No price configured for ${tierId} ${billingPeriod}`);
+        throw new Error('Stories Plus price not configured')
       }
 
       // Create or retrieve Stripe customer
-      let customerId = userProfile.stripe_customer_id;
+      let customerId = userProfile.stripe_customer_id
       if (!customerId) {
         const customer = await getStripe().customers.create({
           email: userProfile.email,
           metadata: {
             supabase_user_id: userId,
           },
-        });
-        customerId = customer.id;
+        })
+        customerId = customer.id
 
         // Save customer ID to database
         await supabase
           .from('user_profiles')
           .update({ stripe_customer_id: customerId })
-          .eq('id', userId);
+          .eq('id', userId)
       }
 
       // Create checkout session
@@ -98,25 +100,24 @@ export class StripeService {
         cancel_url: cancelUrl,
         metadata: {
           user_id: userId,
-          tier_id: tierId,
-          billing_period: billingPeriod,
+          tier_id: PRICING_CONFIG.TIER_STORIES_PLUS,
         },
         subscription_data: {
           metadata: {
             user_id: userId,
-            tier_id: tierId,
+            tier_id: PRICING_CONFIG.TIER_STORIES_PLUS,
           },
         },
-        allow_promotion_codes: true, // Allow Stripe coupon codes
-      });
+        allow_promotion_codes: true,
+      })
 
       return {
         sessionId: session.id,
         url: session.url,
-      };
+      }
     } catch (error: any) {
-      console.error('Error creating checkout session:', error);
-      throw new Error(error.message || 'Failed to create checkout session');
+      console.error('Error creating subscription checkout:', error)
+      throw new Error(error.message || 'Failed to create checkout session')
     }
   }
 
@@ -127,35 +128,35 @@ export class StripeService {
     userId,
     returnUrl,
   }: {
-    userId: string;
-    returnUrl: string;
+    userId: string
+    returnUrl: string
   }) {
     try {
-      const supabase = await createClient();
+      const supabase = await createClient()
 
       // Get user's Stripe customer ID
       const { data: userProfile, error } = await supabase
         .from('user_profiles')
         .select('stripe_customer_id')
         .eq('id', userId)
-        .single();
+        .single()
 
       if (error || !userProfile?.stripe_customer_id) {
-        throw new Error('No active subscription found');
+        throw new Error('No active subscription found')
       }
 
       // Create portal session
       const session = await getStripe().billingPortal.sessions.create({
         customer: userProfile.stripe_customer_id,
         return_url: returnUrl,
-      });
+      })
 
       return {
         url: session.url,
-      };
+      }
     } catch (error: any) {
-      console.error('Error creating billing portal session:', error);
-      throw new Error(error.message || 'Failed to create billing portal session');
+      console.error('Error creating billing portal session:', error)
+      throw new Error(error.message || 'Failed to create billing portal session')
     }
   }
 
@@ -172,50 +173,50 @@ export class StripeService {
         rawBody,
         signature,
         process.env.STRIPE_WEBHOOK_SECRET!
-      );
+      )
 
-      const supabase = createAdminClient();
+      const supabase = createAdminClient()
 
       // Handle different event types
       switch (event.type) {
         case 'checkout.session.completed': {
-          const session = event.data.object as Stripe.Checkout.Session;
-          await this.handleCheckoutCompleted(session, supabase);
-          break;
+          const session = event.data.object as Stripe.Checkout.Session
+          await this.handleCheckoutCompleted(session, supabase)
+          break
         }
 
         case 'customer.subscription.created':
         case 'customer.subscription.updated': {
-          const subscription = event.data.object as Stripe.Subscription;
-          await this.handleSubscriptionUpdate(subscription, supabase);
-          break;
+          const subscription = event.data.object as Stripe.Subscription
+          await this.handleSubscriptionUpdate(subscription, supabase)
+          break
         }
 
         case 'customer.subscription.deleted': {
-          const subscription = event.data.object as Stripe.Subscription;
-          await this.handleSubscriptionCanceled(subscription, supabase);
-          break;
+          const subscription = event.data.object as Stripe.Subscription
+          await this.handleSubscriptionCanceled(subscription, supabase)
+          break
         }
 
         case 'invoice.payment_failed': {
-          const invoice = event.data.object as Stripe.Invoice;
-          await this.handlePaymentFailed(invoice, supabase);
-          break;
+          const invoice = event.data.object as Stripe.Invoice
+          await this.handlePaymentFailed(invoice, supabase)
+          break
         }
 
         default:
-          console.log(`Unhandled webhook event type: ${event.type}`);
+          console.log(`Unhandled webhook event type: ${event.type}`)
       }
 
-      return { received: true };
+      return { received: true }
     } catch (error: any) {
-      console.error('Webhook error:', error);
-      throw new Error(`Webhook Error: ${error.message}`);
+      console.error('Webhook error:', error)
+      throw new Error(`Webhook Error: ${error.message}`)
     }
   }
 
   /**
-   * Handle successful checkout
+   * Handle successful checkout - both subscriptions and one-time payments
    */
   private static async handleCheckoutCompleted(
     session: Stripe.Checkout.Session,
@@ -223,70 +224,130 @@ export class StripeService {
   ) {
     console.log('[WEBHOOK] Processing checkout.session.completed', {
       sessionId: session.id,
-      customer: session.customer,
-      subscription: session.subscription,
+      mode: session.mode,
       metadata: session.metadata,
-    });
+    })
 
-    if (!session.customer || !session.subscription) {
-      console.error('[WEBHOOK ERROR] Missing customer or subscription in checkout session', {
-        sessionId: session.id,
-        hasCustomer: !!session.customer,
-        hasSubscription: !!session.subscription,
-      });
-      return;
-    }
-
-    const userId = session.metadata?.user_id;
+    const userId = session.metadata?.user_id
     if (!userId) {
-      console.error('[WEBHOOK ERROR] Missing user_id in session metadata', {
-        sessionId: session.id,
-        metadata: session.metadata,
-        customer: session.customer,
-      });
-      return;
+      console.error('[WEBHOOK ERROR] Missing user_id in session metadata')
+      return
     }
 
-    console.log(`[WEBHOOK] Found user_id: ${userId}, retrieving subscription details...`);
+    // Handle one-time payment (single story purchase)
+    if (session.mode === 'payment') {
+      await this.handleSingleStoryPurchase(session, supabase, userId)
+      return
+    }
+
+    // Handle subscription checkout
+    if (session.mode === 'subscription') {
+      await this.handleSubscriptionCheckoutCompleted(session, supabase, userId)
+      return
+    }
+  }
+
+  /**
+   * Handle single story purchase ($4.99)
+   */
+  private static async handleSingleStoryPurchase(
+    session: Stripe.Checkout.Session,
+    supabase: any,
+    userId: string
+  ) {
+    const storyId = session.metadata?.story_id
+    const purchaseType = session.metadata?.purchase_type || 'generation_credit'
+
+    console.log('[WEBHOOK] Processing single story purchase', {
+      userId,
+      storyId,
+      purchaseType,
+    })
+
+    // Record the purchase
+    const { error: purchaseError } = await supabase
+      .from('story_purchases')
+      .insert({
+        user_id: userId,
+        story_id: storyId || null,
+        purchase_type: purchaseType,
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: session.payment_intent,
+        amount_cents: session.amount_total,
+      })
+
+    if (purchaseError) {
+      console.error('[WEBHOOK ERROR] Failed to record purchase:', purchaseError)
+      throw new Error('Failed to record purchase')
+    }
+
+    if (storyId) {
+      // Unlock the specific story
+      const { error: unlockError } = await supabase
+        .from('content')
+        .update({
+          is_unlocked: true,
+          unlock_purchase_id: session.id,
+        })
+        .eq('id', storyId)
+        .eq('user_id', userId)
+
+      if (unlockError) {
+        console.error('[WEBHOOK ERROR] Failed to unlock story:', unlockError)
+        throw new Error('Failed to unlock story')
+      }
+
+      console.log(`[WEBHOOK SUCCESS] Story ${storyId} unlocked for user ${userId}`)
+    } else {
+      // Add a generation credit
+      const { error: creditError } = await supabase
+        .rpc('increment_generation_credits', { p_user_id: userId })
+
+      if (creditError) {
+        console.error('[WEBHOOK ERROR] Failed to add generation credit:', creditError)
+        throw new Error('Failed to add generation credit')
+      }
+
+      console.log(`[WEBHOOK SUCCESS] Generation credit added for user ${userId}`)
+    }
+  }
+
+  /**
+   * Handle subscription checkout completion
+   */
+  private static async handleSubscriptionCheckoutCompleted(
+    session: Stripe.Checkout.Session,
+    supabase: any,
+    userId: string
+  ) {
+    if (!session.subscription) {
+      console.error('[WEBHOOK ERROR] Missing subscription in checkout session')
+      return
+    }
 
     // Get subscription details
     const subscription = await getStripe().subscriptions.retrieve(
       session.subscription as string
-    );
+    )
 
-    // Get the price ID and billing period from the subscription item
-    const subscriptionItem = subscription.items.data[0];
-    const priceId = subscriptionItem?.price.id;
+    // Get the price ID from subscription
+    const subscriptionItem = subscription.items.data[0]
+    const priceId = subscriptionItem?.price.id
 
-    console.log('[WEBHOOK] Price ID from subscription:', priceId);
-
-    if (!priceId || !isValidPriceId(priceId)) {
-      console.error('[WEBHOOK ERROR] Invalid price ID', {
-        priceId,
-        userId,
-        subscriptionId: subscription.id,
-        availablePriceIds: Object.values(STRIPE_PRICES).flatMap(tier =>
-          [tier.monthly.regular.id, tier.monthly.promo.id, tier.yearly.regular.id, tier.yearly.promo.id]
-        ),
-      });
-      return;
+    if (!priceId || !isSubscriptionPriceId(priceId)) {
+      console.error('[WEBHOOK ERROR] Invalid subscription price ID:', priceId)
+      return
     }
 
     // Get tier from price ID
-    const tierId = getTierFromPriceId(priceId);
+    const tierId = getTierFromPriceId(priceId)
     if (!tierId) {
-      console.error('[WEBHOOK ERROR] Could not determine tier from price', {
-        priceId,
-        userId,
-        subscriptionId: subscription.id,
-      });
-      return;
+      console.error('[WEBHOOK ERROR] Could not determine tier from price:', priceId)
+      return
     }
 
-    console.log(`[WEBHOOK] Mapped price ${priceId} to tier ${tierId}, updating database...`);
-
     // Update user profile
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_profiles')
       .update({
         subscription_tier_id: tierId,
@@ -297,33 +358,16 @@ export class StripeService {
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
       .eq('id', userId)
-      .select();
 
     if (error) {
-      console.error('[WEBHOOK ERROR] Failed to update user profile', {
-        userId,
-        tierId,
-        error: error.message,
-        errorDetails: error,
-      });
-      throw new Error(`Database update failed: ${error.message}`);
-    }
-
-    if (!data || data.length === 0) {
-      console.error('[WEBHOOK ERROR] No user found with ID', {
-        userId,
-        tierId,
-      });
-      throw new Error(`User not found: ${userId}`);
+      console.error('[WEBHOOK ERROR] Failed to update user profile:', error)
+      throw new Error('Database update failed')
     }
 
     console.log(`[WEBHOOK SUCCESS] Subscription activated for user ${userId}`, {
       tier: tierId,
-      status: 'active',
       subscriptionId: subscription.id,
-      periodStart: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-      periodEnd: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
-    });
+    })
   }
 
   /**
@@ -333,46 +377,22 @@ export class StripeService {
     subscription: Stripe.Subscription,
     supabase: any
   ) {
-    console.log('[WEBHOOK] Processing subscription update', {
-      subscriptionId: subscription.id,
-      status: subscription.status,
-      metadata: subscription.metadata,
-    });
-
-    const userId = subscription.metadata?.user_id;
+    const userId = subscription.metadata?.user_id
     if (!userId) {
-      console.error('[WEBHOOK ERROR] Missing user_id in subscription metadata', {
-        subscriptionId: subscription.id,
-        metadata: subscription.metadata,
-      });
-      return;
+      console.error('[WEBHOOK ERROR] Missing user_id in subscription metadata')
+      return
     }
 
-    // Get the price ID and billing period from the subscription item
-    const subscriptionItem = subscription.items.data[0];
-    const priceId = subscriptionItem?.price.id;
+    const subscriptionItem = subscription.items.data[0]
+    const priceId = subscriptionItem?.price.id
 
-    console.log('[WEBHOOK] Price ID from subscription:', priceId);
-
-    if (!priceId || !isValidPriceId(priceId)) {
-      console.error('[WEBHOOK ERROR] Invalid price ID', {
-        priceId,
-        userId,
-        subscriptionId: subscription.id,
-      });
-      return;
+    if (!priceId || !isSubscriptionPriceId(priceId)) {
+      console.error('[WEBHOOK ERROR] Invalid price ID in subscription update')
+      return
     }
 
-    // Get tier from price ID
-    const tierId = getTierFromPriceId(priceId);
-    if (!tierId) {
-      console.error('[WEBHOOK ERROR] Could not determine tier from price', {
-        priceId,
-        userId,
-        subscriptionId: subscription.id,
-      });
-      return;
-    }
+    const tierId = getTierFromPriceId(priceId)
+    if (!tierId) return
 
     // Map Stripe status to our status
     const statusMap: Record<string, string> = {
@@ -381,14 +401,11 @@ export class StripeService {
       past_due: 'past_due',
       canceled: 'canceled',
       unpaid: 'inactive',
-    };
+    }
 
-    const status = statusMap[subscription.status] || 'inactive';
+    const status = statusMap[subscription.status] || 'inactive'
 
-    console.log(`[WEBHOOK] Updating user ${userId} to tier ${tierId}, status ${status}...`);
-
-    // Update user profile
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_profiles')
       .update({
         subscription_tier_id: tierId,
@@ -398,32 +415,16 @@ export class StripeService {
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
       })
       .eq('id', userId)
-      .select();
 
     if (error) {
-      console.error('[WEBHOOK ERROR] Failed to update user profile', {
-        userId,
-        tierId,
-        status,
-        error: error.message,
-        errorDetails: error,
-      });
-      throw new Error(`Database update failed: ${error.message}`);
-    }
-
-    if (!data || data.length === 0) {
-      console.error('[WEBHOOK ERROR] No user found with ID', {
-        userId,
-        tierId,
-      });
-      throw new Error(`User not found: ${userId}`);
+      console.error('[WEBHOOK ERROR] Failed to update subscription:', error)
+      throw new Error('Database update failed')
     }
 
     console.log(`[WEBHOOK SUCCESS] Subscription updated for user ${userId}`, {
       tier: tierId,
       status,
-      subscriptionId: subscription.id,
-    });
+    })
   }
 
   /**
@@ -433,69 +434,42 @@ export class StripeService {
     subscription: Stripe.Subscription,
     supabase: any
   ) {
-    console.log('[WEBHOOK] Processing subscription cancellation', {
-      subscriptionId: subscription.id,
-      metadata: subscription.metadata,
-    });
+    let userId = subscription.metadata?.user_id
 
-    let userId = subscription.metadata?.user_id;
-
-    // Fallback: lookup user by stripe_subscription_id if user_id not in metadata
+    // Fallback: lookup user by subscription ID
     if (!userId) {
-      console.log('[WEBHOOK] No user_id in metadata, attempting lookup by subscription ID');
       const { data: userBySubscription } = await supabase
         .from('user_profiles')
         .select('id')
         .eq('stripe_subscription_id', subscription.id)
-        .single();
+        .single()
 
       if (userBySubscription) {
-        userId = userBySubscription.id;
-        console.log(`[WEBHOOK] Found user by subscription ID: ${userId}`);
+        userId = userBySubscription.id
       }
     }
 
     if (!userId) {
-      console.warn('[WEBHOOK WARNING] Cannot find user for subscription cancellation', {
-        subscriptionId: subscription.id,
-        metadata: subscription.metadata,
-      });
-      // Return successfully - subscription is deleted anyway, nothing to update
-      return;
+      console.warn('[WEBHOOK WARNING] Cannot find user for subscription cancellation')
+      return
     }
 
-    console.log(`[WEBHOOK] Downgrading user ${userId} to free tier...`);
-
     // Downgrade to free tier
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_profiles')
       .update({
-        subscription_tier_id: 'tier_free',
+        subscription_tier_id: PRICING_CONFIG.TIER_FREE,
         subscription_status: 'inactive',
         subscription_ends_at: new Date().toISOString(),
       })
       .eq('id', userId)
-      .select();
 
     if (error) {
-      console.error('[WEBHOOK ERROR] Failed to downgrade user to free tier', {
-        userId,
-        error: error.message,
-        errorDetails: error,
-      });
-      throw new Error(`Database update failed: ${error.message}`);
+      console.error('[WEBHOOK ERROR] Failed to downgrade user:', error)
+      throw new Error('Database update failed')
     }
 
-    if (!data || data.length === 0) {
-      // User may have been deleted - log but don't throw
-      console.warn('[WEBHOOK WARNING] No user found with ID (may have been deleted)', {
-        userId,
-        subscriptionId: subscription.id,
-      });
-      return;
-    }
-
-    console.log(`[WEBHOOK SUCCESS] Subscription canceled for user ${userId} - downgraded to tier_free`);
+    console.log(`[WEBHOOK SUCCESS] Subscription canceled - user ${userId} downgraded to free tier`)
   }
 
   /**
@@ -505,15 +479,15 @@ export class StripeService {
     invoice: Stripe.Invoice,
     supabase: any
   ) {
-    // In the new API, subscription is nested under parent.subscription_details
-    const subscriptionId = invoice.parent?.subscription_details?.subscription;
-    if (!subscriptionId || typeof subscriptionId !== 'string') return;
+    // Get subscription ID from invoice
+    const subscriptionId = (invoice as any).subscription
+    if (!subscriptionId || typeof subscriptionId !== 'string') return
 
     // Get subscription to find user
-    const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
+    const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
 
-    const userId = subscription.metadata?.user_id;
-    if (!userId) return;
+    const userId = subscription.metadata?.user_id
+    if (!userId) return
 
     // Update subscription status to past_due
     await supabase
@@ -521,255 +495,80 @@ export class StripeService {
       .update({
         subscription_status: 'past_due',
       })
-      .eq('id', userId);
+      .eq('id', userId)
 
-    console.log(`Payment failed for user ${userId} - marked as past_due`);
+    console.log(`[WEBHOOK] Payment failed for user ${userId} - marked as past_due`)
   }
 
   /**
-   * Select the appropriate price ID based on tier and promo status
-   */
-  private static selectPriceId(
-    tier: SubscriptionTier,
-    billingPeriod: BillingPeriod
-  ): string | null {
-    // Determine if promo is active
-    const usePromo = tier.promo_active;
-
-    // Select the appropriate price ID
-    if (billingPeriod === 'monthly') {
-      return usePromo ? tier.stripe_price_monthly_promo : tier.stripe_price_monthly;
-    } else {
-      return usePromo ? tier.stripe_price_yearly_promo : tier.stripe_price_yearly;
-    }
-  }
-
-  /**
-   * Cancel a subscription
+   * Cancel a subscription (at period end)
    */
   static async cancelSubscription(userId: string) {
     try {
-      const supabase = await createClient();
+      const supabase = await createClient()
 
-      // Get user's subscription ID
       const { data: userProfile, error } = await supabase
         .from('user_profiles')
         .select('stripe_subscription_id')
         .eq('id', userId)
-        .single();
+        .single()
 
       if (error || !userProfile?.stripe_subscription_id) {
-        throw new Error('No active subscription found');
+        throw new Error('No active subscription found')
       }
 
-      // Cancel subscription at period end
+      // Cancel at period end (user keeps access until then)
       await getStripe().subscriptions.update(userProfile.stripe_subscription_id, {
         cancel_at_period_end: true,
-      });
+      })
 
-      // Update database
       await supabase
         .from('user_profiles')
         .update({
           subscription_status: 'canceled',
         })
-        .eq('id', userId);
-
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error canceling subscription:', error);
-      throw new Error(error.message || 'Failed to cancel subscription');
-    }
-  }
-
-  /**
-   * Preview the cost of upgrading a subscription (without charging)
-   * Returns the prorated amount the user will be charged
-   */
-  static async previewUpgrade({
-    userId,
-    newTierId,
-    billingPeriod,
-  }: {
-    userId: string;
-    newTierId: string;
-    billingPeriod: BillingPeriod;
-  }) {
-    const supabase = await createClient();
-
-    // Get user's current subscription
-    const { data: userProfile, error } = await supabase
-      .from('user_profiles')
-      .select('stripe_subscription_id')
-      .eq('id', userId)
-      .single();
-
-    if (error || !userProfile?.stripe_subscription_id) {
-      throw new Error('No active subscription found');
-    }
-
-    // Get the new tier's price ID
-    const newTier = await SubscriptionTierService.getTierById(newTierId);
-    const newPriceId = this.selectPriceId(newTier, billingPeriod);
-
-    if (!newPriceId) {
-      throw new Error(`No price configured for ${newTierId} ${billingPeriod}`);
-    }
-
-    // Retrieve existing subscription
-    const subscription = await getStripe().subscriptions.retrieve(
-      userProfile.stripe_subscription_id
-    );
-
-    const subscriptionItemId = subscription.items.data[0]?.id;
-    if (!subscriptionItemId) {
-      throw new Error('Subscription has no items');
-    }
-
-    // Create an invoice preview to see what the proration would be
-    const invoice = await getStripe().invoices.createPreview({
-      customer: subscription.customer as string,
-      subscription: userProfile.stripe_subscription_id,
-      subscription_details: {
-        items: [{
-          id: subscriptionItemId,
-          price: newPriceId,
-        }],
-        proration_behavior: 'always_invoice',
-      },
-    });
-
-    // Calculate the amount due (in cents)
-    const amountDue = invoice.amount_due;
-
-    return {
-      amountDue, // in cents
-      amountDueFormatted: `$${(amountDue / 100).toFixed(2)}`,
-      newTierName: newTier.name,
-      currency: invoice.currency,
-    };
-  }
-
-  /**
-   * Upgrade an existing subscription to a new tier
-   * Uses Stripe's subscription update with proration
-   */
-  static async upgradeSubscription({
-    userId,
-    newTierId,
-    billingPeriod,
-  }: {
-    userId: string;
-    newTierId: string;
-    billingPeriod: BillingPeriod;
-  }) {
-    try {
-      const supabase = await createClient();
-
-      // 1. Get user's current subscription
-      const { data: userProfile, error } = await supabase
-        .from('user_profiles')
-        .select('stripe_subscription_id, subscription_tier_id')
         .eq('id', userId)
-        .single();
 
-      if (error || !userProfile?.stripe_subscription_id) {
-        throw new Error('No active subscription found');
-      }
-
-      // 2. Get the new tier's price ID
-      const newTier = await SubscriptionTierService.getTierById(newTierId);
-      const newPriceId = this.selectPriceId(newTier, billingPeriod);
-
-      if (!newPriceId) {
-        throw new Error(`No price configured for ${newTierId} ${billingPeriod}`);
-      }
-
-      // 3. Retrieve existing subscription to get the item ID
-      const subscription = await getStripe().subscriptions.retrieve(
-        userProfile.stripe_subscription_id
-      );
-
-      const subscriptionItemId = subscription.items.data[0]?.id;
-      if (!subscriptionItemId) {
-        throw new Error('Subscription has no items');
-      }
-
-      // 4. Update the subscription with new price (Stripe handles proration automatically)
-      const updatedSubscription = await getStripe().subscriptions.update(
-        userProfile.stripe_subscription_id,
-        {
-          items: [{
-            id: subscriptionItemId,
-            price: newPriceId,
-          }],
-          proration_behavior: 'always_invoice',
-          metadata: {
-            user_id: userId,
-            tier_id: newTierId,
-          },
-        }
-      );
-
-      // 5. Update database immediately (webhook will also fire, but this ensures instant UI update)
-      const subscriptionItem = updatedSubscription.items.data[0];
-      await supabase
-        .from('user_profiles')
-        .update({
-          subscription_tier_id: newTierId,
-          subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
-          subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
-        })
-        .eq('id', userId);
-
-      console.log(`[UPGRADE] Successfully upgraded user ${userId} to ${newTierId}`);
-
-      return {
-        success: true,
-        subscriptionId: updatedSubscription.id,
-        newTierId,
-      };
+      return { success: true }
     } catch (error: any) {
-      console.error('Error upgrading subscription:', error);
-      throw new Error(error.message || 'Failed to upgrade subscription');
+      console.error('Error canceling subscription:', error)
+      throw new Error(error.message || 'Failed to cancel subscription')
     }
   }
 
   /**
-   * Resume a canceled subscription
+   * Resume a canceled subscription (before period ends)
    */
   static async resumeSubscription(userId: string) {
     try {
-      const supabase = await createClient();
+      const supabase = await createClient()
 
-      // Get user's subscription ID
       const { data: userProfile, error } = await supabase
         .from('user_profiles')
         .select('stripe_subscription_id')
         .eq('id', userId)
-        .single();
+        .single()
 
       if (error || !userProfile?.stripe_subscription_id) {
-        throw new Error('No subscription found');
+        throw new Error('No subscription found')
       }
 
       // Resume subscription
       await getStripe().subscriptions.update(userProfile.stripe_subscription_id, {
         cancel_at_period_end: false,
-      });
+      })
 
-      // Update database
       await supabase
         .from('user_profiles')
         .update({
           subscription_status: 'active',
         })
-        .eq('id', userId);
+        .eq('id', userId)
 
-      return { success: true };
+      return { success: true }
     } catch (error: any) {
-      console.error('Error resuming subscription:', error);
-      throw new Error(error.message || 'Failed to resume subscription');
+      console.error('Error resuming subscription:', error)
+      throw new Error(error.message || 'Failed to resume subscription')
     }
   }
 }

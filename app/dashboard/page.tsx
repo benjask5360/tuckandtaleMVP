@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Users, Sparkles, Library, User, Heart, Moon, Star, Zap } from 'lucide-react'
+import { Users, Sparkles, Library, User, Heart } from 'lucide-react'
 import Link from 'next/link'
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+import StoryUsageCounter from '@/components/subscription/StoryUsageCounter'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -15,41 +17,69 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  // Fetch user's profile and subscription info
+  // Fetch user's profile with new pricing model fields
   const { data: userProfile } = await supabase
     .from('user_profiles')
     .select(`
       full_name,
       subscription_tier_id,
-      subscription_tiers (
-        id,
-        name,
-        child_profiles,
-        other_character_profiles,
-        illustrated_limit_month,
-        illustrated_limit_total,
-        text_limit_month,
-        allow_pets,
-        allow_magical_creatures
-      )
+      subscription_status,
+      subscription_starts_at,
+      total_stories_generated,
+      free_trial_used,
+      generation_credits
     `)
     .eq('id', user.id)
     .single()
 
-  const userTier = (userProfile?.subscription_tiers as any) || {
-    id: 'tier_free',
-    name: 'Moonlight (Free)',
-    child_profiles: 1,
-    other_character_profiles: 0,
-    illustrated_limit_month: 3,
-    illustrated_limit_total: 10,
-    text_limit_month: 10,
-    allow_pets: false,
-    allow_magical_creatures: false
-  }
+  // Determine subscription status for new model
+  const hasActiveSubscription =
+    userProfile?.subscription_status === 'active' &&
+    userProfile?.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
+
+  const subscriptionTierName = hasActiveSubscription ? 'Stories Plus' : 'Free'
+  const totalStoriesGenerated = userProfile?.total_stories_generated || 0
+  const freeTrialUsed = userProfile?.free_trial_used || false
+  const generationCredits = userProfile?.generation_credits || 0
+  const storyNumber = totalStoriesGenerated + 1
 
   // Get first name from full_name
   const firstName = userProfile?.full_name?.split(' ')[0] || 'there'
+
+  // Calculate billing cycle usage for subscribers
+  let storiesUsedThisMonth = 0
+  let storiesRemaining = 0
+  let daysUntilReset: number | null = null
+
+  if (hasActiveSubscription && userProfile?.subscription_starts_at) {
+    // Calculate billing cycle
+    const now = new Date()
+    const subscriptionStart = new Date(userProfile.subscription_starts_at)
+    const anchorDay = subscriptionStart.getDate()
+
+    let cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+    if (cycleStart > now) {
+      cycleStart.setMonth(cycleStart.getMonth() - 1)
+    }
+
+    const cycleEnd = new Date(cycleStart)
+    cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+
+    // Count stories created in current billing cycle
+    const { count } = await supabase
+      .from('content')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('content_type', 'story')
+      .gte('created_at', cycleStart.toISOString())
+      .lt('created_at', cycleEnd.toISOString())
+
+    storiesUsedThisMonth = count || 0
+    storiesRemaining = Math.max(0, PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT - storiesUsedThisMonth)
+
+    const msPerDay = 24 * 60 * 60 * 1000
+    daysUntilReset = Math.ceil((cycleEnd.getTime() - now.getTime()) / msPerDay)
+  }
 
   // Fetch all characters with avatar images
   const { data: allCharacters } = await supabase
@@ -80,21 +110,22 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(3)
 
-  // Calculate limits (null means unlimited, so only use defaults if undefined)
-  const maxChildren = userTier?.child_profiles !== undefined ? userTier.child_profiles : 1
-  const maxOtherCharacters = userTier?.other_character_profiles !== undefined ? userTier.other_character_profiles : 0
-  const maxIllustratedStories = userTier?.illustrated_limit_month !== undefined ? userTier.illustrated_limit_month : 3
-  const maxTextStories = userTier?.text_limit_month !== undefined ? userTier.text_limit_month : 10
-
-  // Get tier icon based on tier ID
-  const getTierIcon = () => {
-    const tierId = userTier?.id || 'tier_free'
-    if (tierId.includes('supernova')) return Zap
-    if (tierId.includes('starlight')) return Star
-    return Moon // Moonlight/Free tier
+  // Build the usage message for non-subscribers
+  const getUsageMessage = (): string => {
+    if (hasActiveSubscription) {
+      return `${storiesRemaining} of ${PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories remaining`
+    }
+    if (generationCredits > 0) {
+      return `${generationCredits} story credit${generationCredits === 1 ? '' : 's'} available`
+    }
+    if (!freeTrialUsed && totalStoriesGenerated === 0) {
+      return 'Your first illustrated story is free!'
+    }
+    if (totalStoriesGenerated === 1) {
+      return '1 more free story to try'
+    }
+    return ''
   }
-
-  const TierIcon = getTierIcon()
 
   return (
     <div className="min-h-screen bg-white">
@@ -111,13 +142,29 @@ export default async function DashboardPage() {
         {/* Subscription Plan Badge - Centered and mobile-optimized */}
         <div className="mb-4 md:mb-6 flex justify-center">
           <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
-            <span className="font-semibold">{userTier.name}</span>
-            <span className="hidden sm:inline">•</span>
-            <span className="text-xs sm:text-sm md:text-base">
-              {maxIllustratedStories === null ? 'Unlimited' : maxIllustratedStories} illustrated stories/month
-            </span>
+            <span className="font-semibold">{subscriptionTierName}</span>
+            {getUsageMessage() && (
+              <>
+                <span className="hidden sm:inline">•</span>
+                <span className="text-xs sm:text-sm md:text-base">
+                  {getUsageMessage()}
+                </span>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Usage Counter for Subscribers */}
+        {hasActiveSubscription && daysUntilReset !== null && (
+          <div className="mb-4 md:mb-6 flex justify-center">
+            <StoryUsageCounter
+              storiesUsed={storiesUsedThisMonth}
+              storiesLimit={PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT}
+              daysUntilReset={daysUntilReset}
+              variant="compact"
+            />
+          </div>
+        )}
 
         {/* Create Story CTA - Mobile-optimized */}
         {primaryCharacter ? (
@@ -208,7 +255,7 @@ export default async function DashboardPage() {
             <div className="flex-grow">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Child Profiles</h2>
               <p className="text-sm text-gray-500">
-                {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
+                {children.length} {children.length === 1 ? 'profile' : 'profiles'}
               </p>
             </div>
 
@@ -256,7 +303,7 @@ export default async function DashboardPage() {
             <div className="flex-grow">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Character Profiles</h2>
               <p className="text-sm text-gray-500">
-                {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'} · {maxOtherCharacters === null ? 'Unlimited' : `${maxOtherCharacters} max`}
+                {otherCharacters.length} {otherCharacters.length === 1 ? 'character' : 'characters'}
               </p>
             </div>
 
@@ -317,7 +364,7 @@ export default async function DashboardPage() {
             <div className="flex-grow">
               <h2 className="text-xl font-bold text-gray-900 mb-1">Story Library</h2>
               <p className="text-sm text-gray-500">
-                {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} · {maxIllustratedStories === null ? 'Unlimited' : `${maxIllustratedStories} illustrated/month`}
+                {storyCount || 0} {(storyCount || 0) === 1 ? 'story' : 'stories'} saved
               </p>
             </div>
 

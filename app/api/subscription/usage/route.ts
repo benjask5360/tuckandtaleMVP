@@ -26,16 +26,19 @@ export async function GET() {
     const stats = await StoryUsageLimitsService.getUsageStats(user.id);
 
     return NextResponse.json({
-      illustrated: {
-        used: stats.illustrated.used,
-        limit: stats.illustrated.limit,
-        lifetimeUsed: stats.illustrated.lifetimeUsed,
-        lifetimeLimit: stats.illustrated.lifetimeLimit,
-      },
-      text: {
-        used: stats.text.used,
-        limit: stats.text.limit,
-      },
+      // For subscribers
+      storiesUsedThisMonth: stats.storiesUsedThisMonth,
+      storiesRemaining: stats.storiesRemaining,
+      monthlyLimit: stats.monthlyLimit,
+      daysUntilReset: stats.daysUntilReset,
+
+      // For non-subscribers
+      totalStoriesGenerated: stats.totalStoriesGenerated,
+      freeTrialUsed: stats.freeTrialUsed,
+      generationCredits: stats.generationCredits,
+
+      // Common
+      hasActiveSubscription: stats.hasActiveSubscription,
     });
   } catch (error: any) {
     console.error('Usage stats error:', error);

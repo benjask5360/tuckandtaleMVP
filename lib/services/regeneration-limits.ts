@@ -1,14 +1,18 @@
 /**
  * Regeneration Limits Service
- * Manages monthly avatar regeneration limits based on subscription tiers
- * All values from database - no hardcoded limits
+ * Manages monthly avatar regeneration limits
  *
  * Uses unified generation_usage table for tracking monthly counts
  * Uses api_cost_logs for detailed generation history and AI config tracking
+ *
+ * Note: With the new hybrid pricing model, regeneration limits are generous
+ * for all users since paywall controls story access, not features.
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { SubscriptionTierService } from './subscription-tier';
+
+// Default generous limit for all users
+const DEFAULT_REGENERATION_LIMIT = 50;
 
 export interface RegenerationStatus {
   used: number;
@@ -41,12 +45,11 @@ export class RegenerationLimitsService {
 
     const result = data?.[0];
     if (!result) {
-      // Get tier to return accurate limit - no defaults
-      const tier = await SubscriptionTierService.getUserTier(userId);
+      // Return generous default limit for all users
       return {
         used: 0,
-        limit: tier.avatar_regenerations_month,
-        remaining: tier.avatar_regenerations_month,
+        limit: DEFAULT_REGENERATION_LIMIT,
+        remaining: DEFAULT_REGENERATION_LIMIT,
         resetsInDays: this.getDaysUntilReset(),
       };
     }
@@ -155,12 +158,11 @@ export class RegenerationLimitsService {
   }
 
   /**
-   * Get user's subscription tier regeneration limit
-   * All values from database - no hardcoded defaults
+   * Get regeneration limit for user
+   * Returns generous default for all users since paywall controls story access
    */
   static async getTierLimit(userId: string): Promise<number> {
-    const tier = await SubscriptionTierService.getUserTier(userId);
-    return tier.avatar_regenerations_month;
+    return DEFAULT_REGENERATION_LIMIT;
   }
 
   /**

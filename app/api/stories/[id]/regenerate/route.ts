@@ -87,8 +87,12 @@ export async function PUT(
       costLog.generation_params
     );
 
-    // Increment usage counts
-    await StoryUsageLimitsService.incrementUsage(user.id);
+    // Increment usage counts (regenerations are text-only, don't use credits)
+    await StoryUsageLimitsService.incrementUsage(user.id, {
+      includeIllustrations: false,
+      usedCredit: false,
+      storyId: result.storyId,
+    });
 
     // Get updated usage stats
     const updatedUsage = await StoryUsageLimitsService.getUsageStats(user.id);

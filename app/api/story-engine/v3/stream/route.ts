@@ -16,7 +16,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { V3StoryPromptBuilder } from '@/lib/story-engine-v3/prompt-builders/V3StoryPromptBuilder';
 import { AIConfigService, type AIConfig } from '@/lib/services/ai-config';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
-import { SubscriptionTierService } from '@/lib/services/subscription-tier';
+import { StoryCompletionService } from '@/lib/services/story-completion';
 import { parser } from 'stream-json';
 import { PassThrough } from 'stream';
 import type {
@@ -127,85 +127,29 @@ export async function POST(request: Request) {
 
         userId = user.id;
 
-        // Get user's tier for feature validation
-        const tier = await SubscriptionTierService.getUserTier(user.id);
-
-        // Validate story mode permissions
-        if (params.mode === 'fun' && !tier.allow_fun_stories) {
-          sendEvent(controller, { type: 'error', message: 'Fun stories are not available on your plan' });
-          controller.close();
-          return;
-        }
-
-        if (params.mode === 'growth' && !tier.allow_growth_stories) {
-          sendEvent(controller, { type: 'error', message: 'Growth stories are not available on your plan' });
-          controller.close();
-          return;
-        }
-
         // Validate mode-specific requirements
-        if (params.mode === 'growth') {
-          if (!params.growthTopicId) {
-            sendEvent(controller, { type: 'error', message: 'growthTopicId is required for growth mode' });
-            controller.close();
-            return;
-          }
-
-          if (!tier.allow_growth_areas) {
-            sendEvent(controller, { type: 'error', message: 'Growth stories are not available on your plan' });
-            controller.close();
-            return;
-          }
-        }
-
-        // Free tier default IDs
-        const FREE_TIER_DEFAULTS = {
-          genreId: '7359b854-532f-4761-bc1d-4a9ca434461d',
-          toneId: '486d23c1-f77e-4a5a-87de-6c7d25b75664',
-          lengthId: '4701edf9-497b-4483-b1a2-7be30de987d5',
-        };
-
-        // Genre validation
-        if (params.genreId && !tier.allow_genres) {
-          if (params.genreId !== FREE_TIER_DEFAULTS.genreId) {
-            sendEvent(controller, { type: 'error', message: 'This genre is not available on your plan' });
-            controller.close();
-            return;
-          }
-        }
-
-        // Writing style validation
-        if (params.toneId && !tier.allow_writing_styles) {
-          if (params.toneId !== FREE_TIER_DEFAULTS.toneId) {
-            sendEvent(controller, { type: 'error', message: 'This writing style is not available on your plan' });
-            controller.close();
-            return;
-          }
-        }
-
-        // Custom instructions validation
-        if (params.customInstructions && !tier.allow_special_requests) {
-          sendEvent(controller, { type: 'error', message: 'Custom instructions are not available on your plan' });
+        if (params.mode === 'growth' && !params.growthTopicId) {
+          sendEvent(controller, { type: 'error', message: 'growthTopicId is required for growth mode' });
           controller.close();
           return;
         }
 
-        // Story length validation
-        if (params.lengthId && !tier.allow_story_length) {
-          if (params.lengthId !== FREE_TIER_DEFAULTS.lengthId) {
-            sendEvent(controller, { type: 'error', message: 'This story length is not available on your plan' });
-            controller.close();
-            return;
-          }
-        }
-
-        // Check usage limits
-        const usageCheck = await StoryUsageLimitsService.canGenerate(user.id, false);
+        // Check usage limits (includes paywall check for free users and subscription limits)
+        const usageCheck = await StoryUsageLimitsService.canGenerate(user.id, params.includeIllustrations ?? true);
         if (!usageCheck.allowed) {
-          sendEvent(controller, { type: 'error', message: 'Story generation limit reached' });
+          const message = usageCheck.reason === 'subscription_limit_reached'
+            ? `You've used all ${usageCheck.billingCycleInfo?.limit || 30} stories this month. Your limit resets in ${usageCheck.billingCycleInfo?.daysUntilReset || 0} days.`
+            : usageCheck.reason === 'paywall_required'
+            ? 'Payment required to generate this story'
+            : 'Story generation limit reached';
+          sendEvent(controller, { type: 'error', message });
           controller.close();
           return;
         }
+
+        // Track whether we're using a generation credit and subscription status
+        const hasSubscription = usageCheck.paywallBehavior?.hasSubscription || false;
+        const usingCredit = params.useCredit && (usageCheck.paywallBehavior?.hasCredits || false);
 
         // Send initial event to indicate stream started
         sendEvent(controller, { type: 'started' });
@@ -279,8 +223,19 @@ export async function POST(request: Request) {
                   .eq('id', costLogId);
               }
 
-              // Increment usage - pass includeIllustrations flag
-              await StoryUsageLimitsService.incrementUsage(userId!, params.includeIllustrations ?? false);
+              // Increment total story count (tracks ALL completed stories)
+              const newStoryCount = await StoryCompletionService.incrementTotalStoryCount(userId!);
+
+              // If used a generation credit, deduct it
+              if (usingCredit) {
+                await StoryCompletionService.useGenerationCredit(userId!);
+              }
+
+              // If this is story #2 and user doesn't have subscription, mark as requiring paywall
+              // (Story #1 is free trial, story #3+ blocked before generation)
+              if (newStoryCount === 2 && !hasSubscription) {
+                await StoryCompletionService.markStoryRequiresPaywall(storyId);
+              }
 
               // Send complete event with story ID
               sendEvent(controller, { type: 'complete', storyId });

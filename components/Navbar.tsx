@@ -4,9 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles, Info } from 'lucide-react'
+import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles, Info, BookOpen } from 'lucide-react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import TierBadge from '@/components/subscription/TierBadge'
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -14,7 +13,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const supabase = createClient()
-  const { tier } = useSubscription()
+  const { hasActiveSubscription, subscriptionTier, storiesRemaining, monthlyLimit } = useSubscription()
   const dropdownRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([])
@@ -184,24 +183,39 @@ export default function Navbar() {
                   role="menu"
                   aria-orientation="vertical"
                 >
-                  {/* Tier Badge Header */}
-                  {tier && (
-                    <div className="px-4 py-3 bg-gradient-to-r from-sky-50 to-primary-50 border-b border-gray-200">
-                      <div className="flex items-center justify-between">
-                        <TierBadge showQuota={false} />
-                        {tier.id === 'tier_free' && (
-                          <Link
-                            href="/pricing"
-                            onClick={closeMenu}
-                            className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1"
-                          >
-                            <Sparkles className="w-3 h-3" />
-                            Upgrade
-                          </Link>
+                  {/* Subscription Status Header */}
+                  <div className="px-4 py-3 bg-gradient-to-r from-sky-50 to-primary-50 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {hasActiveSubscription ? (
+                          <>
+                            <Sparkles className="w-4 h-4 text-primary-600" />
+                            <span className="text-sm font-semibold text-primary-700">Stories Plus</span>
+                          </>
+                        ) : (
+                          <>
+                            <BookOpen className="w-4 h-4 text-gray-600" />
+                            <span className="text-sm font-semibold text-gray-700">Free</span>
+                          </>
                         )}
                       </div>
+                      {!hasActiveSubscription && (
+                        <Link
+                          href="/pricing"
+                          onClick={closeMenu}
+                          className="text-xs font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          Upgrade
+                        </Link>
+                      )}
+                      {hasActiveSubscription && storiesRemaining !== null && (
+                        <span className="text-xs text-gray-600">
+                          {storiesRemaining}/{monthlyLimit} stories
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
 
                   <div className="py-2">
                     {menuItems.map((item, index) => {

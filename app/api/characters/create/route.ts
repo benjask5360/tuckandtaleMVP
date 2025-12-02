@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { generateAIPrompt, generateAvatarPrompt } from '@/lib/prompt-builders'
 import { ProfileType, CharacterSelections } from '@/lib/descriptors/types'
-import { SubscriptionTierService } from '@/lib/services/subscription-tier'
 import { normalizeCharacterSelections } from '@/lib/descriptors/normalize'
 
 function calculateAge(dateOfBirth: string): number | null {
@@ -41,46 +40,8 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get user's subscription tier - no defaults
-    const tier = await SubscriptionTierService.getUserTier(user.id)
-
-    // Check pet and magical creature permissions first
-    if (character_type === 'pet' && !tier.allow_pets) {
-      return NextResponse.json(
-        { error: 'Pet characters are not available on your plan' },
-        { status: 403 }
-      )
-    }
-
-    if (character_type === 'magical' && !tier.allow_magical_creatures) {
-      return NextResponse.json(
-        { error: 'Magical creatures are not available on your plan' },
-        { status: 403 }
-      )
-    }
-
-    // Check character limit based on type (from new schema columns)
-    const maxAllowed = character_type === 'child'
-      ? tier.child_profiles
-      : tier.other_character_profiles
-
-    // Only enforce limit if not unlimited (null would mean unlimited if we supported it)
-    if (maxAllowed !== null) {
-      // Count existing characters of this type
-      const { count } = await supabase
-        .from('character_profiles')
-        .select('id', { count: 'exact' })
-        .eq('user_id', user.id)
-        .eq('character_type', character_type === 'child' ? 'child' : character_type)
-        .is('deleted_at', null)
-
-      if ((count || 0) >= maxAllowed) {
-        return NextResponse.json(
-          { error: `You have reached the limit of ${maxAllowed} ${character_type === 'child' ? 'child profiles' : 'characters'} for your plan` },
-          { status: 403 }
-        )
-      }
-    }
+    // All character types are now available to everyone
+    // Paywall controls access, not feature availability
 
     // Convert character_type to ProfileType for descriptor system
     const profileType = character_type as ProfileType

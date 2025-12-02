@@ -10,7 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { V3StoryGenerationService } from '@/lib/story-engine-v3/services/V3StoryGenerationService';
 import { StoryUsageLimitsService } from '@/lib/services/story-usage-limits';
-import { SubscriptionTierService } from '@/lib/services/subscription-tier';
+import { StoryCompletionService } from '@/lib/services/story-completion';
 import type { V3StoryGenerationParams } from '@/lib/story-engine-v3/types';
 
 export async function POST(request: Request) {
@@ -50,103 +50,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get user's tier for feature validation
-    const tier = await SubscriptionTierService.getUserTier(user.id);
-
-    // Validate story mode permissions
-    if (params.mode === 'fun' && !tier.allow_fun_stories) {
-      return NextResponse.json(
-        { error: 'Fun stories are not available on your plan' },
-        { status: 403 }
-      );
-    }
-
-    if (params.mode === 'growth' && !tier.allow_growth_stories) {
-      return NextResponse.json(
-        { error: 'Growth stories are not available on your plan' },
-        { status: 403 }
-      );
-    }
-
     // Validate mode-specific requirements
-    if (params.mode === 'growth') {
-      if (!params.growthTopicId) {
-        return NextResponse.json(
-          { error: 'growthTopicId is required for growth mode stories' },
-          { status: 400 }
-        );
-      }
-
-      if (!tier.allow_growth_areas) {
-        return NextResponse.json(
-          { error: 'Growth stories are not available on your plan' },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Free tier default IDs
-    const FREE_TIER_DEFAULTS = {
-      genreId: '7359b854-532f-4761-bc1d-4a9ca434461d', // Adventure
-      toneId: '486d23c1-f77e-4a5a-87de-6c7d25b75664', // Classic Bedtime
-      lengthId: '4701edf9-497b-4483-b1a2-7be30de987d5', // Medium Story
-    };
-
-    // Genre validation
-    if (params.genreId && !tier.allow_genres) {
-      if (params.genreId !== FREE_TIER_DEFAULTS.genreId) {
-        return NextResponse.json(
-          { error: 'This genre is not available on your plan. Upgrade to access all genres.' },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Writing style validation
-    if (params.toneId && !tier.allow_writing_styles) {
-      if (params.toneId !== FREE_TIER_DEFAULTS.toneId) {
-        return NextResponse.json(
-          { error: 'This writing style is not available on your plan. Upgrade to access all styles.' },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Custom instructions validation
-    if (params.customInstructions && !tier.allow_special_requests) {
+    if (params.mode === 'growth' && !params.growthTopicId) {
       return NextResponse.json(
-        { error: 'Custom instructions are not available on your plan' },
-        { status: 403 }
+        { error: 'growthTopicId is required for growth mode stories' },
+        { status: 400 }
       );
     }
 
-    // Story length validation
-    if (params.lengthId && !tier.allow_story_length) {
-      if (params.lengthId !== FREE_TIER_DEFAULTS.lengthId) {
-        return NextResponse.json(
-          { error: 'This story length is not available on your plan. Upgrade to access all lengths.' },
-          { status: 403 }
-        );
-      }
-    }
-
-    // Check usage limits - V3 Phase 1 is text-only
-    const usageCheck = await StoryUsageLimitsService.canGenerate(user.id, false);
+    // Check usage limits (includes paywall check for free users and subscription limits)
+    const usageCheck = await StoryUsageLimitsService.canGenerate(user.id, params.includeIllustrations ?? true);
     if (!usageCheck.allowed) {
+      const message = usageCheck.reason === 'subscription_limit_reached'
+        ? `You've used all ${usageCheck.billingCycleInfo?.limit || 30} stories this month.`
+        : usageCheck.reason === 'paywall_required'
+        ? 'Payment required to generate this story'
+        : 'Story generation limit reached';
       return NextResponse.json(
-        {
-          error: 'Story generation limit reached',
-          limits: usageCheck,
-        },
+        { error: message, limits: usageCheck },
         { status: 429 }
       );
     }
 
+    // Track whether we're using a generation credit
+    const hasSubscription = usageCheck.paywallBehavior?.hasSubscription || false;
+    const usingCredit = params.useCredit && (usageCheck.paywallBehavior?.hasCredits || false);
+
     // Generate story using V3 service
     const result = await V3StoryGenerationService.generateStory(user.id, params);
 
-    // Increment usage counts - pass includeIllustrations flag
-    await StoryUsageLimitsService.incrementUsage(user.id, params.includeIllustrations ?? false);
+    // Increment total story count
+    const newStoryCount = await StoryCompletionService.incrementTotalStoryCount(user.id);
+
+    // If used a generation credit, deduct it
+    if (usingCredit) {
+      await StoryCompletionService.useGenerationCredit(user.id);
+    }
+
+    // If this is story #2 and user doesn't have subscription, mark as requiring paywall
+    if (newStoryCount === 2 && !hasSubscription) {
+      await StoryCompletionService.markStoryRequiresPaywall(result.storyId);
+    }
 
     // Return success response
     return NextResponse.json({

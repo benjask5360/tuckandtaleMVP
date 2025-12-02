@@ -1,13 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X, ImageOff, RefreshCw } from 'lucide-react'
 import Image from 'next/image'
 import ReviewRequestModal from '@/components/ReviewRequestModal'
+import StoryPaywall from '@/components/paywall/StoryPaywall'
 import type { V3GenerationMetadata, V3IllustrationStatusData } from '@/lib/story-engine-v3/types'
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+
+interface PaywallViewingStatus {
+  required: boolean
+  isUnlocked: boolean
+  storyTitle: string | null
+  paywallParagraphIndex: number
+}
 
 interface V3StoryData {
   id: string
@@ -39,6 +48,9 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
   const [illustrationStatus, setIllustrationStatus] = useState<V3IllustrationStatusData | null>(null)
   const [illustrationError, setIllustrationError] = useState<string | null>(null)
   const [triggeringIllustrations, setTriggeringIllustrations] = useState(false)
+
+  // Paywall state
+  const [paywallStatus, setPaywallStatus] = useState<PaywallViewingStatus | null>(null)
 
   useEffect(() => {
     loadStory()
@@ -170,6 +182,18 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
       // Load existing illustration status if available
       if (storyData.v3_illustration_status) {
         setIllustrationStatus(storyData.v3_illustration_status as V3IllustrationStatusData)
+      }
+
+      // Check paywall status for viewing
+      try {
+        const paywallResponse = await fetch(`/api/paywall/check-viewing?storyId=${params.id}`)
+        if (paywallResponse.ok) {
+          const paywallData = await paywallResponse.json()
+          setPaywallStatus(paywallData)
+        }
+      } catch (paywallErr) {
+        console.error('Error checking paywall status:', paywallErr)
+        // Non-blocking - continue loading story even if paywall check fails
       }
 
       // Check for unsaved edits in localStorage
@@ -720,45 +744,68 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
         {/* Story Content */}
         <div className="card p-6 md:p-8 lg:p-12">
           <div className="max-w-none">
-            {(isEditMode ? editedParagraphs : paragraphs).map((paragraph, index) => {
-              const sceneIllustration = getSceneIllustration(index)
-              const showSceneIllustration = showIllustrationUI && sceneIllustration
+            {(() => {
+              // Determine if paywall should be shown
+              const showPaywall = paywallStatus?.required && !paywallStatus?.isUnlocked && !isEditMode
+              const paywallIndex = paywallStatus?.paywallParagraphIndex ?? PRICING_CONFIG.PAYWALL_PARAGRAPH_INDEX
+              const displayParagraphs = isEditMode ? editedParagraphs : paragraphs
 
-              return (
-                <div key={index} className="mb-8">
-                  {/* Scene Illustration */}
-                  {showSceneIllustration && (
-                    <div className="mb-6 max-w-2xl mx-auto">
-                      <IllustrationSlot
-                        status={sceneIllustration.status}
-                        tempUrl={sceneIllustration.tempUrl}
-                        imageUrl={sceneIllustration.imageUrl}
-                        alt={`Illustration for paragraph ${index + 1}`}
-                        size="large"
-                      />
-                    </div>
-                  )}
+              return displayParagraphs.map((paragraph, index) => {
+                const sceneIllustration = getSceneIllustration(index)
+                const showSceneIllustration = showIllustrationUI && sceneIllustration
 
-                  {/* Paragraph Text */}
-                  {isEditMode ? (
-                    <textarea
-                      value={paragraph}
-                      onChange={(e) => handleParagraphChange(index, e.target.value)}
-                      className="w-full text-gray-800 leading-relaxed text-base md:text-lg border-2 border-primary-200 rounded-lg p-4 focus:outline-none focus:border-primary-500 min-h-[120px]"
-                      style={{ lineHeight: '1.8' }}
-                      placeholder={`Paragraph ${index + 1}...`}
+                // If paywall is active and we're at or past the paywall index, show paywall instead
+                if (showPaywall && index === paywallIndex) {
+                  return (
+                    <StoryPaywall
+                      key={`paywall-${index}`}
+                      storyId={story.id}
+                      storyTitle={story.title}
                     />
-                  ) : (
-                    <p className="text-gray-800 leading-relaxed text-base md:text-lg" style={{ lineHeight: '1.8' }}>
-                      {paragraph}
-                    </p>
-                  )}
-                </div>
-              )
-            })}
+                  )
+                }
 
-            {/* Moral Section */}
-            {(story.generation_metadata?.moral || isEditMode) && (
+                // Hide paragraphs after paywall point (they're hidden behind the paywall)
+                if (showPaywall && index > paywallIndex) {
+                  return null
+                }
+
+                return (
+                  <div key={index} className="mb-8">
+                    {/* Scene Illustration */}
+                    {showSceneIllustration && (
+                      <div className="mb-6 max-w-2xl mx-auto">
+                        <IllustrationSlot
+                          status={sceneIllustration.status}
+                          tempUrl={sceneIllustration.tempUrl}
+                          imageUrl={sceneIllustration.imageUrl}
+                          alt={`Illustration for paragraph ${index + 1}`}
+                          size="large"
+                        />
+                      </div>
+                    )}
+
+                    {/* Paragraph Text */}
+                    {isEditMode ? (
+                      <textarea
+                        value={paragraph}
+                        onChange={(e) => handleParagraphChange(index, e.target.value)}
+                        className="w-full text-gray-800 leading-relaxed text-base md:text-lg border-2 border-primary-200 rounded-lg p-4 focus:outline-none focus:border-primary-500 min-h-[120px]"
+                        style={{ lineHeight: '1.8' }}
+                        placeholder={`Paragraph ${index + 1}...`}
+                      />
+                    ) : (
+                      <p className="text-gray-800 leading-relaxed text-base md:text-lg" style={{ lineHeight: '1.8' }}>
+                        {paragraph}
+                      </p>
+                    )}
+                  </div>
+                )
+              })
+            })()}
+
+            {/* Moral Section - Only show if story is unlocked or no paywall */}
+            {(story.generation_metadata?.moral || isEditMode) && !(paywallStatus?.required && !paywallStatus?.isUnlocked) && (
               <div className="mt-12 mb-8 p-6 md:p-8 bg-primary-50 rounded-2xl border border-primary-200">
                 <div className="flex items-start gap-3">
                   <Heart className="w-5 h-5 text-primary-600 flex-shrink-0 mt-1" />

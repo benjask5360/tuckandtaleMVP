@@ -1,207 +1,78 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import PricingCard from '@/components/subscription/PricingCard';
-import type { SubscriptionTier } from '@/lib/types/subscription-types';
-import { Sparkles, Shield, Zap, ArrowRight, Heart, Check, ChevronDown, X } from 'lucide-react';
-
-interface UpgradePreview {
-  tierId: string;
-  tierName: string;
-  amountDue: number;
-  amountDueFormatted: string;
-}
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import {
+  Sparkles,
+  Shield,
+  Zap,
+  ArrowRight,
+  Heart,
+  Check,
+  ChevronDown,
+  BookOpen,
+  Loader2,
+} from 'lucide-react'
+import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 
 export default function PricingPage() {
-  const router = useRouter();
-  const [tiers, setTiers] = useState<SubscriptionTier[]>([]);
-  const [currentTierId, setCurrentTierId] = useState<string | null>(null);
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const [loading, setLoading] = useState(true);
-  const [processingCheckout, setProcessingCheckout] = useState(false);
-  const [upgradePreview, setUpgradePreview] = useState<UpgradePreview | null>(null);
-  const [loadingPreview, setLoadingPreview] = useState(false);
+  const router = useRouter()
+  const [processingCheckout, setProcessingCheckout] = useState<'single' | 'subscription' | null>(null)
 
-  useEffect(() => {
-    loadTiersAndUser();
-  }, []);
-
-  const loadTiersAndUser = async () => {
+  const handleSingleStoryPurchase = async () => {
     try {
-      const supabase = createClient();
+      setProcessingCheckout('single')
 
-      // Get current user's tier
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('subscription_tier_id, stripe_subscription_id, subscription_status')
-          .eq('id', user.id)
-          .single();
-
-        setCurrentTierId(profile?.subscription_tier_id || 'tier_free');
-        // Check if user has an active paid subscription
-        setHasActiveSubscription(
-          !!profile?.stripe_subscription_id &&
-          profile?.subscription_status === 'active'
-        );
-      }
-
-      // Get all active tiers
-      const { data: tiersData, error } = await supabase
-        .from('subscription_tiers')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-
-      setTiers(tiersData || []);
-    } catch (error) {
-      console.error('Error loading pricing data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSelectPlan = async (
-    tierId: string,
-    billingPeriod: 'monthly' | 'yearly'
-  ) => {
-    try {
-      setProcessingCheckout(true);
-
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        // Redirect to login (unified auth entry point)
-        router.push('/auth/login?redirect=/pricing');
-        return;
-      }
-
-      // If it's the free tier, just update directly
-      if (tierId === 'tier_free') {
-        const { error } = await supabase
-          .from('user_profiles')
-          .update({ subscription_tier_id: 'tier_free' })
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        router.push('/dashboard');
-        return;
-      }
-
-      // Check if this is an upgrade (user has active subscription and is selecting a different tier)
-      const isUpgrade = hasActiveSubscription && tierId !== currentTierId;
-
-      if (isUpgrade) {
-        // UPGRADE PATH - show preview modal first
-        setLoadingPreview(true);
-        try {
-          const response = await fetch('/api/stripe/preview-upgrade', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tierId, billingPeriod }),
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to preview upgrade');
-          }
-
-          const preview = await response.json();
-          const tier = tiers.find(t => t.id === tierId);
-          setUpgradePreview({
-            tierId,
-            tierName: tier?.name || 'Supernova',
-            amountDue: preview.amountDue,
-            amountDueFormatted: preview.amountDueFormatted,
-          });
-        } finally {
-          setLoadingPreview(false);
-          setProcessingCheckout(false);
-        }
-        return;
-      }
-
-      // NEW SUBSCRIPTION PATH - create Stripe checkout session
-      const response = await fetch('/api/stripe/create-checkout', {
+      const response = await fetch('/api/stripe/create-story-checkout', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tierId,
-          billingPeriod,
-        }),
-      });
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // No storyId = generation credit
+      })
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create checkout session');
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create checkout')
       }
 
-      const { url } = await response.json();
-
+      const { url } = await response.json()
       if (url) {
-        window.location.href = url;
+        window.location.href = url
       }
     } catch (error: any) {
-      console.error('Checkout error:', error);
-      alert(error.message || 'Failed to start checkout. Please try again.');
-    } finally {
-      setProcessingCheckout(false);
+      console.error('Checkout error:', error)
+      alert(error.message || 'Failed to start checkout. Please try again.')
+      setProcessingCheckout(null)
     }
-  };
+  }
 
-  const confirmUpgrade = async () => {
-    if (!upgradePreview) return;
-
+  const handleSubscription = async () => {
     try {
-      setProcessingCheckout(true);
-      const response = await fetch('/api/stripe/upgrade-subscription', {
+      setProcessingCheckout('subscription')
+
+      const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tierId: upgradePreview.tierId,
-          billingPeriod,
+          tierId: PRICING_CONFIG.TIER_STORIES_PLUS,
+          billingPeriod: 'monthly',
         }),
-      });
+      })
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to upgrade subscription');
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create checkout')
       }
 
-      setUpgradePreview(null);
-      router.push('/dashboard?subscription=upgraded');
+      const { url } = await response.json()
+      if (url) {
+        window.location.href = url
+      }
     } catch (error: any) {
-      console.error('Upgrade error:', error);
-      alert(error.message || 'Failed to upgrade. Please try again.');
-      setProcessingCheckout(false);
+      console.error('Checkout error:', error)
+      alert(error.message || 'Failed to start checkout. Please try again.')
+      setProcessingCheckout(null)
     }
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading pricing...</p>
-        </div>
-      </div>
-    );
   }
 
   return (
@@ -212,10 +83,11 @@ export default function PricingPage() {
         <div className="container-narrow px-4 md:px-6 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="font-display font-bold text-3xl md:text-5xl lg:text-6xl mb-4 md:mb-6 text-white">
-              Choose Your Plan
+              Unlimited Storytelling
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed">
-              Create magical bedtime stories for your little ones. Start free, upgrade anytime.
+              Create personalized bedtime stories your children will love.
+              Start with a free illustrated story!
             </p>
           </div>
         </div>
@@ -231,7 +103,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-center gap-2 text-gray-700">
               <Zap className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm">Instant activation</span>
+              <span className="text-sm">Instant access</span>
             </div>
             <div className="flex items-center gap-2 text-gray-700">
               <Sparkles className="w-5 h-5 text-primary-600" />
@@ -241,237 +113,243 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Holiday Promotional Banner */}
-      {tiers.some(t => t.promo_active) && (
-        <section className="py-6 bg-gray-50">
-          <div className="container-narrow">
-            <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
-              <p className="text-lg md:text-2xl font-bold text-white">
-                🎁 Limited-Time Holiday Offer — Save 50% on Starlight & Supernova
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Pricing Cards Section */}
-      <section className="section-padding py-8 md:py-16">
-        <div className="container-narrow px-4 md:px-6">
-          {/* Billing Period Toggle */}
-          <div className="flex flex-col items-center mb-8 md:mb-12">
-            <div className="inline-flex items-center gap-1 md:gap-2 bg-gray-100 rounded-xl p-1 md:p-1.5 shadow-sm">
-              <button
-                onClick={() => setBillingPeriod('monthly')}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
-                  billingPeriod === 'monthly'
-                    ? 'bg-white text-gray-900 shadow-md'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingPeriod('yearly')}
-                className={`px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs md:text-sm font-semibold transition-all ${
-                  billingPeriod === 'yearly'
-                    ? 'bg-white text-gray-900 shadow-md'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Annual
-              </button>
-            </div>
-            {billingPeriod === 'yearly' && (
-              <p className="mt-3 text-sm text-green-600 font-semibold">
-                Save 2 months with annual billing 🎉
-              </p>
-            )}
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
-            {tiers.map((tier) => {
-              const isCurrentPlan = tier.id === currentTierId;
-              const isPopular = tier.id === 'tier_basic'; // Starlight is most popular
-
-              return (
-                <PricingCard
-                  key={tier.id}
-                  tier={tier}
-                  billingPeriod={billingPeriod}
-                  isCurrentPlan={isCurrentPlan}
-                  isPopular={isPopular}
-                  onSelectPlan={handleSelectPlan}
-                />
-              );
-            })}
+      {/* Free Trial Banner */}
+      <section className="py-6 bg-gray-50">
+        <div className="container-narrow">
+          <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-5 text-center shadow-lg">
+            <p className="text-lg md:text-2xl font-bold text-white">
+              Your first illustrated story is completely FREE!
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Feature Comparison Table */}
-      <section className="section-padding py-16 bg-white">
-        <div className="container-narrow">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-8 text-center">
-              Compare Features
-            </h2>
+      {/* Pricing Cards Section */}
+      <section className="section-padding py-8 md:py-16">
+        <div className="container-narrow px-4 md:px-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Single Story Card */}
+            <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 md:p-8 hover:border-primary-200 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                  <BookOpen className="w-6 h-6 text-gray-600" />
+                </div>
+                <h2 className="font-display font-bold text-2xl text-gray-900">
+                  Single Story
+                </h2>
+              </div>
 
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="text-left p-4 font-semibold text-gray-900 rounded-tl-xl">Feature</th>
-                    <th className="text-center p-4 font-semibold text-gray-900">Moonlight</th>
-                    <th className="text-center p-4 font-semibold text-gray-900 bg-gradient-to-br from-sky-50 to-primary-50 border-x-2 border-primary-200">Starlight</th>
-                    <th className="text-center p-4 font-semibold text-gray-900 rounded-tr-xl">Supernova</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Illustrated stories/month</td>
-                    <td className="p-4 text-center text-gray-900">3 total</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">20</td>
-                    <td className="p-4 text-center text-gray-900">40</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Text-only stories/month</td>
-                    <td className="p-4 text-center text-gray-900">5</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">50</td>
-                    <td className="p-4 text-center text-gray-900">100</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Child profiles</td>
-                    <td className="p-4 text-center text-gray-900">1</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">3</td>
-                    <td className="p-4 text-center text-gray-900">10</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700 pl-8 italic">Storybook Character (human)</td>
-                    <td className="p-4 text-center text-gray-900">1</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">Multiple</td>
-                    <td className="p-4 text-center text-gray-900">Multiple</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700 pl-8 italic">Pets</td>
-                    <td className="p-4 text-center text-gray-900">1</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">Multiple</td>
-                    <td className="p-4 text-center text-gray-900">Multiple</td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700 pl-8 italic">Magical Creatures</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Growth stories</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Genres & writing styles</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Story library & favorites</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Advanced customization</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700">Early access to new features</td>
-                    <td className="p-4 text-center text-gray-400">—</td>
-                    <td className="p-4 text-center bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200 text-gray-400">—</td>
-                    <td className="p-4 text-center"><Check className="w-5 h-5 text-green-600 mx-auto" /></td>
-                  </tr>
-                  <tr className="hover:bg-gray-50">
-                    <td className="p-4 text-gray-700 rounded-bl-xl">Support level</td>
-                    <td className="p-4 text-center text-gray-900">Standard</td>
-                    <td className="p-4 text-center text-gray-900 bg-gradient-to-br from-sky-50/30 to-primary-50/30 border-x-2 border-primary-200">Priority</td>
-                    <td className="p-4 text-center text-gray-900 rounded-br-xl">Premium</td>
-                  </tr>
-                </tbody>
-              </table>
+              <p className="text-gray-600 mb-6">
+                Perfect for trying us out or occasional use
+              </p>
+
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-gray-900">
+                  ${(PRICING_CONFIG.SINGLE_STORY_PRICE_CENTS / 100).toFixed(2)}
+                </span>
+                <span className="text-gray-500 ml-2">one-time</span>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Generate one complete story</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Beautiful custom illustrations</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Keep forever in your library</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">All genres & writing styles</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={handleSingleStoryPurchase}
+                disabled={processingCheckout !== null}
+                className="w-full py-4 px-6 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {processingCheckout === 'single' ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>Buy One Story</>
+                )}
+              </button>
             </div>
 
-            {/* Mobile Accordion */}
-            <div className="md:hidden space-y-4">
-              {tiers.filter(t => t.id !== 'tier_premium').map((tier) => (
-                <div key={tier.id} className="bg-white rounded-xl border-2 border-gray-200 overflow-hidden">
-                  <div className={`p-4 ${tier.id === 'tier_basic' ? 'bg-gradient-to-br from-sky-50 to-primary-50' : 'bg-gray-50'}`}>
-                    <h3 className="font-semibold text-lg text-gray-900">{tier.name}</h3>
-                  </div>
-                  <div className="p-4 space-y-3">
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Illustrated stories</span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {tier.id === 'tier_free' ? '3 total' : `${tier.illustrated_limit_month}/month`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Text stories</span>
-                      <span className="text-sm font-semibold text-gray-900">{tier.text_limit_month}/month</span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Child profiles</span>
-                      <span className="text-sm font-semibold text-gray-900">{tier.child_profiles}</span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 italic pl-3">Human characters</span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {tier.id === 'tier_free' ? '1' : 'Multiple'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 italic pl-3">Pets</span>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {tier.id === 'tier_free' ? '1' : 'Multiple'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600 italic pl-3">Magical creatures</span>
-                      {tier.allow_magical_creatures ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Growth stories</span>
-                      {tier.allow_growth_stories ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Genres & styles</span>
-                      {tier.allow_genres ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Story library</span>
-                      {tier.allow_library ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
-                    </div>
-                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                      <span className="text-sm text-gray-600">Early access</span>
-                      {tier.early_access ? <Check className="w-5 h-5 text-green-600" /> : <span className="text-gray-400">—</span>}
-                    </div>
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-sm text-gray-600">Support</span>
-                      <span className="text-sm font-semibold text-gray-900">{tier.support_level}</span>
-                    </div>
-                  </div>
+            {/* Subscription Card */}
+            <div className="bg-white rounded-2xl border-2 border-primary-400 p-6 md:p-8 relative overflow-hidden">
+              {/* Best Value Badge */}
+              <div className="absolute top-4 right-4 bg-gradient-primary text-white text-xs font-bold px-3 py-1 rounded-full">
+                Best Value
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-primary-600" />
                 </div>
-              ))}
+                <h2 className="font-display font-bold text-2xl text-gray-900">
+                  Stories Plus
+                </h2>
+              </div>
+
+              <p className="text-gray-600 mb-6">
+                For story-loving families
+              </p>
+
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-gray-900">
+                  ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}
+                </span>
+                <span className="text-gray-500 ml-2">/month</span>
+              </div>
+
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">
+                    <strong>{PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories</strong> per month
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Full illustrations on every story</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">All genres & writing styles</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Growth stories & life lessons</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">Priority support</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={handleSubscription}
+                disabled={processingCheckout !== null}
+                className="w-full py-4 px-6 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {processingCheckout === 'subscription' ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>Subscribe Now</>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Value comparison note */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500">
+              At $14.99/month for 30 stories, that&apos;s just <strong>$0.50 per story</strong> vs $4.99 each!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* What&apos;s Included Section */}
+      <section className="section-padding py-16 bg-white">
+        <div className="container-narrow">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-8 text-center">
+              Every Story Includes
+            </h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">🎨</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Custom Illustrations</h3>
+                  <p className="text-gray-600 text-sm">
+                    Beautiful AI-generated artwork that brings your story to life
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">👶</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Personalized Characters</h3>
+                  <p className="text-gray-600 text-sm">
+                    Your child is the hero of every adventure
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">📚</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Multiple Genres</h3>
+                  <p className="text-gray-600 text-sm">
+                    Adventure, fantasy, fairy tales, mystery, and more
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">🌱</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Growth Stories</h3>
+                  <p className="text-gray-600 text-sm">
+                    Stories that teach valuable life lessons
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">✍️</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Writing Styles</h3>
+                  <p className="text-gray-600 text-sm">
+                    Classic bedtime, silly adventures, rhyming, and more
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-4">
+                <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl">📖</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Story Library</h3>
+                  <p className="text-gray-600 text-sm">
+                    Save and re-read your favorite stories anytime
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="section-padding py-16 bg-white">
+      <section className="section-padding py-16 bg-gray-50">
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto">
             <h2 className="font-display font-bold text-3xl md:text-4xl text-gray-900 mb-8 text-center">
@@ -480,51 +358,34 @@ export default function PricingPage() {
             <div className="space-y-4">
               <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
                 <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Can I change plans later?</h3>
-                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately for upgrades, and at the end of your billing period for downgrades.
-                </div>
-              </details>
-
-              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
-                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What happens if I go over my story limit?</h3>
-                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  If you reach your illustrated story limit, you can still create text-only stories. You can also upgrade your plan to get more illustrated stories.
-                </div>
-              </details>
-
-              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
-                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
                   <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Is there a free trial?</h3>
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Our Moonlight (Free) plan is always free! You can create up to 3 illustrated stories total and 5 text stories every month to try out the platform.
+                  Yes! Your first illustrated story is completely free. No credit card required to start.
+                  Create your account and generate your first personalized story right away.
                 </div>
               </details>
 
               <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
                 <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">How much do I save with annual billing?</h3>
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">How does the subscription work?</h3>
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Annual plans save you the equivalent of 2 months free! Plus, you get all the same features with the convenience of one simple yearly payment.
+                  Stories Plus gives you 30 stories per month for ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}/month.
+                  Your story count resets on your billing date each month. You can cancel anytime and keep access until the end of your billing period.
                 </div>
               </details>
 
               <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
                 <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What payment methods do you accept?</h3>
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What if I run out of stories?</h3>
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  We accept all major credit and debit cards through our secure payment processor, Stripe. Your payment information is never stored on our servers.
+                  Subscribers can purchase additional stories for ${(PRICING_CONFIG.SINGLE_STORY_PRICE_CENTS / 100).toFixed(2)} each if they need more.
+                  Your monthly allowance resets on your billing date, so you can also wait for the reset.
                 </div>
               </details>
 
@@ -534,7 +395,30 @@ export default function PricingPage() {
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Yes, you can cancel your subscription at any time from your account settings. You'll continue to have access until the end of your billing period.
+                  Yes, you can cancel your subscription at any time from your account settings.
+                  You&apos;ll continue to have access until the end of your billing period, and all your saved stories remain in your library forever.
+                </div>
+              </details>
+
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">What payment methods do you accept?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
+                  We accept all major credit and debit cards through our secure payment processor, Stripe.
+                  Your payment information is never stored on our servers.
+                </div>
+              </details>
+
+              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
+                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
+                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Do I keep my stories forever?</h3>
+                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
+                  Yes! Every story you create is saved to your library permanently.
+                  Even if you cancel your subscription, you can always access and read your stories.
                 </div>
               </details>
             </div>
@@ -543,7 +427,7 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding py-16">
+      <section className="section-padding py-16 bg-white">
         <div className="container-narrow">
           <Link href="/auth/login" className="block">
             <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white cursor-pointer hover:opacity-95 transition-opacity">
@@ -552,6 +436,7 @@ export default function PricingPage() {
               </h2>
               <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
                 Join thousands of families creating personalized stories that inspire and delight.
+                Your first story is free!
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
                 Get Started Free
@@ -563,20 +448,19 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-white border-t border-gray-200 mt-20">
+      <footer className="py-12 bg-white border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col items-center gap-6 text-sm">
             <p className="flex flex-wrap items-center justify-center gap-2 text-lg text-gray-700 text-center">
               Made with <Heart className="w-5 h-5 fill-red-500 text-red-500 animate-pulse-soft" /> in the USA for little dreamers everywhere
             </p>
             <div className="flex flex-col md:flex-row justify-between items-center w-full gap-6">
-              <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
+              <p className="text-center md:text-left text-gray-500">&copy; 2025 Tuck and Tale&trade;. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
                 <a href="/pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
                 <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
                 <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
-                <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>
                 <a href="/privacy" className="hover:text-primary-600 transition-colors">Privacy Policy</a>
                 <a href="/terms" className="hover:text-primary-600 transition-colors">Terms of Service</a>
               </nav>
@@ -589,7 +473,7 @@ export default function PricingPage() {
       {processingCheckout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-sm text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <Loader2 className="w-12 h-12 animate-spin text-primary-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Redirecting to checkout...
             </h3>
@@ -597,79 +481,6 @@ export default function PricingPage() {
           </div>
         </div>
       )}
-
-      {/* Loading Preview Overlay */}
-      {loadingPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-sm text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Calculating upgrade...
-            </h3>
-            <p className="text-gray-600">Please wait a moment</p>
-          </div>
-        </div>
-      )}
-
-      {/* Upgrade Confirmation Modal */}
-      {upgradePreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 md:p-8 max-w-md w-full">
-            <div className="flex justify-between items-start mb-6">
-              <h3 className="text-xl font-semibold text-gray-900">
-                Confirm Upgrade
-              </h3>
-              <button
-                onClick={() => setUpgradePreview(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <p className="text-gray-600">
-                You&apos;re upgrading to <span className="font-semibold text-gray-900">{upgradePreview.tierName}</span>
-              </p>
-
-              <div className="bg-gray-50 rounded-xl p-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Amount due today</span>
-                  <span className="text-2xl font-bold text-gray-900">
-                    {upgradePreview.amountDueFormatted}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  This is the prorated difference for the remainder of your billing period.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setUpgradePreview(null)}
-                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmUpgrade}
-                disabled={processingCheckout}
-                className="flex-1 px-4 py-3 bg-gradient-primary text-white rounded-xl font-semibold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {processingCheckout ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>Confirm Upgrade</>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+  )
 }
