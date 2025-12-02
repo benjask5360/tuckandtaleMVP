@@ -20,7 +20,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Personalized AI adventures featuring your child by name, making bedtime magical.
+                Personalized bedtime stories that teach gentle hands and kind hearts.
               </p>
 
               <div className="flex flex-col gap-4 mb-6">
