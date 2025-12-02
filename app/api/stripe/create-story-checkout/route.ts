@@ -94,6 +94,13 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log('[create-story-checkout] Creating session:', {
+      userId: user.id,
+      storyId: storyId || 'credit',
+      priceId,
+      customerId,
+    })
+
     // Determine success/cancel URLs based on whether unlocking specific story or buying credit
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -127,10 +134,15 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ url: session.url })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating story checkout session:', error)
+    console.error('Error details:', {
+      message: error.message,
+      type: error.type,
+      code: error.code,
+    })
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: error.message || 'Failed to create checkout session' },
       { status: 500 }
     )
   }
