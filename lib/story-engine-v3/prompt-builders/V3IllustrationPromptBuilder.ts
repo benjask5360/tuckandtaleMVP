@@ -35,7 +35,15 @@ export function buildIllustrationPromptsPrompt(
 
   // Find the hero character's background for ethnicity consistency
   const heroCharacter = characters.find(c => c.role === 'hero');
-  const heroBackground = heroCharacter?.background;
+  let heroBackground;
+
+  // Extract ethnicity from appearance description
+  if (heroCharacter?.appearanceDescription) {
+    const match = heroCharacter.appearanceDescription.match(/\b(African American|Black or African American|Asian|White|Hispanic or Latino|Middle Eastern or North African|Native Hawaiian or Other Pacific Islander|American Indian or Alaska Native)\b/i);
+    if (match) {
+      heroBackground = match[1];
+    }
+  }
 
   return `You are creating illustration prompts for a children's bedtime story.
 

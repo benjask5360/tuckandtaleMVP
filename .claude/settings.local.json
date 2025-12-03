@@ -19,7 +19,8 @@
       "Bash(netsh advfirewall firewall show rule:*)",
       "Bash(findstr:*)",
       "Bash(netsh advfirewall firewall add rule:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(npx supabase:*)"
     ],
     "deny": [],
     "ask": []
