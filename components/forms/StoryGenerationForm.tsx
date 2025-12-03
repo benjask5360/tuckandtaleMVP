@@ -296,7 +296,6 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
                 onClick={(e) => {
                   e.stopPropagation();
                   setIncludeIllustrations(!includeIllustrations);
-                  setCharacterLimitMessage(null);
                 }}
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
                   includeIllustrations ? 'bg-primary-600' : 'bg-gray-300'
