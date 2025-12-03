@@ -269,7 +269,6 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
       <div
         onClick={() => {
           setIncludeIllustrations(!includeIllustrations)
-          setCharacterLimitMessage(null)
         }}
         className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
           includeIllustrations
