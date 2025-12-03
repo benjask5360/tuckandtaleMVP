@@ -86,8 +86,20 @@ RULES:
 - DO NOT use actual line breaks in the prompt string
 - ALWAYS end with " . STYLE : Disney pixar"${heroBackground ? `
 
-IMPORTANT - NEW CHARACTER ETHNICITY:
-When the story introduces NEW human characters not listed above (e.g., grandparents, teachers, friends, neighbors, shopkeepers), depict them as ${heroBackground} unless the story text explicitly describes them differently. This ensures visual consistency and family representation throughout the illustrations.` : ''}
+CRITICAL - FAMILY MEMBER ETHNICITY:
+When describing family members (Mom, Dad, Mother, Father, Grandma, Grandpa, Grandmother, Grandfather, Brother, Sister, Aunt, Uncle, Cousin) who are NOT in the character list above, you MUST include "${heroBackground}" in their description.
+
+CORRECT Examples:
+- "Mom: A ${heroBackground} woman with black hair, brown eyes, and average build, wearing a yellow dress"
+- "Grandpa: A ${heroBackground} man with gray hair, brown eyes, and average build, wearing a green sweater and brown pants"
+- "Sister: A 7-year-old ${heroBackground} girl with black hair, brown eyes, and slim build, wearing a pink dress"
+
+WRONG Examples (DO NOT DO THIS):
+- "Mom: A woman with black hair..." ❌ Missing ethnicity
+- "Grandpa: An elderly man..." ❌ Missing ethnicity
+- "Dad: A man with brown eyes..." ❌ Missing ethnicity
+
+For non-family characters (teachers, friends, neighbors, shopkeepers), also depict them as ${heroBackground} unless the story text explicitly describes them differently. This ensures visual consistency and realistic family representation.` : ''}
 
 ## EXAMPLE OUTPUT
 For a story with a child (Zaier) and a magical creature (Flicker the firefly):

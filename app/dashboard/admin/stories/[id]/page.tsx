@@ -227,12 +227,12 @@ export default async function AdminStoryInspectionPage({
           </div>
         </div>
 
-        {/* Full System Prompt */}
+        {/* Full Story System Prompt */}
         <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
               <Code className="w-5 h-5 text-purple-600" />
-              Full System Prompt
+              Story Generation System Prompt
             </h2>
             <CopyButton text={story.generation_prompt || 'No prompt available'} />
           </div>
@@ -242,6 +242,24 @@ export default async function AdminStoryInspectionPage({
             </pre>
           </div>
         </div>
+
+        {/* Illustration System Prompt (V3 only) */}
+        {isV3 && story.v3_illustration_system_prompt && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-purple-600" />
+                Illustration Generation System Prompt
+              </h2>
+              <CopyButton text={story.v3_illustration_system_prompt || 'No prompt available'} />
+            </div>
+            <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+              <pre className="text-xs text-gray-800 whitespace-pre-wrap font-mono">
+                {story.v3_illustration_system_prompt}
+              </pre>
+            </div>
+          </div>
+        )}
 
         {/* Story Content & Illustrations */}
         <div className="bg-white rounded-xl shadow-lg p-6">
