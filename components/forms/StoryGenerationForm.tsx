@@ -108,9 +108,6 @@ function FreeTrialWarningModal({
 export default function StoryGenerationForm({ childProfiles, paywallStatus }: StoryGenerationFormProps) {
   const router = useRouter()
 
-  // Configuration
-  const MAX_ILLUSTRATED_CHARACTERS = 3
-
   // Form state
   const [heroId, setHeroId] = useState<string>(childProfiles.find(p => p.character_type === 'child')?.id || '')
   const [additionalCharacterIds, setAdditionalCharacterIds] = useState<string[]>([])
@@ -123,7 +120,6 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
   const [moralLessonId, setMoralLessonId] = useState<string>('')
   const [customInstructions, setCustomInstructions] = useState<string>('')
   const [includeIllustrations, setIncludeIllustrations] = useState<boolean>(true) // Default to true now
-  const [characterLimitMessage, setCharacterLimitMessage] = useState<string | null>(null)
   const [showFreeTrialWarning, setShowFreeTrialWarning] = useState(false)
 
   // Data state
@@ -273,7 +269,6 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
       <div
         onClick={() => {
           setIncludeIllustrations(!includeIllustrations)
-          setCharacterLimitMessage(null)
         }}
         className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${
           includeIllustrations
@@ -301,7 +296,6 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
                 onClick={(e) => {
                   e.stopPropagation();
                   setIncludeIllustrations(!includeIllustrations);
-                  setCharacterLimitMessage(null);
                 }}
                 className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
                   includeIllustrations ? 'bg-primary-600' : 'bg-gray-300'
@@ -396,32 +390,16 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
                 const isCharacterSelected = additionalCharacterIds.includes(character.id)
 
                 // If deselecting, always allow
+                // Toggle character selection
                 if (isCharacterSelected) {
                   setAdditionalCharacterIds(prev => prev.filter(id => id !== character.id))
-                  setCharacterLimitMessage(null)
-                  return
+                } else {
+                  setAdditionalCharacterIds(prev => [...prev, character.id])
                 }
-
-                // If selecting and illustrations are on, check limit
-                if (includeIllustrations && totalCharacters >= MAX_ILLUSTRATED_CHARACTERS) {
-                  setCharacterLimitMessage(`Illustrated stories support up to ${MAX_ILLUSTRATED_CHARACTERS} characters.`)
-                  return
-                }
-
-                // Otherwise, add the character
-                setAdditionalCharacterIds(prev => [...prev, character.id])
-                setCharacterLimitMessage(null)
               }}
-              disabled={
-                includeIllustrations &&
-                !additionalCharacterIds.includes(character.id) &&
-                (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
-              }
               className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all min-h-[140px] ${
                 additionalCharacterIds.includes(character.id)
                   ? 'border-primary-600 bg-primary-50'
-                  : includeIllustrations && (1 + additionalCharacterIds.length) >= MAX_ILLUSTRATED_CHARACTERS
-                  ? 'border-gray-200 opacity-50 cursor-not-allowed'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -444,22 +422,12 @@ export default function StoryGenerationForm({ childProfiles, paywallStatus }: St
           ))}
         </div>
 
-        {/* Character count and helper text when illustrations are enabled */}
-        {includeIllustrations && (
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-gray-600">
-              With illustrations enabled, you can choose up to {MAX_ILLUSTRATED_CHARACTERS} characters for the clearest artwork.
+        {/* Warning banner when more than 3 characters selected */}
+        {(1 + additionalCharacterIds.length) > 3 && (
+          <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800 text-sm">
+              AI illustrations work best with up to 3 characters.
             </p>
-            <p className="text-sm text-gray-600">
-              {1 + additionalCharacterIds.length} / {MAX_ILLUSTRATED_CHARACTERS} characters selected
-            </p>
-          </div>
-        )}
-
-        {/* Soft inline message when limit is reached */}
-        {characterLimitMessage && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-gray-700 text-sm">{characterLimitMessage}</p>
           </div>
         )}
 

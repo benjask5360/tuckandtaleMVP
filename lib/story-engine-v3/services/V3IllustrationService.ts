@@ -102,6 +102,14 @@ export async function generateAllIllustrations(
     }
     console.log('[V3 Illustrations] Prompts generated successfully');
 
+    // Save the system prompt for admin inspection
+    if (promptsResult.systemPrompt) {
+      await supabase
+        .from('content')
+        .update({ v3_illustration_system_prompt: promptsResult.systemPrompt })
+        .eq('id', storyId);
+    }
+
     // 5. Update status with prompts
     const statusWithPrompts: V3IllustrationStatusData = {
       overall: 'generating',
@@ -264,9 +272,9 @@ async function generateIllustrationPrompts(
   title: string,
   paragraphs: V3Paragraph[],
   characters: V3CharacterInfo[]
-): Promise<{ success: boolean; prompts?: V3IllustrationPromptsResponse; error?: string }> {
+): Promise<{ success: boolean; prompts?: V3IllustrationPromptsResponse; error?: string; systemPrompt?: string }> {
   const MAX_RETRIES = 2;
-  const prompt = buildIllustrationPromptsPrompt(title, paragraphs, characters);
+  const systemPrompt = buildIllustrationPromptsPrompt(title, paragraphs, characters);
   let lastError = '';
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -285,7 +293,7 @@ async function generateIllustrationPrompts(
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
-          messages: [{ role: 'user', content: prompt }],
+          messages: [{ role: 'user', content: systemPrompt }],
           response_format: { type: 'json_object' },
           max_tokens: 4000,
           temperature: 0.7,
@@ -329,7 +337,7 @@ async function generateIllustrationPrompts(
       }
 
       console.log(`[V3 Illustrations] OpenAI prompts validated successfully`);
-      return { success: true, prompts: validation.data };
+      return { success: true, prompts: validation.data, systemPrompt };
 
     } catch (error: any) {
       console.error(`[V3 Illustrations] Prompt generation error (attempt ${attempt}/${MAX_RETRIES}):`, error);
@@ -340,7 +348,7 @@ async function generateIllustrationPrompts(
 
   // All retries exhausted
   console.error('[V3 Illustrations] All retries exhausted');
-  return { success: false, error: lastError || 'Failed after multiple attempts' };
+  return { success: false, error: lastError || 'Failed after multiple attempts', systemPrompt };
 }
 
 /**

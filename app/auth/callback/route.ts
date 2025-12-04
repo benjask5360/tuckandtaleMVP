@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // Wait for database trigger to create user profile
+      await new Promise(resolve => setTimeout(resolve, 500))
+
       // Check if user has characters
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,7 +28,6 @@ export async function GET(request: NextRequest) {
 
         // If no characters, this is a new user
         if (!characters || characters.length === 0) {
-          // Welcome email will be sent after name collection in onboarding
           return NextResponse.redirect(`${origin}/onboarding/character`)
         }
       }
