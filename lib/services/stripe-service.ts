@@ -281,6 +281,20 @@ export class StripeService {
       throw new Error('Failed to record purchase')
     }
 
+    // Increment purchased_story_count for single_story purchases
+    // This unlocks one additional preview slot (maxPreviewStory = 2 + purchased_story_count)
+    if (purchaseType === 'single_story') {
+      const { data: newCount, error: countError } = await supabase
+        .rpc('increment_purchased_story_count', { p_user_id: userId })
+
+      if (countError) {
+        console.error('[WEBHOOK ERROR] Failed to increment purchased_story_count:', countError)
+        // Don't throw - story purchase was recorded, user can contact support
+      } else {
+        console.log(`[WEBHOOK SUCCESS] Purchased story count incremented to ${newCount} for user ${userId}`)
+      }
+    }
+
     if (storyId) {
       // Unlock the specific story
       const { error: unlockError } = await supabase

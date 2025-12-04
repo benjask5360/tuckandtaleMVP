@@ -21,6 +21,7 @@ export interface UserStoryStatus {
   totalStoriesGenerated: number
   freeTrialUsed: boolean
   generationCredits: number
+  purchasedStoryCount: number
   hasActiveSubscription: boolean
   subscriptionTierId: string | null
 }
@@ -175,6 +176,7 @@ export class StoryCompletionService {
         total_stories_generated,
         free_trial_used,
         generation_credits,
+        purchased_story_count,
         subscription_status,
         subscription_tier_id
       `)
@@ -187,6 +189,7 @@ export class StoryCompletionService {
         totalStoriesGenerated: 0,
         freeTrialUsed: false,
         generationCredits: 0,
+        purchasedStoryCount: 0,
         hasActiveSubscription: false,
         subscriptionTierId: null,
       }
@@ -197,6 +200,7 @@ export class StoryCompletionService {
       totalStories: data.total_stories_generated,
       freeTrialUsed: data.free_trial_used,
       credits: data.generation_credits,
+      purchasedCount: data.purchased_story_count,
       status: data.subscription_status,
       tier: data.subscription_tier_id
     })
@@ -209,6 +213,7 @@ export class StoryCompletionService {
       totalStoriesGenerated: data.total_stories_generated || 0,
       freeTrialUsed: data.free_trial_used || false,
       generationCredits: data.generation_credits || 0,
+      purchasedStoryCount: data.purchased_story_count || 0,
       hasActiveSubscription,
       subscriptionTierId: data.subscription_tier_id,
     }
@@ -310,7 +315,22 @@ export class StoryCompletionService {
       }
     }
 
-    // Story 3+: Must pay before generation
+    // Story 3+: Check if they've unlocked this preview slot
+    const maxAllowedPreviewStory = 2 + status.purchasedStoryCount
+
+    if (storyNumber <= maxAllowedPreviewStory) {
+      // They've unlocked preview for this story slot
+      return {
+        storyNumber,
+        behavior: 'generate_then_paywall',
+        canGenerate: true,
+        hasCredits: false,
+        hasSubscription: false,
+        freeTrialUsed: status.freeTrialUsed,
+      }
+    }
+
+    // Beyond their unlocked preview slots: paywall before generation
     return {
       storyNumber,
       behavior: 'paywall_before_generate',

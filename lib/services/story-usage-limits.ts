@@ -169,9 +169,12 @@ export class StoryUsageLimitsService {
     }
 
     // Determine if this story should be marked as requiring paywall
-    // Story #2 for non-subscribers gets the paywall
+    // Stories within preview slots (2+) for non-subscribers get the paywall
+    const maxAllowedPreviewStory = 2 + statusBefore.purchasedStoryCount
+
     const shouldMarkPaywall =
-      newStoryCount === 2 &&
+      newStoryCount >= 2 &&
+      newStoryCount <= maxAllowedPreviewStory &&
       !statusBefore.hasActiveSubscription &&
       !usedCredit
 
