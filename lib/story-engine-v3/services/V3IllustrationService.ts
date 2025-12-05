@@ -455,21 +455,16 @@ async function generateSingleIllustration(
       };
 
     } catch (error: any) {
-      // Check if it's a moderation-related error
-      // Note: Leonardo uses "moderated" not "moderation", so we check for the root "moderat"
-      const isModerationError =
-        error.message?.toLowerCase().includes('moderat') ||
-        error.message?.toLowerCase().includes('content policy') ||
-        error.message?.toLowerCase().includes('nsfw');
-
-      if (isModerationError && attempt < MAX_MODERATION_RETRIES) {
-        console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} moderation error, cleansing attempt ${attempt + 1}`);
+      // If we haven't exhausted retries, try cleansing the prompt and retry
+      // This handles all types of generation failures including moderation errors
+      if (attempt < MAX_MODERATION_RETRIES) {
+        console.log(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} error (attempt ${attempt + 1}/${MAX_MODERATION_RETRIES + 1}), cleansing and retrying: ${error.message}`);
         currentPrompt = await cleansePromptWithOpenAI(originalPrompt, attempt);
         continue;
       }
 
-      // Non-moderation error or retries exhausted - progressive DB update for failure
-      console.error(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} error:`, error.message);
+      // All retries exhausted - progressive DB update for failure
+      console.error(`[V3 Illustrations] ${imageType}${paragraphIndex !== undefined ? ` ${paragraphIndex}` : ''} failed after ${MAX_MODERATION_RETRIES + 1} attempts:`, error.message);
 
       if (storyId) {
         try {
