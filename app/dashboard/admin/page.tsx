@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { Shield, Users, FileText, BarChart3, Settings, Database, Sparkles } from 'lucide-react';
+import { Shield, Users, FileText, BarChart3, Settings, Database, Sparkles, Share2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function AdminDashboardPage() {
@@ -121,6 +121,20 @@ export default async function AdminDashboardPage() {
               Test Leonardo API directly with story illustration config. Benchmark performance.
             </p>
             <div className="text-sm text-yellow-600 font-medium">Test API →</div>
+          </Link>
+
+          {/* Facebook Ads */}
+          <Link href="/dashboard/admin/facebook-ads" className="bg-white border border-gray-200 rounded-2xl p-6 shadow-soft hover:shadow-card transition-shadow block group">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors">
+                <Share2 className="w-6 h-6 text-indigo-600" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Facebook Ads</h2>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Test and preview Facebook ad creatives with story content and character images.
+            </p>
+            <div className="text-sm text-indigo-600 font-medium">Test Ads →</div>
           </Link>
 
           {/* Support */}
