@@ -194,46 +194,79 @@ export function validateIllustrationPromptsResponse(
 /**
  * Moderation cleanse instructions - progressively more conservative
  * Used when Leonardo rejects a prompt
+ *
+ * Leonardo flags prompts with CHILD + TRADEMARK ("Disney Pixar") combination.
+ * Cleansing removes trademark terms and progressively simplifies the prompt.
  */
 export const MODERATION_CLEANSE_INSTRUCTIONS = [
-  // Attempt 1: Standard cleanse
-  `This illustration prompt was flagged for moderation. Rewrite to be more child-friendly while keeping the same scene:
+  // Attempt 1: Remove trademark, standard cleanse
+  `This illustration prompt was flagged for moderation. Rewrite to remove trademark references while keeping the same scene:
 
 Original: "{prompt}"
 
-Focus on:
-- Remove any physical contact between characters
+CRITICAL CHANGES:
+- Replace "Disney pixar illustration" with "3D animated cartoon style illustration"
+- Replace ". STYLE : Disney pixar" with ". STYLE: 3D animated cartoon"
+- Remove any physical contact between characters (no hugging, touching, carrying)
 - Simplify actions to non-physical things (looking, pointing, standing, walking)
 - Avoid bedrooms/bathrooms - use neutral settings like outdoors, living room
-- Keep characters further apart in the scene
 
-Return ONLY the cleaned prompt in the exact same format, no explanation.`,
+Return ONLY the cleaned prompt, no explanation.`,
 
   // Attempt 2: Remove physical contact
-  `This prompt was flagged again. Remove ALL physical contact between characters. Characters must be visually separated in the scene:
+  `This prompt was flagged again. Ensure NO trademark terms and remove ALL physical contact:
 
 Original: "{prompt}"
+
+CRITICAL:
+- Must NOT contain "Disney", "Pixar", or any trademarked terms
+- Start with "3D animated cartoon style illustration."
+- End with ". STYLE: 3D animated cartoon"
+- Characters must be visually separated in the scene
+- No hugging, touching, carrying, holding hands
 
 Return ONLY the cleaned prompt, no explanation.`,
 
-  // Attempt 3: Simplify actions
-  `Still flagged. Use ONLY these simple actions: looking, pointing, standing, walking. No touching, hugging, carrying, holding hands, or any physical contact:
+  // Attempt 3: Simplify actions, change age description
+  `Still flagged. Remove trademarks AND simplify character descriptions:
 
 Original: "{prompt}"
+
+CRITICAL CHANGES:
+- NO "Disney", "Pixar", or trademarked terms anywhere
+- Change "X-year-old" ages to "young" for children (e.g., "A young Asian girl" instead of "A 10-year-old Asian girl")
+- Use ONLY these simple actions: looking, pointing, standing, walking
+- No touching, hugging, carrying, holding hands
+- Start with "3D animated cartoon style illustration."
 
 Return ONLY the cleaned prompt, no explanation.`,
 
-  // Attempt 4: Change setting
-  `Still flagged. Move the scene to a neutral OUTDOOR setting (park, garden, field, forest clearing). Characters standing apart, simple actions only:
+  // Attempt 4: Change setting, minimal description
+  `Still flagged. Use minimal character descriptions and outdoor setting:
 
 Original: "{prompt}"
+
+CRITICAL:
+- NO trademark terms (Disney, Pixar)
+- Describe children as "young girl" or "young boy" without specific ages
+- Move to a neutral OUTDOOR setting (park, garden, field)
+- Characters standing far apart, simple actions only
+- Start with "Cartoon style illustration."
 
 Return ONLY the cleaned prompt, no explanation.`,
 
   // Attempt 5: Character portrait fallback
-  `Final attempt. Show ONLY the main character alone, standing in a neutral outdoor setting (park or garden). No other characters, no actions, just a simple portrait:
+  `Final attempt. Show ONLY the main character alone as a simple portrait:
 
 Original: "{prompt}"
+
+Extract the main child character and rewrite as:
+"Cartoon illustration of a young [ethnicity] [girl/boy] with [hair color] hair and [eye color] eyes, wearing [clothing], standing alone in a sunny park."
+
+- NO trademark terms
+- NO specific ages
+- NO other characters
+- NO actions or interactions
 
 Return ONLY the cleaned prompt, no explanation.`,
 ];

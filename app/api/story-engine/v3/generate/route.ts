@@ -79,6 +79,9 @@ export async function POST(request: Request) {
     // Generate story using V3 service
     const result = await V3StoryGenerationService.generateStory(user.id, params);
 
+    // Get user status before incrementing (needed for paywall calculation)
+    const statusBefore = await StoryCompletionService.getUserStoryStatus(user.id);
+
     // Increment total story count
     const newStoryCount = await StoryCompletionService.incrementTotalStoryCount(user.id);
 
@@ -87,8 +90,10 @@ export async function POST(request: Request) {
       await StoryCompletionService.consumeGenerationCredit(user.id);
     }
 
-    // If this is story #2 and user doesn't have subscription, mark as requiring paywall
-    if (newStoryCount === 2 && !hasSubscription) {
+    // Mark story as requiring paywall for preview stories (story #2 and beyond based on purchases)
+    // Story #1 is free trial, stories beyond maxAllowedPreviewStory are blocked before generation
+    const maxAllowedPreviewStory = 2 + statusBefore.purchasedStoryCount;
+    if (newStoryCount >= 2 && newStoryCount <= maxAllowedPreviewStory && !hasSubscription && !usingCredit) {
       await StoryCompletionService.markStoryRequiresPaywall(result.storyId);
     }
 

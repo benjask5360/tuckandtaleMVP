@@ -239,9 +239,10 @@ export async function POST(request: Request) {
                 await StoryCompletionService.consumeGenerationCredit(userId!);
               }
 
-              // If this is story #2 and user doesn't have subscription, mark as requiring paywall
-              // (Story #1 is free trial, story #3+ blocked before generation)
-              if (newStoryCount === 2 && !hasSubscription) {
+              // Mark story as requiring paywall for preview stories (story #2 and beyond based on purchases)
+              // Story #1 is free trial, stories beyond maxAllowedPreviewStory are blocked before generation
+              const maxAllowedPreviewStory = 2 + statusBefore.purchasedStoryCount;
+              if (newStoryCount >= 2 && newStoryCount <= maxAllowedPreviewStory && !hasSubscription && !usingCredit) {
                 await StoryCompletionService.markStoryRequiresPaywall(storyId);
               }
 
