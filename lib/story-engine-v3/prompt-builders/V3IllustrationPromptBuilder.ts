@@ -87,6 +87,7 @@ RULES:
 - ALWAYS specify stripe colors: "blue and white striped shirt" not "striped shirt"
 - SETTING: 1 short sentence maximum
 - ACTIONS: 2-3 brief bullet points with character name and action
+- EVERY person mentioned in ACTIONS must be defined in CHARACTERS section first
 - NO adjectives like: magical, wonderful, beautiful, cozy, warm, bright, golden
 - NO emotional descriptors like: excited, happy, worried, confidently, eagerly, joyfully
 - NEVER use these action words (they trigger content filters): shooting, hitting, fighting, punching, kicking
