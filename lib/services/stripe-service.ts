@@ -360,7 +360,7 @@ export class StripeService {
       return
     }
 
-    // Update user profile
+    // Update user profile - reset story count so they start fresh with their subscription
     const { error } = await supabase
       .from('user_profiles')
       .update({
@@ -370,6 +370,7 @@ export class StripeService {
         subscription_status: 'active',
         subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
+        total_stories_generated: 0,
       })
       .eq('id', userId)
 
