@@ -312,7 +312,9 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
     instructions += '**TITLE REQUIREMENTS:**\n';
     instructions += '- Create a strong, engaging, kid-friendly title\n';
     instructions += '- The title should capture the essence of the story\n';
-    instructions += '- Avoid generic titles - make it memorable and specific to this story\n\n';
+    instructions += '- AVOID the cliché pattern "[Name] and the [Noun]" (e.g., "Emma and the Magic Garden")\n';
+    instructions += '- Instead, try creative alternatives: action phrases, questions, playful wordplay, or evocative imagery\n';
+    instructions += '- Examples of GOOD titles: "The Night the Stars Came Down", "How Lily Learned to Roar", "Moonbeam Wishes"\n\n';
 
     if (request.mode === 'growth') {
       instructions += '**IMPORTANT: Do NOT include a "moral" field.**\n';

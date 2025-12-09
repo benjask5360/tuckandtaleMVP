@@ -20,7 +20,10 @@
       "Bash(findstr:*)",
       "Bash(netsh advfirewall firewall add rule:*)",
       "Bash(node -e:*)",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "Bash(find:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
