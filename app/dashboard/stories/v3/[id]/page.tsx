@@ -486,7 +486,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
                 <p className="text-blue-600 font-medium text-sm">
                   {progressText}
                 </p>
-                <p className="text-blue-400 text-xs">This may take a moment</p>
+                <p className="text-blue-400 text-xs">Sit tight! This usually takes about a minute</p>
               </div>
             </div>
           </div>

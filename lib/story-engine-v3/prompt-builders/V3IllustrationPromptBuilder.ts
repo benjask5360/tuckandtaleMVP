@@ -66,8 +66,10 @@ Each prompt must follow this EXACT format as a SINGLE-LINE STRING. Note the spac
 Disney pixar illustration. CHARACTERS: {Name1}: {description}; {Name2}: {description} . SETTING : {brief location} . ACTIONS : - {Name1} {action} - {Name2} {action} . STYLE : Disney pixar
 
 CHARACTER DESCRIPTION FORMATS (use natural language based on character type):
-- For children/people: "{Name}: A {age}-year-old {ethnicity} {boy/girl/man/woman} with {color} hair, {color} eyes, and {build} build, wearing {clothing}."
+- For children: "{Name}: A {age}-year-old {ethnicity} {boy/girl} with {color} hair, {color} eyes, and {build} build, wearing {clothing}."
   Example: "Zaier: A 3-year-old African American boy with brown hair, brown eyes, and average build, wearing a red t-shirt with yellow star and blue shorts."
+- For adults (parents, grandparents, etc.): "{Name}: A/An {ethnicity} {man/woman} with {color} hair, {color} eyes, and {build} build, wearing {clothing}."
+  Example: "Dad: An African American man with black hair, brown eyes, and average build, wearing a blue polo shirt and khaki pants."
 - For pets: "{Name}: A {color} {species/breed} with {eye color} eyes."
   Example: "Penny: An orange and white Corgi with brown eyes."
 - For magical creatures: "{Name}: A {color} {creature type} with {distinctive features}."
@@ -79,7 +81,7 @@ RULES:
 - Use spaces around colons in section headers: " SETTING : " not "SETTING:"
 - Keep each prompt under 150 words
 - For humans: Use natural language with age-appropriate gender terms (boy/girl for children under 18, man/woman for adults, child/person for non-binary)
-- For humans: ALWAYS include ethnicity/background after the age (e.g., "A 3-year-old African American boy")
+- For humans: ALWAYS include ethnicity/background (e.g., "A 3-year-old African American boy" or "An African American man" - NEVER just "A man" or "An older man")
 - For humans: ALWAYS include "{color} hair" and "{color} eyes" (full words, not just colors)
 - Keep clothing/appearance IDENTICAL across ALL prompts for each character
 - NEVER use vague clothing terms like: colorful, striped, patterned, bright
