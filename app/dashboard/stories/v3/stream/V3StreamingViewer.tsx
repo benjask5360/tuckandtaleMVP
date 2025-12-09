@@ -212,7 +212,7 @@ export default function V3StreamingViewer() {
                     ? 'Preparing your story...'
                     : !state.title
                     ? 'Creating your story...'
-                    : `Writing your story... ${state.paragraphs.length > 0 ? `(${state.paragraphs.length} paragraphs)` : ''}`}
+                    : 'Crafting your personalized story...'}
                 </p>
                 <p className="text-blue-600 text-sm mt-1">
                   Your story will appear below as it's being written
