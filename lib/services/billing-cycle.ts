@@ -44,13 +44,15 @@ export class BillingCycleService {
     }
 
     const subscriptionStartsAt = new Date(data.subscription_starts_at)
-    return this.calculateBillingCycle(subscriptionStartsAt)
+    return this.calculateBillingCycle(subscriptionStartsAt, true)
   }
 
   /**
    * Calculate billing cycle from an anchor date
+   * @param subscriptionStartsAt - The original subscription start timestamp
+   * @param useExactTimestamp - If true, use the exact timestamp for the first cycle (not midnight)
    */
-  static calculateBillingCycle(subscriptionStartsAt: Date): BillingCycle {
+  static calculateBillingCycle(subscriptionStartsAt: Date, useExactTimestamp: boolean = false): BillingCycle {
     const now = new Date()
     const anchorDay = subscriptionStartsAt.getDate()
 
@@ -74,16 +76,32 @@ export class BillingCycleService {
     // Set time to start of day
     cycleStart.setHours(0, 0, 0, 0)
 
-    // Calculate cycle end (one month after start)
-    const cycleEnd = new Date(cycleStart)
-    cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+    // For the FIRST billing cycle (same month/year as subscription start),
+    // use the exact subscription timestamp so pre-subscription stories don't count
+    if (useExactTimestamp) {
+      const subStartMidnight = new Date(subscriptionStartsAt)
+      subStartMidnight.setHours(0, 0, 0, 0)
 
-    // Handle end-of-month edge case for cycle end too
-    const expectedEndDay = cycleStart.getDate()
-    if (cycleEnd.getDate() !== expectedEndDay) {
+      // Check if we're still in the first billing cycle
+      // (cycleStart matches the subscription start date)
+      if (cycleStart.getTime() === subStartMidnight.getTime()) {
+        // Use exact subscription timestamp, not midnight
+        cycleStart = new Date(subscriptionStartsAt)
+      }
+    }
+
+    // Calculate cycle end (one month after the anchor day at midnight)
+    const cycleEnd = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+    if (cycleEnd <= now) {
+      cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+    }
+
+    // Handle end-of-month edge case for cycle end
+    if (cycleEnd.getDate() !== anchorDay) {
       // Roll to last day of the month
-      cycleEnd.setDate(0) // This goes to last day of previous month
-      cycleEnd.setMonth(cycleEnd.getMonth() + 1) // Then move forward
+      const intendedMonth = cycleEnd.getMonth()
+      cycleEnd.setDate(0)
+      cycleEnd.setMonth(intendedMonth)
     }
 
     // Calculate days remaining
