@@ -74,6 +74,11 @@ export default function CharacterOnboarding() {
     return (
       <ParentNameCollector
         onComplete={() => {
+          // Fire Meta Pixel CompleteRegistration event
+          if (typeof window !== 'undefined' && window.fbq) {
+            window.fbq('track', 'CompleteRegistration')
+          }
+
           setShowNameCollector(false)
           // Recheck profile to see if terms modal should be shown
           const recheckProfile = async () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -45,6 +45,19 @@ function CreateStoryContent() {
 
   // Check if user just purchased a credit
   const justPurchasedCredit = searchParams.get('credit') === 'purchased'
+
+  // Track if Purchase pixel has been fired to prevent duplicates
+  const purchasePixelFired = useRef(false)
+
+  // Fire Meta Pixel Purchase event when credit is purchased
+  useEffect(() => {
+    if (justPurchasedCredit && !purchasePixelFired.current) {
+      purchasePixelFired.current = true
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
+      }
+    }
+  }, [justPurchasedCredit])
 
   useEffect(() => {
     loadData()

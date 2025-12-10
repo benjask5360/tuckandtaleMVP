@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -32,6 +32,7 @@ interface V3StoryData {
 
 export default function V3StoryViewerPage({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const [story, setStory] = useState<V3StoryData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,6 +52,20 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
 
   // Paywall state
   const [paywallStatus, setPaywallStatus] = useState<PaywallViewingStatus | null>(null)
+
+  // Track if Purchase pixel has been fired to prevent duplicates
+  const purchasePixelFired = useRef(false)
+
+  // Fire Meta Pixel Purchase event when story is unlocked via payment
+  useEffect(() => {
+    const justUnlocked = searchParams.get('unlocked') === 'true'
+    if (justUnlocked && !purchasePixelFired.current) {
+      purchasePixelFired.current = true
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
+      }
+    }
+  }, [searchParams])
 
   useEffect(() => {
     loadStory()
