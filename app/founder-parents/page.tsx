@@ -61,12 +61,14 @@ export default function FounderParentsPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {/* Benefit 1 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4">
-                <Star className="w-6 h-6 text-white" />
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Star className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Lifetime Discount
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                Lifetime Discount
-              </h3>
               <p className="text-gray-600">
                 Lock in special founder pricing for life—never pay full price!
               </p>
@@ -74,12 +76,14 @@ export default function FounderParentsPage() {
 
             {/* Benefit 2 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-white" />
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Early Access
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                Early Access
-              </h3>
               <p className="text-gray-600">
                 Be the first to try new features before anyone else.
               </p>
@@ -87,12 +91,14 @@ export default function FounderParentsPage() {
 
             {/* Benefit 3 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4">
-                <Gift className="w-6 h-6 text-white" />
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Gift className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Exclusive Perks
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                Exclusive Perks
-              </h3>
               <p className="text-gray-600">
                 Special gifts, bonus stories, and surprise rewards throughout the year.
               </p>
@@ -100,12 +106,14 @@ export default function FounderParentsPage() {
 
             {/* Benefit 4 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4">
-                <Heart className="w-6 h-6 text-white" />
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Direct Impact
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                Direct Impact
-              </h3>
               <p className="text-gray-600">
                 Your feedback shapes our roadmap—help build features families love.
               </p>
