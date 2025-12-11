@@ -374,7 +374,7 @@ export default function PricingPage() {
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
                   Yes, you can cancel your subscription at any time from your account settings.
-                  You&apos;ll continue to have access until the end of your billing period, and all your saved stories remain in your library forever.
+                  You&apos;ll continue to have access until the end of your billing period.
                 </div>
               </details>
 
