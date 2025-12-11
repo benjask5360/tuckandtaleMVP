@@ -388,17 +388,6 @@ export default function PricingPage() {
                   Your payment information is never stored on our servers.
                 </div>
               </details>
-
-              <details className="group bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-200">
-                <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-gray-50 transition-colors">
-                  <h3 className="font-semibold text-lg md:text-xl text-gray-900 pr-4">Do I keep my stories forever?</h3>
-                  <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Yes! Every story you create is saved to your library permanently.
-                  Even if you cancel your subscription, you can always access and read your stories.
-                </div>
-              </details>
             </div>
           </div>
         </div>

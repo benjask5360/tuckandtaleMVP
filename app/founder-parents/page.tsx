@@ -62,7 +62,7 @@ export default function FounderParentsPage() {
             {/* Benefit 1 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-xl text-gray-900">
@@ -77,7 +77,7 @@ export default function FounderParentsPage() {
             {/* Benefit 2 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
                   <Zap className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-xl text-gray-900">
@@ -92,7 +92,7 @@ export default function FounderParentsPage() {
             {/* Benefit 3 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
                   <Gift className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-xl text-gray-900">
@@ -107,7 +107,7 @@ export default function FounderParentsPage() {
             {/* Benefit 4 */}
             <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4">
-                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
                   <Heart className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-xl text-gray-900">
