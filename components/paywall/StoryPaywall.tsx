@@ -121,7 +121,7 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />
-                Keep forever
+                Keep saved in your library
               </li>
             </ul>
             <button
