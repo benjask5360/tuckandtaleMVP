@@ -23,11 +23,11 @@ export default function FAQPage() {
     },
     {
       question: 'How many stories can I create?',
-      answer: 'It depends on your subscription tier! The Free plan includes a small number of stories each month. Premium plans unlock more stories, more illustrations, and richer personalization options.'
+      answer: 'Your first illustrated story is completely free! After that, you can choose between our monthly subscription or purchase stories individually. Visit our pricing page to see which option works best for your family.'
     },
     {
       question: 'Can I include more than one child in a story?',
-      answer: 'Absolutely. Premium tiers let you create stories featuring siblings, friends, and pets—perfect for bedtime, birthdays, or special family moments.'
+      answer: 'Absolutely! You can create stories featuring siblings, friends, and pets—perfect for bedtime, birthdays, or special family moments.'
     },
     {
       question: 'Are the illustrations safe and appropriate?',
@@ -43,7 +43,7 @@ export default function FAQPage() {
     },
     {
       question: 'Is there a free trial?',
-      answer: 'Yes! Our Free plan gives you a taste of personalized storytelling with a limited number of stories each month. You can upgrade anytime to unlock more features and unlimited magical adventures.'
+      answer: 'Yes! Your first illustrated story is completely free—no credit card required. It\'s the perfect way to experience the magic of personalized storytelling. Visit our pricing page to explore subscription and individual purchase options.'
     },
     {
       question: 'Can I cancel my subscription?',
