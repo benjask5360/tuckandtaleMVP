@@ -566,7 +566,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
               <p className="font-medium">Edit Mode Active</p>
             </div>
             <p className="text-sm text-blue-700 mt-1">
-              Changes are automatically saved to your browser. Click the save icon to save permanently.
+              Changes are automatically saved to your browser. Click the save icon to save to your library.
             </p>
           </div>
         )}

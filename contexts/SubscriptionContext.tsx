@@ -209,7 +209,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return 'Create one more story to try our service'
     }
 
-    return 'Subscribe to create unlimited stories'
+    return 'Subscribe for more stories'
   }
 
   const value: SubscriptionContextType = {

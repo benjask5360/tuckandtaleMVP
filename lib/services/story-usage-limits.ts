@@ -222,6 +222,6 @@ export class StoryUsageLimitsService {
       return 'Create one more story to try our service'
     }
 
-    return 'Subscribe to create unlimited stories'
+    return 'Subscribe for more stories'
   }
 }
