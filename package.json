@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "cross-env NODE_OPTIONS='--dns-result-order=ipv4first' next dev",
     "dev:webpack": "next dev --experimental-https=false",
-    "build": "next build",
+    "build": "next build && next-sitemap",
     "start": "next start",
     "lint": "next lint",
     "db:push": "node scripts/db-push-dedicated.js",
@@ -29,6 +29,7 @@
     "jsonrepair": "^3.13.1",
     "lucide-react": "^0.552.0",
     "next": "14.2.18",
+    "next-sitemap": "^4.2.3",
     "openai": "^6.8.1",
     "pg": "^8.16.3",
     "react": "^18.3.1",
