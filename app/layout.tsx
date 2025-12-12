@@ -49,6 +49,10 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        <Script
+          src="https://t.contentsquare.net/uxa/0a33da7791c50.js"
+          strategy="afterInteractive"
+        />
       </head>
       <body className={`${inter.className} ${playfair.variable}`}>
         <SubscriptionProvider>
