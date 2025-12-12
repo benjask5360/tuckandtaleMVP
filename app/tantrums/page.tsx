@@ -29,7 +29,12 @@ export default function TantrumsPage() {
               </p>
 
               <div className="flex flex-col gap-4 mb-6">
-                <AuthAwareCTA />
+                <AuthAwareCTA>
+                  <>
+                    Create Your Free Story
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>
+                </AuthAwareCTA>
               </div>
 
               <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
@@ -271,8 +276,8 @@ export default function TantrumsPage() {
           </p>
           <AuthAwareCTA>
             <>
-              Get started now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Create Your Free Story
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           </AuthAwareCTA>
         </div>
