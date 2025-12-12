@@ -103,15 +103,15 @@ export default function TantrumsPage() {
               </p>
             </div>
 
-            {/* Step 2 - Pick an Adventure */}
+            {/* Step 2 - Pick a Growth Story */}
             <div className="card p-6 text-center group">
               <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
                 <Image
-                  src="/images/How it works/create.png"
-                  alt="Choose from various story adventures"
+                  src="/images/How it works/growth.png"
+                  alt="Choose growth stories that teach emotional regulation"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
