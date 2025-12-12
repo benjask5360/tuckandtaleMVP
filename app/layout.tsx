@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
-  title: 'Tuck and Tale - AI-Powered Bedtime Stories',
+  title: 'Tuck and Tale - Personalized Bedtime Stories',
   description: 'Create personalized illustrated bedtime stories featuring your child as the hero',
 }
 
@@ -53,6 +53,18 @@ export default function RootLayout({
           src="https://t.contentsquare.net/uxa/0a33da7791c50.js"
           strategy="afterInteractive"
         />
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-BE7Y9YCCG6"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-BE7Y9YCCG6');
+          `}
+        </Script>
       </head>
       <body className={`${inter.className} ${playfair.variable}`}>
         <SubscriptionProvider>
