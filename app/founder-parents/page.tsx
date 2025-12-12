@@ -54,7 +54,7 @@ export default function FounderParentsPage() {
               Founder Parents Benefits
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Exclusive perks and lifetime benefits for our early supporters.
+              Exclusive perks and benefits for our early supporters.
             </p>
           </div>
 
@@ -66,11 +66,11 @@ export default function FounderParentsPage() {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="font-semibold text-xl text-gray-900">
-                  Lifetime Discount
+                  Founder Parent Discount
                 </h3>
               </div>
               <p className="text-gray-600">
-                Lock in special founder pricing for life—never pay full price!
+                Lock in special founder pricing—never pay full price!
               </p>
             </div>
 
