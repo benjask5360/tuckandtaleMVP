@@ -308,7 +308,7 @@ function BillingPageContent() {
         {!hasActiveSubscription && (
           <div className="bg-gradient-to-br from-sky-50 to-primary-50 rounded-2xl p-8 text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Unlock Unlimited Storytelling
+              Unlock More Stories
             </h2>
             <p className="text-gray-600 mb-6 max-w-lg mx-auto">
               Subscribe to Stories Plus for {PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories per month,

@@ -198,7 +198,7 @@ export default function MyChildrenPage() {
               </div>
               <div className="text-center md:text-right flex-shrink-0">
                 <p className="text-sm md:text-base text-gray-500 mb-3 md:mb-4">
-                  {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'Unlimited' : `${maxChildren} max`}
+                  {children.length} {children.length === 1 ? 'profile' : 'profiles'} · {maxChildren === null ? 'No limit' : `${maxChildren} max`}
                 </p>
                 {canAddMore ? (
                   <Link

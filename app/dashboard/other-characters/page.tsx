@@ -206,7 +206,7 @@ export default function OtherCharactersPage() {
               </div>
               <div className="text-center md:text-right flex-shrink-0">
                 <p className="text-sm md:text-base text-gray-500 mb-3 md:mb-4">
-                  {characters.length} {characters.length === 1 ? 'character' : 'characters'} · {maxCharacters === null ? 'Unlimited' : `${maxCharacters} max`}
+                  {characters.length} {characters.length === 1 ? 'character' : 'characters'} · {maxCharacters === null ? 'No limit' : `${maxCharacters} max`}
                 </p>
                 {canAddMore ? (
                   <Link
