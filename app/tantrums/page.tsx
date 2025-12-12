@@ -72,80 +72,7 @@ export default function TantrumsPage() {
         </div>
       </section>
 
-      {/* Meet the Magic Behind Every Story Section */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="container-narrow section-padding">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Meet the Magic Behind Every Story
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              At Tuck and Tale, every adventure begins with the people (and pets!) your child loves most.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Card 1 - Children */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/children.jpg"
-                  alt="Children characters in personalized stories"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Your Child, Their Way</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Stories shaped around your little one — their look, age, and personality.
-              </p>
-            </div>
-
-            {/* Card 2 - Magical Characters */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/characters.jpg"
-                  alt="Magical characters including dragons, mermaids, and elves"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">A World Full of Wonder</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Magical friends who spark imagination and bring each tale to life.
-              </p>
-            </div>
-
-            {/* Card 3 - Pets */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/pets.jpg"
-                  alt="Beloved pets including dogs and cats joining the story"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Furry Friends Welcome</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Corgis, pugs, goldens, cats — their favorite buddies can join the fun too.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center animate-fade-in">
-            <p className="text-xl md:text-2xl font-semibold text-gray-800">
-              Personalized. Magical. Made just for your family.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
+      {/* How It Helps With Tantrums Section */}
       <section className="py-12 md:py-16 bg-gradient-bg-primary">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
@@ -219,6 +146,79 @@ export default function TantrumsPage() {
             </p>
             <p className="text-lg md:text-xl text-gray-600">
               Personalized, magical, and made for the way your child sees the world.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Meet the Magic Behind Every Story Section */}
+      <section className="py-12 md:py-16 bg-white">
+        <div className="container-narrow section-padding">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
+              Meet the Magic Behind Every Story
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              At Tuck and Tale, every adventure begins with the people (and pets!) your child loves most.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Card 1 - Children */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/children.jpg"
+                  alt="Children characters in personalized stories"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Your Child, Their Way</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Stories shaped around your little one — their look, age, and personality.
+              </p>
+            </div>
+
+            {/* Card 2 - Magical Characters */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/characters.jpg"
+                  alt="Magical characters including dragons, mermaids, and elves"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">A World Full of Wonder</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Magical friends who spark imagination and bring each tale to life.
+              </p>
+            </div>
+
+            {/* Card 3 - Pets */}
+            <div className="card-interactive p-6 group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/Characters/pets.jpg"
+                  alt="Beloved pets including dogs and cats joining the story"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Furry Friends Welcome</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Corgis, pugs, goldens, cats — their favorite buddies can join the fun too.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center animate-fade-in">
+            <p className="text-xl md:text-2xl font-semibold text-gray-800">
+              Personalized. Magical. Made just for your family.
             </p>
           </div>
         </div>
