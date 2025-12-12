@@ -111,7 +111,7 @@ export default function TantrumsPage() {
                   alt="Choose growth stories that teach emotional regulation"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
