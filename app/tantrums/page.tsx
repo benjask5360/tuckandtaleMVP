@@ -142,7 +142,7 @@ export default function TantrumsPage() {
 
           <div className="text-center animate-fade-in">
             <p className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
-              Every bedtime becomes a moment they&apos;ll remember.
+              Every bedtime becomes a chance to teach calm.
             </p>
             <p className="text-lg md:text-xl text-gray-600">
               Personalized, magical, and made for the way your child sees the world.
@@ -151,12 +151,12 @@ export default function TantrumsPage() {
         </div>
       </section>
 
-      {/* Early Parent Reactions Section */}
+      {/* What Parents Are Saying Section */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Early Parent Reactions
+              What Parents Are Saying
             </h2>
           </div>
 

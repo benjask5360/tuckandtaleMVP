@@ -125,13 +125,14 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Value 1 */}
             <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <Sparkles className="w-6 h-6 text-primary-600" />
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-primary-600" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Imagination
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                {/* TODO: Replace with your value title */}
-                Imagination
-              </h3>
               <p className="text-gray-600">
                 {/* TODO: Replace with your value description */}
                 We believe every child deserves stories that spark their imagination and creativity.
@@ -140,13 +141,14 @@ export default function AboutPage() {
 
             {/* Value 2 */}
             <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
-                <Heart className="w-6 h-6 text-teal-600" />
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Heart className="w-6 h-6 text-teal-600" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Personalization
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                {/* TODO: Replace with your value title */}
-                Personalization
-              </h3>
               <p className="text-gray-600">
                 {/* TODO: Replace with your value description */}
                 Every child is unique, and their stories should reflect their individual personality.
@@ -155,13 +157,14 @@ export default function AboutPage() {
 
             {/* Value 3 */}
             <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
-                <BookOpen className="w-6 h-6 text-primary-600" />
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-6 h-6 text-primary-600" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Education
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                {/* TODO: Replace with your value title */}
-                Education
-              </h3>
               <p className="text-gray-600">
                 {/* TODO: Replace with your value description */}
                 Stories that entertain while teaching valuable life lessons and skills.
@@ -170,13 +173,14 @@ export default function AboutPage() {
 
             {/* Value 4 */}
             <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition-shadow">
-              <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-teal-600" />
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Users className="w-6 h-6 text-teal-600" />
+                </div>
+                <h3 className="font-semibold text-xl text-gray-900">
+                  Connection
+                </h3>
               </div>
-              <h3 className="font-semibold text-xl text-gray-900 mb-2">
-                {/* TODO: Replace with your value title */}
-                Connection
-              </h3>
               <p className="text-gray-600">
                 {/* TODO: Replace with your value description */}
                 Building stronger bonds between parents and children through shared stories.

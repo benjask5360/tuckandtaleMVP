@@ -20,7 +20,7 @@ export default function HomePage() {
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Personalized bedtime stories that teach gentle hands and kind hearts.
+                Personalized bedtime stories that teach calm, kindness, and big emotions.
               </p>
 
               <div className="flex flex-col gap-4 mb-6">
@@ -58,6 +58,85 @@ export default function HomePage() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="py-12 md:py-16 bg-gradient-bg-primary">
+        <div className="container-narrow section-padding">
+          <div className="text-center mb-12 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
+              How It Works
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              A magical story made just for your child — in three simple steps.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {/* Step 1 - Tell Us About Your Little One */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/avatar.png"
+                  alt="Create a character profile for your child"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="text-4xl font-bold text-primary-500 mb-3">1</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Tell Us About Your Little One</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Share their name, age, and interests so we can shape a story that feels just like them.
+              </p>
+            </div>
+
+            {/* Step 2 - Pick an Adventure */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/create.png"
+                  alt="Choose from various story adventures"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick a Story</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Choose from magical adventures or stories that help with big feelings.
+              </p>
+            </div>
+
+            {/* Step 3 - Watch Their Story Come to Life */}
+            <div className="card p-6 text-center group">
+              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
+                <Image
+                  src="/images/How it works/read.jpg"
+                  alt="Read personalized illustrated stories"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="text-4xl font-bold text-primary-500 mb-3">3</div>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Watch Their Story Come to Life</h3>
+              <p className="text-gray-600 leading-relaxed">
+                In seconds, a beautifully illustrated tale appears — starring your child and their friends.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center animate-fade-in">
+            <p className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
+              Every bedtime becomes a moment they&apos;ll remember.
+            </p>
+            <p className="text-lg md:text-xl text-gray-600">
+              Personalized, magical, and made for the way your child sees the world.
+            </p>
           </div>
         </div>
       </section>
@@ -135,96 +214,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works Section */}
+      {/* What Parents Are Saying Section */}
       <section className="py-12 md:py-16 bg-gradient-bg-primary">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              How It Works
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              A magical story made just for your child — in three simple steps.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Step 1 - Tell Us About Your Little One */}
-            <div className="card p-6 text-center group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/How it works/avatar.png"
-                  alt="Create a character profile for your child"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="text-4xl font-bold text-primary-500 mb-3">1</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Tell Us About Your Little One</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Share their name, age, and interests so we can shape a story that feels just like them.
-              </p>
-            </div>
-
-            {/* Step 2 - Pick an Adventure */}
-            <div className="card p-6 text-center group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/How it works/create.png"
-                  alt="Choose from various story adventures"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick an Adventure</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Choose from bedtime stories, magical quests, or sweet everyday moments.
-              </p>
-            </div>
-
-            {/* Step 3 - Watch Their Story Come to Life */}
-            <div className="card p-6 text-center group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/How it works/read.jpg"
-                  alt="Read personalized illustrated stories"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="text-4xl font-bold text-primary-500 mb-3">3</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Watch Their Story Come to Life</h3>
-              <p className="text-gray-600 leading-relaxed">
-                In seconds, a beautifully illustrated tale appears — starring your child and their friends.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center animate-fade-in">
-            <p className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
-              Every bedtime becomes a moment they&apos;ll remember.
-            </p>
-            <p className="text-lg md:text-xl text-gray-600">
-              Personalized, magical, and made for the way your child sees the world.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Early Parent Reactions Section */}
-      <section className="py-12 md:py-16 bg-white">
-        <div className="container-narrow section-padding">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Early Parent Reactions
+              What Parents Are Saying
             </h2>
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -233,7 +233,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -242,7 +242,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -255,7 +255,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-bg-primary relative overflow-hidden">
+      <section className="py-24 bg-white relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh-primary opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">
