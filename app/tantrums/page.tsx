@@ -150,10 +150,10 @@ export default function TantrumsPage() {
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              How It Works
+              How It Helps With Tantrums
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              A magical story made just for your child — in three simple steps.
+              A calmer bedtime in three simple steps.
             </p>
           </div>
 
@@ -188,9 +188,9 @@ export default function TantrumsPage() {
                 />
               </div>
               <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick an Adventure</h3>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick a Growth Story</h3>
               <p className="text-gray-600 leading-relaxed">
-                Choose from bedtime stories, magical quests, or sweet everyday moments.
+                Choose stories that teach calm, emotional regulation, and big feelings.
               </p>
             </div>
 
@@ -208,7 +208,7 @@ export default function TantrumsPage() {
               <div className="text-4xl font-bold text-primary-500 mb-3">3</div>
               <h3 className="text-2xl font-bold mb-3 text-gray-900">Watch Their Story Come to Life</h3>
               <p className="text-gray-600 leading-relaxed">
-                In seconds, a beautifully illustrated tale appears — starring your child and their friends.
+                In seconds, a beautifully illustrated tale appears — with your child learning to manage tough moments.
               </p>
             </div>
           </div>
