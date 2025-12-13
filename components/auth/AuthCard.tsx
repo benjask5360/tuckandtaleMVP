@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 interface AuthCardProps {
   children: ReactNode
-  title: string
+  title?: string
   subtitle?: string
 }
 
@@ -33,16 +33,20 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
         </Link>
 
         {/* Title and Subtitle outside white box */}
-        <div className="text-center mb-6 md:mb-8">
-          <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-base md:text-lg text-gray-600">
-              {subtitle}
-            </p>
-          )}
-        </div>
+        {(title || subtitle) && (
+          <div className="text-center mb-6 md:mb-8">
+            {title && (
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold gradient-text mb-2">
+                {title}
+              </h1>
+            )}
+            {subtitle && (
+              <p className="text-base md:text-lg text-gray-600">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* White card with form */}
         <div className="card p-6 md:p-8">

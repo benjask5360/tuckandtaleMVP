@@ -23,7 +23,10 @@
       "Bash(npx supabase:*)",
       "Bash(find:*)",
       "Bash(wc:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(node check-env.js:*)",
+      "Bash(set SUPABASE_DB_PORT=5432)"
     ],
     "deny": [],
     "ask": []

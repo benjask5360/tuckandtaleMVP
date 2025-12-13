@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Star, Users, Image as ImageIcon, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import GoogleButton from '@/components/auth/GoogleButton'
 
 function SignupForm() {

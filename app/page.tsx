@@ -1,6 +1,5 @@
-import { Star, Check, ArrowRight, BookOpen, Moon, Users, Shield, Heart } from 'lucide-react'
+import { Check, ArrowRight, Heart } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import AuthAwareCTA from '@/components/AuthAwareCTA'
 
 export default function HomePage() {
