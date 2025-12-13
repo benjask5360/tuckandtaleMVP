@@ -105,10 +105,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard
-      title="Welcome Back!"
-      subtitle="Login to continue your story adventures"
-    >
+    <AuthCard>
       <div className="space-y-6">
         {error && (
           <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl text-sm font-medium">
