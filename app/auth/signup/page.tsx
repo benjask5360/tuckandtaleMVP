@@ -81,90 +81,10 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-bg-warm flex">
-      {/* Left Side - Marketing Content */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-end py-16 pr-12 relative overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-30"></div>
-        <div className="max-w-lg w-full relative z-10">
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 mb-12 hover:opacity-90 transition-all hover:scale-[1.02]">
-            <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
-              <Image
-                src="/images/logo.png"
-                alt="Tuck and Tale Logo"
-                width={75}
-                height={75}
-                className="object-contain"
-                priority
-              />
-            </div>
-            <div className="flex items-start gap-0.5">
-              <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
-                Tuck and Tale
-              </span>
-              <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
-            </div>
-          </Link>
-
-          <h1 className="text-5xl font-display font-bold text-gray-900 mb-5">
-            Join the Adventure!
-          </h1>
-          <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-            Create magical bedtime stories personalized for your family
-          </p>
-
-          <div className="badge-primary px-5 py-3 mb-10 inline-block text-base">
-            Join thousands of families creating magical stories every night
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex gap-4 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-blue-glow">
-                <Star className="w-7 h-7 text-white fill-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-lg">AI-powered personalized stories</h3>
-                <p className="text-gray-600 leading-relaxed">Every story crafted uniquely for your child</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-blue-glow">
-                <Users className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-lg">Perfect for your whole family</h3>
-                <p className="text-gray-600 leading-relaxed">Include humans, pets, and magical creatures in stories</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-teal flex items-center justify-center flex-shrink-0 shadow-teal-glow">
-                <ImageIcon className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-lg">Beautiful illustrations included</h3>
-                <p className="text-gray-600 leading-relaxed">AI-generated artwork brings stories to life</p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-sky flex items-center justify-center flex-shrink-0 shadow-blue-glow">
-                <Check className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-900 mb-2 text-lg">Start free, no credit card required</h3>
-                <p className="text-gray-600 leading-relaxed">Try 3 stories on us</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Side - Signup Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-start px-4 py-12 lg:pl-12">
-        <div className="w-full max-w-lg">
-          {/* Logo for mobile */}
-          <Link href="/" className="flex lg:hidden items-center justify-center gap-2 sm:gap-2.5 hover:opacity-90 transition-all hover:scale-[1.02] mb-10">
+    <div className="min-h-screen bg-gradient-bg-warm flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-lg">
+          {/* Logo */}
+          <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-90 transition-all hover:scale-[1.02] mb-10">
             <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
               <Image
                 src="/images/logo.png"
@@ -304,7 +224,6 @@ function SignupForm() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   )
 }
