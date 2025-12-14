@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Menu, Settings, HelpCircle, Shield, FileText, LogOut, CreditCard, Sparkles, Info, BookOpen } from 'lucide-react'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -13,7 +14,11 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
   const supabase = createClient()
+  const pathname = usePathname()
   const { hasActiveSubscription, subscriptionTier, storiesRemaining, monthlyLimit } = useSubscription()
+
+  // Hide Get Started button on waitlist page
+  const hideGetStarted = pathname === '/waitlist'
   const dropdownRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([])
@@ -258,13 +263,13 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : !hideGetStarted ? (
             <Link href="/auth/login">
               <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl whitespace-nowrap">
                 Get Started
               </button>
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
     </nav>
