@@ -58,18 +58,8 @@ export async function PATCH(request: Request) {
         console.error('Failed to send welcome email:', error)
       })
 
-      // Notify admin of new signup (non-blocking)
-      fetch(`${baseUrl}/api/notify-admin-signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user.email,
-          name: fullName,
-          userId: user.id
-        })
-      }).catch(error => {
-        console.error('Failed to notify admin:', error)
-      })
+      // Note: Admin notification is now handled by database trigger (on_user_profile_created)
+      // which fires on INSERT to user_profiles and calls the on-user-created Edge Function
     }
 
     return NextResponse.json({
