@@ -26,7 +26,11 @@
       "Bash(grep:*)",
       "Bash(npm run migrate:*)",
       "Bash(node check-env.js:*)",
-      "Bash(set SUPABASE_DB_PORT=5432)"
+      "Bash(set SUPABASE_DB_PORT=5432)",
+      "Bash(mkdir:*)",
+      "Bash(del \"c:\\Users\\benja\\PROJECTS\\tuckandtaleMVP\\app\\waitlist\\layout.tsx\")",
+      "Bash(npm run migrate:new:*)",
+      "Bash(set:*)"
     ],
     "deny": [],
     "ask": []

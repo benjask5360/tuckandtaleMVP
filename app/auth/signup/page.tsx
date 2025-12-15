@@ -75,6 +75,17 @@ function SignupForm() {
       return
     }
 
+    // Notify admin of new signup (non-blocking)
+    fetch('/api/notify-admin-signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name: '(Not provided yet)',
+        userId: 'pending' // User ID not available until session is established
+      })
+    }).catch(err => console.error('Failed to notify admin:', err))
+
     // Welcome email will be sent after name collection in onboarding
     // Redirect to onboarding (auth callback will handle this)
     router.push('/onboarding/character')

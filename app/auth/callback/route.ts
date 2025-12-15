@@ -26,8 +26,26 @@ export async function GET(request: NextRequest) {
           .is('deleted_at', null)
           .limit(1)
 
-        // If no characters, this is a new user
+        // If no characters, this is a new user - send admin notification
         if (!characters || characters.length === 0) {
+          // Get user profile for name
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single()
+
+          // Notify admin of new signup (non-blocking)
+          fetch(`${origin}/api/notify-admin-signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.email,
+              name: profile?.full_name || '(Not provided yet)',
+              userId: user.id
+            })
+          }).catch(err => console.error('Failed to notify admin:', err))
+
           return NextResponse.redirect(`${origin}/onboarding/character`)
         }
       }
