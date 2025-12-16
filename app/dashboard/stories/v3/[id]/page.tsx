@@ -8,6 +8,7 @@ import { ArrowLeft, Heart, Sparkles, Loader2, Target, Download, Edit2, Save, X, 
 import Image from 'next/image'
 import ReviewRequestModal from '@/components/ReviewRequestModal'
 import StoryPaywall from '@/components/paywall/StoryPaywall'
+import StoryFeedback from '@/components/StoryFeedback'
 import type { V3GenerationMetadata, V3IllustrationStatusData } from '@/lib/story-engine-v3/types'
 import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 
@@ -583,22 +584,9 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
 
           {/* Story Metadata Card */}
           <div className="card p-6 md:p-8">
-            {/* Title and Actions */}
-            <div className="flex items-start justify-between gap-4 mb-3">
-              {isEditMode ? (
-                <input
-                  type="text"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center flex-1 min-w-0 w-full border-2 border-primary-300 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
-                  placeholder="Story title..."
-                />
-              ) : (
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center flex-1">
-                  {story.title}
-                </h1>
-              )}
-              <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Actions - Above title on mobile, inline on desktop */}
+            <div className="flex justify-center md:justify-end mb-3 md:mb-0 md:float-right">
+              <div className="flex items-center gap-1">
                 {isEditMode ? (
                   <>
                     <button
@@ -659,6 +647,23 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
                   </>
                 )}
               </div>
+            </div>
+
+            {/* Title */}
+            <div className="mb-3">
+              {isEditMode ? (
+                <input
+                  type="text"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center w-full border-2 border-primary-300 rounded-lg px-4 py-2 focus:outline-none focus:border-primary-500"
+                  placeholder="Story title..."
+                />
+              ) : (
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-800 text-center">
+                  {story.title}
+                </h1>
+              )}
             </div>
 
             {/* Metadata Line */}
@@ -881,6 +886,13 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
             </div>
           </div>
         </div>
+
+        {/* Story Feedback - only show if not paywalled */}
+        {!(paywallStatus?.required && !paywallStatus?.isUnlocked) && (
+          <div className="card p-4 mt-6">
+            <StoryFeedback storyId={params.id} />
+          </div>
+        )}
 
         {/* Create Another Story CTA */}
         <div className="mt-6 mb-8">

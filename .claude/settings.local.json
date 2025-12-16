@@ -24,13 +24,13 @@
       "Bash(find:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",
-      "Bash(npm run migrate:*)",
-      "Bash(node check-env.js:*)",
-      "Bash(set SUPABASE_DB_PORT=5432)",
-      "Bash(mkdir:*)",
-      "Bash(del \"c:\\Users\\benja\\PROJECTS\\tuckandtaleMVP\\app\\waitlist\\layout.tsx\")",
-      "Bash(npm run migrate:new:*)",
-      "Bash(set:*)"
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"File: {}\"\"\"\"; head -80 \"\"\"\"{}\"\"\"\"')",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(gh pr list:*)",
+      "Bash(npm audit:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
