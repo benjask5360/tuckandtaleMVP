@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import TermsConsentModal from '@/components/auth/TermsConsentModal'
 import ParentNameCollector from '@/components/onboarding/ParentNameCollector'
+import { getStoredUTMs, clearStoredUTMs } from '@/lib/utils/utm'
 
 export default function CharacterOnboarding() {
   const router = useRouter()
@@ -77,6 +78,20 @@ export default function CharacterOnboarding() {
           // Fire Meta Pixel CompleteRegistration event
           if (typeof window !== 'undefined' && window.fbq) {
             window.fbq('track', 'CompleteRegistration')
+          }
+
+          // Save UTM params to user profile (non-blocking)
+          try {
+            const utms = getStoredUTMs()
+            if (utms) {
+              fetch('/api/utm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(utms),
+              }).then(() => clearStoredUTMs()).catch(() => {})
+            }
+          } catch (e) {
+            // Silent fail - UTM is non-critical
           }
 
           setShowNameCollector(false)
