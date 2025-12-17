@@ -63,6 +63,10 @@ export default function TermsPage() {
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">4. Subscription and Payment</h2>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Free Trial</p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                New users receive a 7-day free trial with access to up to 30 stories. A valid credit card is required to start the trial. If you cancel before the trial ends, you will not be charged. If you do not cancel, your subscription will automatically begin at the end of the trial period.
+              </p>
               <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Subscription Plans</p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We offer multiple subscription tiers with different benefits and usage limits.
@@ -83,7 +87,7 @@ export default function TermsPage() {
               </p>
               <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Satisfaction Guarantee</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                New subscribers may request a full refund within 30 days of their first payment if they have created 3 or fewer stories. To request a refund, contact us through our contact form. Refunds are processed within 5-7 business days to your original payment method. After 30 days, or once a 4th story has been created, refunds are no longer available. You may cancel anytime, and your subscription will remain active until the end of your current billing period.
+                Paid subscribers may request a full refund within 30 days of their first paid charge if they have created 3 or fewer stories after the trial period. To request a refund, contact us through our contact form. Refunds are processed within 5-7 business days to your original payment method. After 30 days, or once a 4th story has been created, refunds are no longer available. You may cancel anytime, and your subscription will remain active until the end of your current billing period.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. Acceptable Use</h2>
@@ -221,7 +225,7 @@ export default function TermsPage() {
                 Ready to Create Magic?
               </h2>
               <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                Join thousands of families creating personalized stories that inspire and delight.
+                Join families creating personalized stories that inspire and delight.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
                 Start Your Free Trial
