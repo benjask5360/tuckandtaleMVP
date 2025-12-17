@@ -132,10 +132,7 @@ export default function FounderParentsPage() {
               </h2>
               <div className="prose prose-lg max-w-none mb-8">
                 <p className="text-gray-700 leading-relaxed mb-4">
-                  The Founder Parents program is currently available to our early subscribers. If you're already a paid subscriber, you may already be eligible!
-                </p>
-                <p className="text-gray-700 leading-relaxed mb-4">
-                  To learn more or check your eligibility, please use the contact form below to get in touch with our team.
+                  The Founder Parents program is invite-only for early subscribers. Interested? Reach out below and we'll let you know if you qualify.
                 </p>
               </div>
               <div className="text-center">
@@ -143,7 +140,7 @@ export default function FounderParentsPage() {
                   href="/contact"
                   className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-primary text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                 >
-                  Contact Us About Joining
+                  Check Eligibility
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </div>
@@ -161,7 +158,7 @@ export default function FounderParentsPage() {
                 Ready to Create Magic?
               </h2>
               <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                Join thousands of families creating personalized stories that inspire and delight.
+                Join families creating personalized stories that inspire and delight.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
                 Start Your Free Trial
