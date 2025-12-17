@@ -112,31 +112,36 @@ function StoryQuotaDisplay() {
     );
   }
 
-  // For free users, show credits and trial status
+  // For non-subscribers, show trial prompt or credits
   return (
     <div className="mb-6 pb-6 border-b border-gray-200">
-      <div className="p-4 rounded-xl border-2 border-gray-200 bg-gray-50">
+      <div className="p-4 rounded-xl border-2 border-primary-200 bg-gradient-to-r from-primary-50 to-sky-50">
         <div className="flex items-center gap-3 mb-2">
-          <span className="text-3xl">📚</span>
+          <span className="text-3xl">✨</span>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">Free Plan</h3>
-            <p className="text-sm text-gray-600">
-              {!freeTrialUsed ? (
-                <>Your first illustrated story is <span className="font-semibold text-green-600">free</span>!</>
-              ) : generationCredits > 0 ? (
-                <>You have <span className="font-semibold text-primary-600">{generationCredits}</span> story credit{generationCredits !== 1 ? 's' : ''}</>
-              ) : (
-                <>No story credits available</>
-              )}
-            </p>
+            {generationCredits > 0 ? (
+              <>
+                <h3 className="font-semibold text-gray-900">Story Credits</h3>
+                <p className="text-sm text-gray-600">
+                  You have <span className="font-semibold text-primary-600">{generationCredits}</span> story credit{generationCredits !== 1 ? 's' : ''} available
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold text-gray-900">Start Creating Stories</h3>
+                <p className="text-sm text-gray-600">
+                  Try our 7-day free trial to create personalized stories
+                </p>
+              </>
+            )}
           </div>
         </div>
         <Link
-          href="/pricing"
+          href="/onboarding/pricing"
           className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700"
         >
           <Sparkles className="w-4 h-4" />
-          Upgrade to Stories Plus for 30 stories/month
+          Start Your Free Trial
         </Link>
       </div>
     </div>

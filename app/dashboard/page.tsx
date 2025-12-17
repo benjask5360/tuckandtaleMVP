@@ -115,7 +115,7 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(3)
 
-  // Build the usage message for non-subscribers
+  // Build the usage message
   const getUsageMessage = (): string => {
     if (hasActiveSubscription) {
       return `${storiesRemaining} of ${PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories remaining`
@@ -123,13 +123,8 @@ export default async function DashboardPage() {
     if (generationCredits > 0) {
       return `${generationCredits} story credit${generationCredits === 1 ? '' : 's'} available`
     }
-    if (!freeTrialUsed && totalStoriesGenerated === 0) {
-      return 'Your first illustrated story is free!'
-    }
-    if (totalStoriesGenerated === 1) {
-      return '1 more free story to try'
-    }
-    return ''
+    // Non-subscribers without credits see a prompt to start trial
+    return 'Start your free trial to create stories'
   }
 
   return (
