@@ -3,28 +3,59 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import { Check, Sparkles, Shield, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DISPLAY_PRICES } from '@/lib/config/pricing-config'
+
+interface Character {
+  id: string
+  name: string
+  avatar_url: string | null
+}
 
 function OnboardingPricingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [processingCheckout, setProcessingCheckout] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [loadingCharacters, setLoadingCharacters] = useState(true)
   const canceled = searchParams.get('canceled')
 
-  // Check if user is authenticated
+  // Check if user is authenticated and fetch characters
   useEffect(() => {
-    const checkAuth = async () => {
+    const initPage = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/auth/login')
+        return
       }
+
+      // Fetch user's characters with their avatars
+      const { data: chars, error: charsError } = await supabase
+        .from('character_profiles')
+        .select(`
+          id,
+          name,
+          avatar_cache:avatar_cache_id (
+            image_url
+          )
+        `)
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+
+      if (chars && chars.length > 0) {
+        setCharacters(chars.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          avatar_url: c.avatar_cache?.image_url || null
+        })))
+      }
+      setLoadingCharacters(false)
     }
-    checkAuth()
+    initPage()
   }, [router])
 
   const handleStartTrial = async () => {
@@ -53,30 +84,24 @@ function OnboardingPricingContent() {
     }
   }
 
+  // Build the subtext with character names
+  const getSubtext = () => {
+    if (loadingCharacters || characters.length === 0) {
+      return 'Start creating magical stories for your child'
+    }
+    const names = characters.map(c => c.name)
+    if (names.length === 1) {
+      return `${names[0]} is ready for their first adventure!`
+    }
+    if (names.length === 2) {
+      return `${names[0]} and ${names[1]} are ready for their first adventure!`
+    }
+    const lastIndex = names.length - 1
+    return `${names.slice(0, lastIndex).join(', ')}, and ${names[lastIndex]} are ready for their first adventure!`
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header - centered like auth pages */}
-      <header className="pt-8 md:pt-12 px-4">
-        <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity min-h-[44px]">
-          <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
-            <Image
-              src="/images/logo.png"
-              alt="Tuck and Tale Logo"
-              width={75}
-              height={75}
-              className="object-contain"
-              priority
-            />
-          </div>
-          <div className="flex items-start gap-0.5">
-            <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 4.5vw, 2.5rem)' }}>
-              Tuck and Tale
-            </span>
-            <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
-          </div>
-        </Link>
-      </header>
-
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="max-w-lg w-full">
@@ -98,8 +123,34 @@ function OnboardingPricingContent() {
                 Start Your Free Trial
               </h1>
               <p className="text-gray-600">
-                Start creating magical stories for your child
+                {getSubtext()}
               </p>
+
+              {/* Character Avatars */}
+              {!loadingCharacters && characters.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-3 mt-5">
+                  {characters.map((char) => (
+                    <div key={char.id} className="flex flex-col items-center w-16">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 border-primary-200 bg-white shadow-sm">
+                        {char.avatar_url ? (
+                          <Image
+                            src={char.avatar_url}
+                            alt={char.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl bg-gradient-to-br from-primary-100 to-sky-100">
+                            {char.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-600 mt-1 font-medium truncate w-full text-center">{char.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Pricing */}

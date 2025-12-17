@@ -12,6 +12,7 @@ interface DynamicCharacterFormProps {
   isEditing?: boolean
   onSubmit?: (data: any) => Promise<void | any>
   onAvatarGenerated?: (avatarUrl: string, avatarCacheId?: string) => void
+  redirectAfterCreate?: string // Custom redirect URL after character creation
 }
 
 export default function DynamicCharacterForm({
@@ -19,7 +20,8 @@ export default function DynamicCharacterForm({
   initialValues = {},
   isEditing = false,
   onSubmit,
-  onAvatarGenerated
+  onAvatarGenerated,
+  redirectAfterCreate
 }: DynamicCharacterFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>(initialValues)
   const [loading, setLoading] = useState(false)
@@ -148,10 +150,15 @@ export default function DynamicCharacterForm({
       // If shouldRedirectAfterAvatar is true, redirect now (onboarding flow)
       // Otherwise, only redirect if no custom onSubmit was provided
       if (shouldRedirectAfterAvatar) {
-        // For onboarding, add a small delay then redirect to pricing page for trial offer
+        // For onboarding, add a small delay then redirect
         // The delay ensures the database has time to commit the avatar link
         setTimeout(() => {
-          window.location.href = '/onboarding/pricing'
+          window.location.href = '/onboarding/add-more'
+        }, 500)
+      } else if (redirectAfterCreate) {
+        // Custom redirect URL was provided
+        setTimeout(() => {
+          window.location.href = redirectAfterCreate
         }, 500)
       } else if (!onSubmit && !showAvatarGenerator) {
         // For regular profile creation, redirect to the appropriate section

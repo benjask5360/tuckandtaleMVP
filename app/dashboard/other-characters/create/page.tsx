@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getCharacterTypesByCategory } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import Link from 'next/link'
@@ -14,12 +15,14 @@ function FormLoader() {
   )
 }
 
-export default function CreateOtherCharacterPage() {
+function CreateOtherCharacterContent() {
+  const searchParams = useSearchParams()
+  const isOnboarding = searchParams.get('onboarding') === 'true'
   const otherTypes = getCharacterTypesByCategory('other')
 
-  // Default to Storybook Character
+  // Default to Pet
   const [selectedType, setSelectedType] = useState(
-    otherTypes.find(t => t.id === 'storybook_character') || otherTypes[0]
+    otherTypes.find(t => t.id === 'pet') || otherTypes[0]
   )
 
   if (!otherTypes || otherTypes.length === 0) {
@@ -32,17 +35,20 @@ export default function CreateOtherCharacterPage() {
     )
   }
 
+  const backHref = isOnboarding ? '/onboarding/add-more' : '/dashboard/other-characters'
+  const backText = isOnboarding ? 'Back to Add Characters' : 'Back to Other Characters'
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <Link
-            href="/dashboard/other-characters"
+            href={backHref}
             className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-            Back to Other Characters
+            {backText}
           </Link>
 
           <div className="card p-6 md:p-8">
@@ -83,15 +89,22 @@ export default function CreateOtherCharacterPage() {
         {/* Form */}
         {selectedType && (
           <div className="card p-6 md:p-8">
-            <Suspense fallback={<FormLoader />}>
-              <DynamicCharacterForm
-                key={selectedType.id} // Force re-render when type changes
-                characterType={selectedType}
-              />
-            </Suspense>
+            <DynamicCharacterForm
+              key={selectedType.id} // Force re-render when type changes
+              characterType={selectedType}
+              redirectAfterCreate={isOnboarding ? '/onboarding/add-more' : undefined}
+            />
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+export default function CreateOtherCharacterPage() {
+  return (
+    <Suspense fallback={<FormLoader />}>
+      <CreateOtherCharacterContent />
+    </Suspense>
   )
 }

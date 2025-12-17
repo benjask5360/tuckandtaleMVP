@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { getCharacterTypeById } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import Link from 'next/link'
@@ -14,7 +15,9 @@ function FormLoader() {
   )
 }
 
-export default function CreateChildPage() {
+function CreateChildContent() {
+  const searchParams = useSearchParams()
+  const isOnboarding = searchParams.get('onboarding') === 'true'
   const childType = getCharacterTypeById('child')
 
   if (!childType) {
@@ -27,17 +30,20 @@ export default function CreateChildPage() {
     )
   }
 
+  const backHref = isOnboarding ? '/onboarding/add-more' : '/dashboard/my-children'
+  const backText = isOnboarding ? 'Back to Add Characters' : 'Back to My Children'
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">
           <Link
-            href="/dashboard/my-children"
+            href={backHref}
             className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-            Back to My Children
+            {backText}
           </Link>
 
           <div className="card p-6 md:p-8">
@@ -52,11 +58,20 @@ export default function CreateChildPage() {
 
         {/* Form */}
         <div className="card p-6 md:p-8">
-          <Suspense fallback={<FormLoader />}>
-            <DynamicCharacterForm characterType={childType} />
-          </Suspense>
+          <DynamicCharacterForm
+            characterType={childType}
+            redirectAfterCreate={isOnboarding ? '/onboarding/add-more' : undefined}
+          />
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CreateChildPage() {
+  return (
+    <Suspense fallback={<FormLoader />}>
+      <CreateChildContent />
+    </Suspense>
   )
 }

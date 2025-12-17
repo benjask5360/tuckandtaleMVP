@@ -202,6 +202,133 @@ export const characterTypes: CharacterTypeConfig[] = [
     ]
   },
   {
+    id: 'pet',
+    displayName: 'Pet',
+    category: 'other',
+    fieldGroups: [
+      {
+        title: 'Pet Information',
+        fields: [
+          {
+            id: 'name',
+            type: 'text',
+            label: 'Pet Name',
+            placeholder: 'Enter pet name',
+            required: true
+          },
+          {
+            id: 'species',
+            type: 'buttons',
+            label: 'Species',
+            customOptions: true,
+            required: true,
+            options: [
+              { value: 'dog', label: 'Dog', emoji: '🐕' },
+              { value: 'cat', label: 'Cat', emoji: '🐈' },
+              { value: 'bird', label: 'Bird', emoji: '🦜' },
+              { value: 'rabbit', label: 'Rabbit', emoji: '🐰' },
+              { value: 'hamster', label: 'Hamster', emoji: '🐹' },
+              { value: 'fish', label: 'Fish', emoji: '🐠' },
+              { value: 'turtle', label: 'Turtle', emoji: '🐢' },
+              { value: 'horse', label: 'Horse', emoji: '🐴' }
+            ]
+          },
+          {
+            id: 'breed',
+            type: 'text',
+            label: 'Breed',
+            placeholder: 'e.g., Golden Retriever, Persian, Parrot'
+          },
+          {
+            id: 'primaryColor',
+            type: 'buttons',
+            label: 'Fur/Feather Color',
+            customOptions: true,
+            options: [
+              { value: 'white', label: 'White' },
+              { value: 'black', label: 'Black' },
+              { value: 'brown', label: 'Brown' },
+              { value: 'gray', label: 'Gray' },
+              { value: 'golden', label: 'Golden' },
+              { value: 'tan', label: 'Tan' },
+              { value: 'orange', label: 'Orange' },
+              { value: 'spotted', label: 'Spotted' },
+              { value: 'striped', label: 'Striped' }
+            ]
+          },
+          {
+            id: 'eyeColor',
+            type: 'buttons',
+            label: 'Eye Color',
+            customOptions: true,
+            options: [
+              { value: 'blue', label: 'Blue' },
+              { value: 'brown', label: 'Brown' },
+              { value: 'green', label: 'Green' },
+              { value: 'amber', label: 'Amber' },
+              { value: 'hazel', label: 'Hazel' },
+              { value: 'gray', label: 'Gray' },
+              { value: 'black', label: 'Black' }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'magical_creature',
+    displayName: 'Magical Creature',
+    category: 'other',
+    fieldGroups: [
+      {
+        title: 'Magical Being',
+        fields: [
+          {
+            id: 'name',
+            type: 'text',
+            label: 'Creature Name',
+            placeholder: 'Enter creature name',
+            required: true
+          },
+          {
+            id: 'creatureType',
+            type: 'buttons',
+            label: 'Creature Type',
+            customOptions: true,
+            required: true,
+            options: [
+              { value: 'dragon', label: 'Dragon', emoji: '🐉' },
+              { value: 'unicorn', label: 'Unicorn', emoji: '🦄' },
+              { value: 'fairy', label: 'Fairy', emoji: '🧚' },
+              { value: 'phoenix', label: 'Phoenix', emoji: '🔥' },
+              { value: 'mermaid', label: 'Mermaid', emoji: '🧜' },
+              { value: 'griffin', label: 'Griffin', emoji: '🦅' },
+              { value: 'elf', label: 'Elf', emoji: '🧝' },
+              { value: 'wizard', label: 'Wizard', emoji: '🧙' }
+            ]
+          },
+          {
+            id: 'color',
+            type: 'buttons',
+            label: 'Color',
+            customOptions: true,
+            options: [
+              { value: 'gold', label: 'Gold' },
+              { value: 'silver', label: 'Silver' },
+              { value: 'rainbow', label: 'Rainbow' },
+              { value: 'purple', label: 'Purple' },
+              { value: 'blue', label: 'Blue' },
+              { value: 'green', label: 'Green' },
+              { value: 'red', label: 'Red' },
+              { value: 'white', label: 'White' },
+              { value: 'black', label: 'Black' }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     id: 'storybook_character',
     displayName: 'Storybook Character',
     category: 'other',
@@ -344,133 +471,6 @@ export const characterTypes: CharacterTypeConfig[] = [
               { value: 'middle_eastern_north_african', label: 'Middle Eastern or North African' },
               { value: 'hispanic_latino', label: 'Hispanic or Latino' },
               { value: 'other', label: 'Other' }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'pet',
-    displayName: 'Pet',
-    category: 'other',
-    fieldGroups: [
-      {
-        title: 'Pet Information',
-        fields: [
-          {
-            id: 'name',
-            type: 'text',
-            label: 'Pet Name',
-            placeholder: 'Enter pet name',
-            required: true
-          },
-          {
-            id: 'species',
-            type: 'buttons',
-            label: 'Species',
-            customOptions: true,
-            required: true,
-            options: [
-              { value: 'dog', label: 'Dog', emoji: '🐕' },
-              { value: 'cat', label: 'Cat', emoji: '🐈' },
-              { value: 'bird', label: 'Bird', emoji: '🦜' },
-              { value: 'rabbit', label: 'Rabbit', emoji: '🐰' },
-              { value: 'hamster', label: 'Hamster', emoji: '🐹' },
-              { value: 'fish', label: 'Fish', emoji: '🐠' },
-              { value: 'turtle', label: 'Turtle', emoji: '🐢' },
-              { value: 'horse', label: 'Horse', emoji: '🐴' }
-            ]
-          },
-          {
-            id: 'breed',
-            type: 'text',
-            label: 'Breed',
-            placeholder: 'e.g., Golden Retriever, Persian, Parrot'
-          },
-          {
-            id: 'primaryColor',
-            type: 'buttons',
-            label: 'Fur/Feather Color',
-            customOptions: true,
-            options: [
-              { value: 'white', label: 'White' },
-              { value: 'black', label: 'Black' },
-              { value: 'brown', label: 'Brown' },
-              { value: 'gray', label: 'Gray' },
-              { value: 'golden', label: 'Golden' },
-              { value: 'tan', label: 'Tan' },
-              { value: 'orange', label: 'Orange' },
-              { value: 'spotted', label: 'Spotted' },
-              { value: 'striped', label: 'Striped' }
-            ]
-          },
-          {
-            id: 'eyeColor',
-            type: 'buttons',
-            label: 'Eye Color',
-            customOptions: true,
-            options: [
-              { value: 'blue', label: 'Blue' },
-              { value: 'brown', label: 'Brown' },
-              { value: 'green', label: 'Green' },
-              { value: 'amber', label: 'Amber' },
-              { value: 'hazel', label: 'Hazel' },
-              { value: 'gray', label: 'Gray' },
-              { value: 'black', label: 'Black' }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'magical_creature',
-    displayName: 'Magical Creature',
-    category: 'other',
-    fieldGroups: [
-      {
-        title: 'Magical Being',
-        fields: [
-          {
-            id: 'name',
-            type: 'text',
-            label: 'Creature Name',
-            placeholder: 'Enter creature name',
-            required: true
-          },
-          {
-            id: 'creatureType',
-            type: 'buttons',
-            label: 'Creature Type',
-            customOptions: true,
-            required: true,
-            options: [
-              { value: 'dragon', label: 'Dragon', emoji: '🐉' },
-              { value: 'unicorn', label: 'Unicorn', emoji: '🦄' },
-              { value: 'fairy', label: 'Fairy', emoji: '🧚' },
-              { value: 'phoenix', label: 'Phoenix', emoji: '🔥' },
-              { value: 'mermaid', label: 'Mermaid', emoji: '🧜' },
-              { value: 'griffin', label: 'Griffin', emoji: '🦅' },
-              { value: 'elf', label: 'Elf', emoji: '🧝' },
-              { value: 'wizard', label: 'Wizard', emoji: '🧙' }
-            ]
-          },
-          {
-            id: 'color',
-            type: 'buttons',
-            label: 'Color',
-            customOptions: true,
-            options: [
-              { value: 'gold', label: 'Gold' },
-              { value: 'silver', label: 'Silver' },
-              { value: 'rainbow', label: 'Rainbow' },
-              { value: 'purple', label: 'Purple' },
-              { value: 'blue', label: 'Blue' },
-              { value: 'green', label: 'Green' },
-              { value: 'red', label: 'Red' },
-              { value: 'white', label: 'White' },
-              { value: 'black', label: 'Black' }
             ]
           }
         ]
