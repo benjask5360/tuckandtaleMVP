@@ -344,6 +344,13 @@ export class StripeService {
       session.subscription as string
     )
 
+    console.log('[WEBHOOK DEBUG] Subscription retrieved:', {
+      id: subscription.id,
+      status: subscription.status,
+      trial_start: subscription.trial_start,
+      trial_end: subscription.trial_end,
+    })
+
     // Get the price ID from subscription
     const subscriptionItem = subscription.items.data[0]
     const priceId = subscriptionItem?.price.id
@@ -360,8 +367,19 @@ export class StripeService {
       return
     }
 
-    // Determine subscription status (could be trialing for trial subscriptions)
-    const subscriptionStatus = subscription.status === 'trialing' ? 'trialing' : 'active'
+    // Determine subscription status - map from Stripe status
+    // Stripe statuses: 'active', 'trialing', 'past_due', 'canceled', 'unpaid', 'incomplete', 'incomplete_expired', 'paused'
+    let subscriptionStatus: string
+    if (subscription.status === 'trialing') {
+      subscriptionStatus = 'trialing'
+    } else if (subscription.status === 'active') {
+      subscriptionStatus = 'active'
+    } else {
+      // For checkout completion, status should only be 'trialing' or 'active'
+      console.warn('[WEBHOOK WARNING] Unexpected subscription status:', subscription.status)
+      subscriptionStatus = 'active'
+    }
+    console.log('[WEBHOOK DEBUG] Setting subscription_status to:', subscriptionStatus, '(Stripe status:', subscription.status, ')')
 
     // Update user profile - reset story count so they start fresh with their subscription
     const { error } = await supabase
