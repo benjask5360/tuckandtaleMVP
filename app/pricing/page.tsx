@@ -83,8 +83,7 @@ export default function PricingPage() {
               Personalized Bedtime Stories
             </h1>
             <p className="text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed">
-              Create magical stories your children will love.
-              Start with a free illustrated story!
+              Create magical stories your children will love. Try free for 7 days.
             </p>
           </div>
         </div>
@@ -110,89 +109,11 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Free Trial CTA */}
-      <section className="py-6 bg-gray-50">
-        <div className="container-narrow">
-          <div className="bg-gradient-primary rounded-2xl px-6 py-4 md:px-8 md:py-6 text-center shadow-lg">
-            <p className="text-xl md:text-2xl font-bold text-white mb-3">
-              Get Your First Free Illustrated Story on Us!
-            </p>
-            <p className="text-white/90 mb-4 text-sm md:text-base">
-              7-day free trial • Cancel anytime
-            </p>
-            <Link
-              href="/auth/signup"
-              className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg"
-            >
-              Start Your Free Trial
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Cards Section */}
       <section className="section-padding py-8 md:py-16">
         <div className="container-narrow px-4 md:px-6">
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Single Story Card */}
-            <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 md:p-8 hover:border-primary-200 transition-colors">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-6 h-6 text-gray-600" />
-                </div>
-                <h2 className="font-display font-bold text-2xl text-gray-900">
-                  Single Story
-                </h2>
-              </div>
-
-              <p className="text-gray-600 mb-6">
-                Perfect for trying us out or occasional use
-              </p>
-
-              <div className="mb-6">
-                <span className="text-5xl font-bold text-gray-900">
-                  ${(PRICING_CONFIG.SINGLE_STORY_PRICE_CENTS / 100).toFixed(2)}
-                </span>
-                <span className="text-gray-500 ml-2">one-time</span>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Generate one complete story</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Beautiful custom illustrations</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Keep saved in your library</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">All genres & writing styles</span>
-                </li>
-              </ul>
-
-              <button
-                onClick={handleSingleStoryPurchase}
-                disabled={processingCheckout !== null}
-                className="w-full py-4 px-6 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {processingCheckout === 'single' ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>Buy One Story</>
-                )}
-              </button>
-            </div>
-
-            {/* Subscription Card */}
+          <div className="max-w-md mx-auto">
+            {/* Subscription Card - Primary */}
             <div className="bg-white rounded-2xl border-2 border-primary-400 p-6 md:p-8 relative overflow-hidden">
               {/* Best Value Badge */}
               <div className="absolute top-4 right-4 bg-gradient-primary text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -272,6 +193,28 @@ export default function PricingPage() {
             <p className="text-sm text-gray-500">
               At $14.99/month for 30 stories, that&apos;s just <strong>$0.50 per story</strong> vs $4.99 each!
             </p>
+          </div>
+
+          {/* Single Story - Secondary Option */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500 mb-3">Or just need one story?</p>
+            <button
+              onClick={handleSingleStoryPurchase}
+              disabled={processingCheckout !== null}
+              className="inline-flex items-center gap-2 px-6 py-3 text-gray-600 hover:text-gray-900 font-medium transition-colors disabled:opacity-50"
+            >
+              {processingCheckout === 'single' ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <BookOpen className="w-4 h-4" />
+                  Buy a single story for ${(PRICING_CONFIG.SINGLE_STORY_PRICE_CENTS / 100).toFixed(2)}
+                </>
+              )}
+            </button>
           </div>
 
           {/* Our Guarantee Section */}
@@ -358,8 +301,7 @@ export default function PricingPage() {
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Yes! Start with a 7-day free trial. Cancel anytime.
-                  Create your account and generate your first personalized story right away.
+                  Yes! Get 7 days free with access to up to 30 stories. Cancel anytime before your trial ends and you won&apos;t be charged.
                 </div>
               </details>
 
@@ -420,8 +362,7 @@ export default function PricingPage() {
                 Ready to Create Magic?
               </h2>
               <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                Join thousands of families creating personalized stories that inspire and delight.
-                Your first story is free!
+                Join families creating personalized stories that inspire and delight. Start your 7-day free trial.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
                 Start Your Free Trial
