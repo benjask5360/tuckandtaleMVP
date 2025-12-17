@@ -28,7 +28,7 @@ export async function POST(request) {
 
     // Use your verified domain for all emails
     // Note: Domain must be verified in Resend dashboard at resend.com/domains
-    const fromEmail = 'Tuck & Tale <hello@tuckandtale.com>';
+    const fromEmail = 'Tuck & Tale <hello@send.tuckandtale.com>';
 
     // Send the welcome email
     const { data, error } = await resend.emails.send({

@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     `;
 
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'Tuck & Tale <hello@tuckandtale.com>',
+      from: 'Tuck & Tale <hello@send.tuckandtale.com>',
       to: ['hello@tuckandtale.com'],
       replyTo: email,
       subject: `[${referenceNumber}] ${subject}`,

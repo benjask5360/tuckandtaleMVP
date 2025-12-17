@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     });
 
     await resend.emails.send({
-      from: 'Tuck & Tale <notifications@tuckandtale.com>',
+      from: 'Tuck & Tale <notifications@send.tuckandtale.com>',
       to: [ADMIN_EMAIL],
       subject: `🎉 New User Signup: ${name}`,
       html: `

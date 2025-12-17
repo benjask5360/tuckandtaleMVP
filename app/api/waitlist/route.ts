@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     `;
 
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'Tuck & Tale <therapist@tuckandtale.com>',
+      from: 'Tuck & Tale <therapist@send.tuckandtale.com>',
       to: ['hello@tuckandtale.com'],
       subject: `New Waitlist Signup: ${email}`,
       html: emailHtml,

@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
       : "(Name not yet provided)";
 
     await resend.emails.send({
-      from: "Tuck & Tale <notifications@tuckandtale.com>",
+      from: "Tuck & Tale <notifications@send.tuckandtale.com>",
       to: [ADMIN_EMAIL],
       subject: `🎉 New User Signup: ${email}`,
       html: `
