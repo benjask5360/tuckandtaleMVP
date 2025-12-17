@@ -146,17 +146,30 @@ export default async function DashboardPage() {
 
         {/* Subscription Plan Badge - Centered and mobile-optimized */}
         <div className="mb-4 md:mb-6 flex justify-center">
-          <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
-            <span className="font-semibold">{subscriptionTierName}</span>
-            {getUsageMessage() && (
-              <>
-                <span className="hidden sm:inline">•</span>
-                <span className="text-xs sm:text-sm md:text-base">
-                  {getUsageMessage()}
-                </span>
-              </>
-            )}
-          </div>
+          {hasActiveSubscription ? (
+            <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center">
+              <span className="font-semibold">{subscriptionTierName}</span>
+              {getUsageMessage() && (
+                <>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="text-xs sm:text-sm md:text-base">
+                    {getUsageMessage()}
+                  </span>
+                </>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/onboarding/pricing"
+              className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              <span className="font-semibold">{subscriptionTierName}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="text-xs sm:text-sm md:text-base">
+                {getUsageMessage()}
+              </span>
+            </Link>
+          )}
         </div>
 
         {/* Usage Counter for Subscribers */}
