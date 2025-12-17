@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /auth
+Disallow: /onboarding
+Disallow: /test-stripe
+
+# Host
+Host: https://tuckandtale.com
+
+# Sitemaps
+Sitemap: https://tuckandtale.com/sitemap.xml
