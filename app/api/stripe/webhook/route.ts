@@ -3,9 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Stripe requires raw body for webhook signature verification
 export async function POST(request: NextRequest) {
+  console.log('[WEBHOOK] ====== INCOMING WEBHOOK REQUEST ======');
   try {
     // Get raw body
     const rawBody = await request.text();
+    console.log('[WEBHOOK] Raw body length:', rawBody.length);
 
     // Get Stripe signature header
     const signature = request.headers.get('stripe-signature');

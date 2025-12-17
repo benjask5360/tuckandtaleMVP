@@ -175,6 +175,8 @@ export class StripeService {
         process.env.STRIPE_WEBHOOK_SECRET!
       )
 
+      console.log('[WEBHOOK] Event received:', event.type, 'ID:', event.id)
+
       const supabase = createAdminClient()
 
       // Handle different event types
