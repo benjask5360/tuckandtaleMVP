@@ -360,6 +360,9 @@ export class StripeService {
       return
     }
 
+    // Determine subscription status (could be trialing for trial subscriptions)
+    const subscriptionStatus = subscription.status === 'trialing' ? 'trialing' : 'active'
+
     // Update user profile - reset story count so they start fresh with their subscription
     const { error } = await supabase
       .from('user_profiles')
@@ -367,7 +370,7 @@ export class StripeService {
         subscription_tier_id: tierId,
         stripe_customer_id: session.customer as string,
         stripe_subscription_id: subscription.id,
-        subscription_status: 'active',
+        subscription_status: subscriptionStatus,
         subscription_starts_at: new Date(subscriptionItem.current_period_start * 1000).toISOString(),
         subscription_ends_at: new Date(subscriptionItem.current_period_end * 1000).toISOString(),
         total_stories_generated: 0,

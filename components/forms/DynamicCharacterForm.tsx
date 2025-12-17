@@ -148,10 +148,10 @@ export default function DynamicCharacterForm({
       // If shouldRedirectAfterAvatar is true, redirect now (onboarding flow)
       // Otherwise, only redirect if no custom onSubmit was provided
       if (shouldRedirectAfterAvatar) {
-        // For onboarding, add a small delay then redirect to main dashboard with full page reload
+        // For onboarding, add a small delay then redirect to pricing page for trial offer
         // The delay ensures the database has time to commit the avatar link
         setTimeout(() => {
-          window.location.href = '/dashboard'
+          window.location.href = '/onboarding/pricing'
         }, 500)
       } else if (!onSubmit && !showAvatarGenerator) {
         // For regular profile creation, redirect to the appropriate section

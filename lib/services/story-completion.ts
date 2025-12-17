@@ -205,8 +205,9 @@ export class StoryCompletionService {
       tier: data.subscription_tier_id
     })
 
+    // Treat 'trialing' status as active subscription (7-day free trial)
     const hasActiveSubscription =
-      data.subscription_status === 'active' &&
+      (data.subscription_status === 'active' || data.subscription_status === 'trialing') &&
       data.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
 
     return {
@@ -221,6 +222,7 @@ export class StoryCompletionService {
 
   /**
    * Check if user has an active Stories Plus subscription
+   * Includes users on 7-day free trial (trialing status)
    */
   static async hasActiveSubscription(userId: string): Promise<boolean> {
     const supabase = await createClient()
@@ -235,8 +237,9 @@ export class StoryCompletionService {
       return false
     }
 
+    // Treat 'trialing' status as active subscription (7-day free trial)
     return (
-      data.subscription_status === 'active' &&
+      (data.subscription_status === 'active' || data.subscription_status === 'trialing') &&
       data.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
     )
   }

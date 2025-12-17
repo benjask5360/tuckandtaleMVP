@@ -219,7 +219,7 @@ function SignupForm() {
 
               <p className="text-center text-xs text-gray-500 flex items-center justify-center gap-2">
                 <Check className="w-4 h-4 text-primary-500" />
-                No credit card required
+                7-day free trial • Cancel anytime, pay nothing
               </p>
               </form>
             </div>

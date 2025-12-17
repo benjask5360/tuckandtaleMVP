@@ -43,7 +43,7 @@ export default function FAQPage() {
     },
     {
       question: 'Is there a free trial?',
-      answer: 'Yes! Your first illustrated story is completely free—no credit card required. It\'s the perfect way to experience the magic of personalized storytelling. Visit our pricing page to explore subscription and individual purchase options.'
+      answer: 'Yes! Start with a 7-day free trial. Cancel anytime. It\'s the perfect way to experience the magic of personalized storytelling. Visit our pricing page to explore subscription and individual purchase options.'
     },
     {
       question: 'Can I cancel my subscription?',
@@ -122,7 +122,7 @@ export default function FAQPage() {
                 Join thousands of families creating personalized stories that inspire and delight.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
-                Get Started Free
+                Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
               </div>
             </div>

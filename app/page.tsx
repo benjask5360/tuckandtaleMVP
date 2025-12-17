@@ -28,7 +28,7 @@ export default function HomePage() {
 
               <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
                 <Check className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                <span>No credit card required</span>
+                <span>7-day free trial</span>
               </p>
 
               {/* Mobile Hero Image */}
@@ -261,12 +261,12 @@ export default function HomePage() {
             Ready to create your first story?
           </h2>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Craft captivating stories today — no credit card required.
+            Craft captivating stories today — start your 7-day free trial.
           </p>
           <AuthAwareCTA>
             <>
-              Get started now
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Start Your Free Trial
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           </AuthAwareCTA>
         </div>

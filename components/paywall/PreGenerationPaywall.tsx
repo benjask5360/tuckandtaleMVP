@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Sparkles, BookOpen, Check, ArrowLeft } from 'lucide-react'
-import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+import { Sparkles, BookOpen, Check, ArrowLeft, Shield } from 'lucide-react'
+import { PRICING_CONFIG, DISPLAY_PRICES } from '@/lib/config/pricing-config'
 
 interface PreGenerationPaywallProps {
   storyNumber: number
@@ -52,13 +52,10 @@ export default function PreGenerationPaywall({
     try {
       setProcessingCheckout('subscription')
 
-      const response = await fetch('/api/stripe/create-checkout', {
+      // Use trial checkout endpoint for 7-day free trial
+      const response = await fetch('/api/stripe/create-trial-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tierId: PRICING_CONFIG.TIER_STORIES_PLUS,
-          billingPeriod: 'monthly',
-        }),
       })
 
       if (!response.ok) {
@@ -153,7 +150,7 @@ export default function PreGenerationPaywall({
             </button>
           </div>
 
-          {/* Subscription Card */}
+          {/* Subscription Card with Trial */}
           <div className="bg-white rounded-2xl border-2 border-primary-400 p-6 md:p-8 relative overflow-hidden">
             {/* Best Value Badge */}
             <div className="absolute top-4 right-4 bg-gradient-primary text-white text-xs font-bold px-3 py-1 rounded-full">
@@ -169,12 +166,18 @@ export default function PreGenerationPaywall({
               </h2>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-2">
+              <span className="text-gray-400 line-through text-lg mr-2">
+                {DISPLAY_PRICES.ORIGINAL_MONTHLY}
+              </span>
               <span className="text-4xl font-bold text-gray-900">
-                ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}
+                {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}
               </span>
               <span className="text-gray-500 ml-1">/month</span>
             </div>
+            <p className="text-primary-600 font-semibold mb-6">
+              {DISPLAY_PRICES.TRIAL_PERIOD}, then {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}/month
+            </p>
 
             <ul className="space-y-3 mb-8">
               <li className="flex items-start gap-3">
@@ -189,15 +192,15 @@ export default function PreGenerationPaywall({
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">All genres and writing styles</span>
+                <span className="text-gray-700">Cancel anytime before day 7, pay nothing</span>
               </li>
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <span className="text-gray-700">Growth stories and life lessons</span>
               </li>
               <li className="flex items-start gap-3">
-                <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-700">Priority support</span>
+                <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                <span className="text-gray-700">30-day satisfaction guarantee</span>
               </li>
             </ul>
 
@@ -212,7 +215,7 @@ export default function PreGenerationPaywall({
                   Processing...
                 </>
               ) : (
-                <>Subscribe Now</>
+                <>Start Free Trial</>
               )}
             </button>
           </div>

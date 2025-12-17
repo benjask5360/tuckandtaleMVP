@@ -81,6 +81,10 @@ export default function TermsPage() {
               <p className="text-gray-700 leading-relaxed mb-4">
                 We may update pricing with at least 30 days' notice via email or within the platform. Continued use after the change constitutes acceptance.
               </p>
+              <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Satisfaction Guarantee</p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                New subscribers may request a full refund within 30 days of their first payment if they have created 3 or fewer stories. To request a refund, contact us through our contact form. Refunds are processed within 5-7 business days to your original payment method. After 30 days, or once a 4th story has been created, refunds are no longer available. You may cancel anytime, and your subscription will remain active until the end of your current billing period.
+              </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. Acceptable Use</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -220,7 +224,7 @@ export default function TermsPage() {
                 Join thousands of families creating personalized stories that inspire and delight.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
-                Get Started Free
+                Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
               </div>
             </div>

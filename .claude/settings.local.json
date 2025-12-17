@@ -30,7 +30,12 @@
       "Bash(gh pr list:*)",
       "Bash(npm audit:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(where:*)",
+      "Bash(vercel logs:*)",
+      "Bash(vercel ls:*)",
+      "Bash(vercel login)",
+      "Bash(vercel whoami:*)"
     ],
     "deny": [],
     "ask": []

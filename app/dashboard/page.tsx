@@ -34,12 +34,15 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
-  // Determine subscription status for new model
+  // Determine subscription status for new model (includes trialing users)
   const hasActiveSubscription =
-    userProfile?.subscription_status === 'active' &&
+    (userProfile?.subscription_status === 'active' || userProfile?.subscription_status === 'trialing') &&
     userProfile?.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
 
-  const subscriptionTierName = hasActiveSubscription ? 'Stories Plus' : 'Free'
+  const isTrialing = userProfile?.subscription_status === 'trialing'
+  const subscriptionTierName = hasActiveSubscription
+    ? (isTrialing ? 'Stories Plus (Trial)' : 'Stories Plus')
+    : 'Free'
   const totalStoriesGenerated = userProfile?.total_stories_generated || 0
   const freeTrialUsed = userProfile?.free_trial_used || false
   const generationCredits = userProfile?.generation_credits || 0

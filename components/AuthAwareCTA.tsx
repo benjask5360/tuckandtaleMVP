@@ -46,7 +46,7 @@ export default function AuthAwareCTA({ className = "btn-primary btn-xl group", c
       <button className={className} disabled>
         {children || (
           <>
-            Start Creating Stories
+            Start Your Free Trial
             <ArrowRight className="w-5 h-5 ml-2" />
           </>
         )}
@@ -58,7 +58,7 @@ export default function AuthAwareCTA({ className = "btn-primary btn-xl group", c
     <button onClick={handleClick} className={className}>
       {children || (
         <>
-          {isAuthenticated ? 'Go to Dashboard' : 'Start Creating Stories'}
+          {isAuthenticated ? 'Go to Dashboard' : 'Start Your Free Trial'}
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </>
       )}

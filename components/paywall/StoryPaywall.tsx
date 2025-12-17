@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Sparkles, BookOpen, Check, Lock } from 'lucide-react'
-import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+import { Sparkles, BookOpen, Check, Lock, Shield } from 'lucide-react'
+import { PRICING_CONFIG, DISPLAY_PRICES } from '@/lib/config/pricing-config'
 
 interface StoryPaywallProps {
   storyId: string
@@ -46,13 +46,10 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
     try {
       setProcessingCheckout('subscription')
 
-      const response = await fetch('/api/stripe/create-checkout', {
+      // Use trial checkout endpoint for 7-day free trial
+      const response = await fetch('/api/stripe/create-trial-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tierId: PRICING_CONFIG.TIER_STORIES_PLUS,
-          billingPeriod: 'monthly',
-        }),
       })
 
       if (!response.ok) {
@@ -140,7 +137,7 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
             </button>
           </div>
 
-          {/* Subscription Option */}
+          {/* Subscription Option with Trial */}
           <div className="bg-gradient-to-br from-primary-50 to-sky-50 rounded-xl p-4 border-2 border-primary-300 relative">
             <div className="absolute -top-2 -right-2 bg-gradient-primary text-white text-xs font-bold px-2 py-0.5 rounded-full">
               Best Value
@@ -149,12 +146,18 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
               <Sparkles className="w-5 h-5 text-primary-600" />
               <span className="font-semibold text-gray-900">Stories Plus</span>
             </div>
-            <div className="mb-3">
+            <div className="mb-1">
+              <span className="text-gray-400 line-through text-sm mr-1">
+                {DISPLAY_PRICES.ORIGINAL_MONTHLY}
+              </span>
               <span className="text-2xl font-bold text-gray-900">
-                ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}
+                {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}
               </span>
               <span className="text-gray-500 text-sm ml-1">/month</span>
             </div>
+            <p className="text-primary-600 text-xs font-semibold mb-3">
+              {DISPLAY_PRICES.TRIAL_PERIOD}, then {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}/month
+            </p>
             <ul className="space-y-1 mb-4 text-sm text-gray-600">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />
@@ -162,7 +165,7 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />
-                All features included
+                Cancel anytime, no commitment
               </li>
             </ul>
             <button
@@ -176,10 +179,16 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
                   Processing...
                 </>
               ) : (
-                <>Subscribe & Unlock</>
+                <>Start Free Trial</>
               )}
             </button>
           </div>
+        </div>
+
+        {/* Guarantee badge */}
+        <div className="flex items-center justify-center gap-2 text-xs text-gray-600 mb-2">
+          <Shield className="w-4 h-4 text-green-600" />
+          <span>30-day satisfaction guarantee</span>
         </div>
 
         <p className="text-center text-xs text-gray-500">

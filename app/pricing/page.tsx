@@ -14,7 +14,7 @@ import {
   BookOpen,
   Loader2,
 } from 'lucide-react'
-import { PRICING_CONFIG } from '@/lib/config/pricing-config'
+import { PRICING_CONFIG, DISPLAY_PRICES } from '@/lib/config/pricing-config'
 
 export default function PricingPage() {
   const router = useRouter()
@@ -50,13 +50,10 @@ export default function PricingPage() {
     try {
       setProcessingCheckout('subscription')
 
-      const response = await fetch('/api/stripe/create-checkout', {
+      // Use trial checkout endpoint for 7-day free trial
+      const response = await fetch('/api/stripe/create-trial-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tierId: PRICING_CONFIG.TIER_STORIES_PLUS,
-          billingPeriod: 'monthly',
-        }),
       })
 
       if (!response.ok) {
@@ -121,13 +118,13 @@ export default function PricingPage() {
               Get Your First Free Illustrated Story on Us!
             </p>
             <p className="text-white/90 mb-4 text-sm md:text-base">
-              No credit card required • Start creating in minutes
+              7-day free trial • Cancel anytime
             </p>
             <Link
               href="/auth/signup"
               className="inline-flex items-center gap-2 bg-white text-primary-600 px-6 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors shadow-lg"
             >
-              Get Started Free
+              Start Your Free Trial
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -211,16 +208,22 @@ export default function PricingPage() {
                 </h2>
               </div>
 
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4">
                 For story-loving families
               </p>
 
-              <div className="mb-6">
+              <div className="mb-2">
+                <span className="text-gray-400 line-through text-lg mr-2">
+                  {DISPLAY_PRICES.ORIGINAL_MONTHLY}
+                </span>
                 <span className="text-5xl font-bold text-gray-900">
-                  ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}
+                  {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}
                 </span>
                 <span className="text-gray-500 ml-2">/month</span>
               </div>
+              <p className="text-primary-600 font-semibold mb-6">
+                {DISPLAY_PRICES.TRIAL_PERIOD}, then {DISPLAY_PRICES.SUBSCRIPTION_MONTHLY}/month
+              </p>
 
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
@@ -235,15 +238,15 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">All genres & writing styles</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700">Growth stories & life lessons</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Priority support</span>
+                  <span className="text-gray-700">Cancel anytime before day 7, pay nothing</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <span className="text-gray-700">30-day satisfaction guarantee</span>
                 </li>
               </ul>
 
@@ -258,7 +261,7 @@ export default function PricingPage() {
                     Processing...
                   </>
                 ) : (
-                  <>Subscribe Now</>
+                  <>Start Free Trial</>
                 )}
               </button>
             </div>
@@ -269,6 +272,21 @@ export default function PricingPage() {
             <p className="text-sm text-gray-500">
               At $14.99/month for 30 stories, that&apos;s just <strong>$0.50 per story</strong> vs $4.99 each!
             </p>
+          </div>
+
+          {/* Our Guarantee Section */}
+          <div className="mt-12 max-w-2xl mx-auto">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="w-8 h-8 text-green-600" />
+                <h3 className="font-display font-bold text-xl text-gray-900">Our Guarantee</h3>
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                We want you to love Tuck and Tale. If you&apos;re not completely satisfied within 30 days
+                of your first payment, and you&apos;ve created 3 or fewer stories, we&apos;ll give you a full
+                refund — no questions asked.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -340,7 +358,7 @@ export default function PricingPage() {
                   <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-6 text-gray-600 leading-relaxed">
-                  Yes! Your first illustrated story is completely free. No credit card required to start.
+                  Yes! Start with a 7-day free trial. Cancel anytime.
                   Create your account and generate your first personalized story right away.
                 </div>
               </details>
@@ -406,7 +424,7 @@ export default function PricingPage() {
                 Your first story is free!
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
-                Get Started Free
+                Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
               </div>
             </div>
