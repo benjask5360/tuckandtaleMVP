@@ -247,6 +247,9 @@ export class StoryCompletionService {
   /**
    * Determine paywall behavior based on user's story count and status
    * This is the core logic that determines what happens when a user tries to generate a story
+   *
+   * New model (2024): Users must have an active subscription (including 7-day free trial) to generate stories.
+   * No free stories without payment info on file.
    */
   static async getPaywallBehavior(
     userId: string,
@@ -255,7 +258,7 @@ export class StoryCompletionService {
     const status = await this.getUserStoryStatus(userId)
     const storyNumber = status.totalStoriesGenerated + 1
 
-    // Subscribers can always generate (limit checked separately by billing cycle service)
+    // Subscribers (including trialing) can generate (limit checked separately by billing cycle service)
     if (status.hasActiveSubscription) {
       return {
         storyNumber,
@@ -267,7 +270,7 @@ export class StoryCompletionService {
       }
     }
 
-    // Has generation credits from $4.99 purchase
+    // Has generation credits from $4.99 purchase - allow generation
     if (status.generationCredits > 0) {
       return {
         storyNumber,
@@ -279,61 +282,8 @@ export class StoryCompletionService {
       }
     }
 
-    // Story 1 with illustrations and trial not used: Free trial
-    if (storyNumber === 1 && includeIllustrations && !status.freeTrialUsed) {
-      return {
-        storyNumber,
-        behavior: 'free',
-        canGenerate: true,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialUsed: false,
-      }
-    }
-
-    // Story 1 without illustrations: Allow (counts toward total, doesn't use trial)
-    if (storyNumber === 1 && !includeIllustrations) {
-      return {
-        storyNumber,
-        behavior: 'free',
-        canGenerate: true,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialUsed: status.freeTrialUsed,
-      }
-    }
-
-    // Story 2 (or story 1 with illustrations after trial used): Generate, then show paywall
-    // Also applies if user is on story 2+ and their free trial wasn't used yet (they skipped illustrations)
-    if (storyNumber === 2 || (storyNumber === 1 && includeIllustrations && status.freeTrialUsed)) {
-      // Special case: If on story 1 but trial is used, this shouldn't happen in normal flow
-      // But handle it as story 2 behavior
-      return {
-        storyNumber,
-        behavior: 'generate_then_paywall',
-        canGenerate: true,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialUsed: status.freeTrialUsed,
-      }
-    }
-
-    // Story 3+: Check if they've unlocked this preview slot
-    const maxAllowedPreviewStory = 2 + status.purchasedStoryCount
-
-    if (storyNumber <= maxAllowedPreviewStory) {
-      // They've unlocked preview for this story slot
-      return {
-        storyNumber,
-        behavior: 'generate_then_paywall',
-        canGenerate: true,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialUsed: status.freeTrialUsed,
-      }
-    }
-
-    // Beyond their unlocked preview slots: paywall before generation
+    // Non-subscribers without credits must start a free trial to generate stories
+    // Show paywall before any generation
     return {
       storyNumber,
       behavior: 'paywall_before_generate',

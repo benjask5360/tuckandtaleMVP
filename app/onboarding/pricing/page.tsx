@@ -53,10 +53,6 @@ function OnboardingPricingContent() {
     }
   }
 
-  const handleSkip = () => {
-    window.location.href = '/dashboard'
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header - centered like auth pages */}
@@ -193,16 +189,6 @@ function OnboardingPricingContent() {
               </div>
             </div>
 
-            {/* Skip link */}
-            <div className="mt-8 text-center">
-              <button
-                onClick={handleSkip}
-                disabled={processingCheckout}
-                className="text-gray-500 hover:text-gray-700 text-sm transition-colors disabled:opacity-50"
-              >
-                Continue with limited access →
-              </button>
-            </div>
           </div>
         </div>
       </main>

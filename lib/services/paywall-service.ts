@@ -77,7 +77,10 @@ export class PaywallService {
   }
 
   /**
-   * Check if user must pay BEFORE generating (story 3+ case)
+   * Check if user must pay BEFORE generating
+   *
+   * New model (2024): Users must have an active subscription (including 7-day free trial)
+   * or generation credits to create stories. No free stories without payment info on file.
    */
   static async requiresPaywallBeforeGeneration(
     userId: string
@@ -85,57 +88,36 @@ export class PaywallService {
     const status = await StoryCompletionService.getUserStoryStatus(userId)
     const storyNumber = status.totalStoriesGenerated + 1
 
-    // Subscribers don't need paywall (but may hit 30/month limit - checked separately)
+    // Subscribers (including trialing) don't need paywall (but may hit 30/month limit - checked separately)
     if (status.hasActiveSubscription) {
       return {
         required: false,
         storyNumber,
         hasCredits: false,
         hasSubscription: true,
-        freeTrialAvailable: !status.freeTrialUsed,
+        freeTrialAvailable: false, // Already on trial or subscribed
       }
     }
 
-    // Has generation credits
+    // Has generation credits - allow generation
     if (status.generationCredits > 0) {
       return {
         required: false,
         storyNumber,
         hasCredits: true,
         hasSubscription: false,
-        freeTrialAvailable: !status.freeTrialUsed,
+        freeTrialAvailable: true,
       }
     }
 
-    // Story 1: No paywall needed (free trial or text-only allowed)
-    if (storyNumber === 1) {
-      return {
-        required: false,
-        storyNumber,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialAvailable: !status.freeTrialUsed,
-      }
-    }
-
-    // Story 2: No pre-generation paywall (paywall shown after generation)
-    if (storyNumber === 2) {
-      return {
-        required: false,
-        storyNumber,
-        hasCredits: false,
-        hasSubscription: false,
-        freeTrialAvailable: !status.freeTrialUsed,
-      }
-    }
-
-    // Story 3+: Paywall required before generation
+    // Non-subscribers without credits: Paywall required before any generation
+    // User must start free trial to create stories
     return {
       required: true,
       storyNumber,
       hasCredits: false,
       hasSubscription: false,
-      freeTrialAvailable: !status.freeTrialUsed,
+      freeTrialAvailable: true,
     }
   }
 

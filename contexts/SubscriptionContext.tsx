@@ -169,22 +169,12 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const canGenerateStory = (): boolean => {
     if (state.loading) return false
 
-    // Subscribers can generate if they have remaining stories
+    // Only users with active subscription (including trialing) can generate stories
     if (state.hasActiveSubscription) {
       return state.storiesRemaining > 0
     }
 
-    // Non-subscribers: check paywall rules
-    // Has generation credits
-    if (state.generationCredits > 0) return true
-
-    // Story #1 with unused trial
-    if (state.storyNumber === 1 && !state.freeTrialUsed) return true
-
-    // Story #2 (generate then paywall)
-    if (state.storyNumber === 2) return true
-
-    // Story #3+ requires payment
+    // Non-subscribers cannot generate stories - must start free trial
     return false
   }
 
@@ -198,19 +188,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       return `${state.storiesRemaining} of ${state.monthlyLimit} stories remaining this month`
     }
 
-    if (state.generationCredits > 0) {
-      return `${state.generationCredits} story credit${state.generationCredits === 1 ? '' : 's'} available`
-    }
-
-    if (state.totalStoriesGenerated === 0 && !state.freeTrialUsed) {
-      return 'Your first illustrated story is free!'
-    }
-
-    if (state.totalStoriesGenerated === 1) {
-      return 'Create one more story to try our service'
-    }
-
-    return 'Subscribe for more stories'
+    // Non-subscribers need to start free trial
+    return 'Start your free trial to create stories'
   }
 
   const value: SubscriptionContextType = {

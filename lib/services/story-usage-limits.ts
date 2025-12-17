@@ -1,12 +1,12 @@
 /**
  * Story Usage Limits Service
- * Manages story generation limits for the new hybrid pricing model
+ * Manages story generation limits for the subscription-first pricing model
  *
- * New model:
- * - Free trial: First illustrated story free
- * - Story #2: Generate then paywall
- * - Story #3+: Paywall before generation
- * - Subscribers: 30 stories per billing cycle
+ * Current model (2024):
+ * - Users must start 7-day free trial (with CC) or subscribe to generate stories
+ * - Subscribers: Up to 30 stories per billing cycle
+ * - Generation credits: Available via single-story purchases ($4.99)
+ * - No free stories without payment info on file
  */
 
 import { StoryCompletionService, type PaywallBehaviorResult } from './story-completion'
@@ -214,14 +214,7 @@ export class StoryUsageLimitsService {
       return `${stats.generationCredits} story credit${stats.generationCredits === 1 ? '' : 's'} available`
     }
 
-    if (stats.totalStoriesGenerated === 0 && !stats.freeTrialUsed) {
-      return 'Your first illustrated story is free!'
-    }
-
-    if (stats.totalStoriesGenerated === 1) {
-      return 'Create one more story to try our service'
-    }
-
-    return 'Subscribe for more stories'
+    // Non-subscribers must start free trial to create stories
+    return 'Start your free trial to create stories'
   }
 }

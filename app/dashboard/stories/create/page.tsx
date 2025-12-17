@@ -284,15 +284,6 @@ function CreateStoryContent() {
                   </div>
                 )}
 
-                {/* Free trial indicator */}
-                {!paywallStatus?.hasActiveSubscription && paywallStatus?.freeTrialAvailable && paywallStatus?.storyNumber === 1 && (
-                  <div className="mt-4 p-3 bg-gradient-to-r from-primary-50 to-sky-50 border border-primary-200 rounded-lg">
-                    <p className="text-sm text-primary-700 font-medium">
-                      Your first illustrated story is free!
-                    </p>
-                  </div>
-                )}
-
                 {/* Generation credits indicator */}
                 {!paywallStatus?.hasActiveSubscription && (paywallStatus?.generationCredits ?? 0) > 0 && (
                   <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
