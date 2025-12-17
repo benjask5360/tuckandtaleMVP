@@ -161,12 +161,12 @@ export default async function DashboardPage() {
           ) : (
             <Link
               href="/onboarding/pricing"
-              className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center hover:opacity-90 transition-opacity cursor-pointer"
+              className="group inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-5 md:px-6 py-2.5 md:py-3 badge-primary text-sm md:text-base shadow-blue-glow text-center hover:scale-105 hover:shadow-xl transition-all duration-200 cursor-pointer"
             >
               <span className="font-semibold">{subscriptionTierName}</span>
               <span className="hidden sm:inline">•</span>
-              <span className="text-xs sm:text-sm md:text-base">
-                {getUsageMessage()}
+              <span className="text-xs sm:text-sm md:text-base group-hover:underline">
+                {getUsageMessage()} →
               </span>
             </Link>
           )}
