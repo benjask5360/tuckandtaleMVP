@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       },
       custom_text: {
         submit: {
-          message: '🛡️ 30-Day Satisfaction Guarantee — Not loving it? Get a full refund if you\'ve created 3 or fewer stories. No questions asked.',
+          message: '🛡️ 30-Day Satisfaction Guarantee — Not loving it? Get a full refund if you\'ve created 3 or fewer stories total. No questions asked.',
         },
       },
       allow_promotion_codes: true,

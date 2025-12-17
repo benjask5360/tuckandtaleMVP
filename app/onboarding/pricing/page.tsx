@@ -180,13 +180,19 @@ function OnboardingPricingContent() {
                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-green-600" />
                 </div>
-                <span className="text-gray-700">Unlimited access to Fun + Growth stories</span>
+                <span className="text-gray-700">Up to <strong>30 personalized stories</strong> per month</span>
               </div>
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                   <Check className="w-4 h-4 text-green-600" />
                 </div>
-                <span className="text-gray-700">Full illustrations on every story</span>
+                <span className="text-gray-700">Beautiful personalized illustrations</span>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                  <Check className="w-4 h-4 text-green-600" />
+                </div>
+                <span className="text-gray-700">Growth stories & life lessons</span>
               </div>
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">

@@ -149,13 +149,11 @@ export default function PricingPage() {
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">
-                    <strong>{PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories</strong> per month
-                  </span>
+                  <span className="text-gray-700">Up to <strong>30 personalized stories</strong> per month</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-700">Full illustrations on every story</span>
+                  <span className="text-gray-700">Beautiful personalized illustrations</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
@@ -166,7 +164,7 @@ export default function PricingPage() {
                   <span className="text-gray-700">Cancel anytime before day 7, pay nothing</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <span className="text-gray-700">30-day satisfaction guarantee</span>
                 </li>
               </ul>
@@ -225,9 +223,7 @@ export default function PricingPage() {
                 <h3 className="font-display font-bold text-xl text-gray-900">Our Guarantee</h3>
               </div>
               <p className="text-gray-700 leading-relaxed">
-                We want you to love Tuck and Tale. If you&apos;re not completely satisfied within 30 days
-                of your first payment, and you&apos;ve created 3 or fewer stories, we&apos;ll give you a full
-                refund — no questions asked.
+                We want you to love Tuck and Tale. If you&apos;re not completely satisfied within 30 days of your first payment, and you&apos;ve created 3 or fewer stories total, we&apos;ll give you a full refund — no questions asked.
               </p>
             </div>
           </div>

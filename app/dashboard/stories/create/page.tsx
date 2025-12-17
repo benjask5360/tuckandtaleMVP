@@ -243,8 +243,8 @@ function CreateStoryContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="w-full max-w-3xl">
         {/* Success message for credit purchase */}
         {justPurchasedCredit && (
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700">
@@ -252,58 +252,52 @@ function CreateStoryContent() {
           </div>
         )}
 
-        {/* Header */}
-        <div className="mb-4 md:mb-6">
-          <Link
-            href="/dashboard/story-library"
-            className="inline-flex items-center gap-2 text-primary-600 active:text-primary-700 md:hover:text-primary-700 font-semibold mb-4 md:mb-6 min-h-[44px] transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-            Back to Story Library
-          </Link>
-
-          <div className="card p-6 md:p-8">
-            <div className="flex items-start gap-3">
-              <Sparkles className="w-8 h-8 text-primary-600 flex-shrink-0 mt-1" />
-              <div className="flex-grow">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-2">
-                  Create a New Story
-                </h1>
-                <p className="text-base md:text-lg text-gray-600">
-                  Generate a personalized story for your child
-                </p>
-
-                {/* Usage counter for subscribers */}
-                {paywallStatus?.hasActiveSubscription && (
-                  <div className="mt-4">
-                    <StoryUsageCounter
-                      storiesUsed={paywallStatus.storiesUsedThisMonth}
-                      storiesLimit={paywallStatus.monthlyLimit}
-                      daysUntilReset={paywallStatus.daysUntilReset}
-                    />
-                  </div>
-                )}
-
-                {/* Generation credits indicator */}
-                {!paywallStatus?.hasActiveSubscription && (paywallStatus?.generationCredits ?? 0) > 0 && (
-                  <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-700 font-medium">
-                      {paywallStatus?.generationCredits} story {paywallStatus?.generationCredits === 1 ? 'credit' : 'credits'} available
-                    </p>
-                  </div>
-                )}
-              </div>
+        <div className="card p-6 md:p-8 lg:p-10">
+          {/* Header */}
+          <div className="text-center mb-6 md:mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-primary rounded-2xl mb-4">
+              <Sparkles className="w-8 h-8 text-white" />
             </div>
-          </div>
-        </div>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-3">
+              Create a New Story
+            </h1>
+            <p className="text-base md:text-lg text-gray-600">
+              Generate a personalized story for your child
+            </p>
 
-        {/* Form */}
-        <div className="card p-6 md:p-8">
+            {/* Usage counter for subscribers */}
+            {paywallStatus?.hasActiveSubscription && (
+              <div className="mt-4 flex justify-center">
+                <StoryUsageCounter
+                  storiesUsed={paywallStatus.storiesUsedThisMonth}
+                  storiesLimit={paywallStatus.monthlyLimit}
+                  daysUntilReset={paywallStatus.daysUntilReset}
+                />
+              </div>
+            )}
+
+            {/* Generation credits indicator */}
+            {!paywallStatus?.hasActiveSubscription && (paywallStatus?.generationCredits ?? 0) > 0 && (
+              <div className="mt-4 inline-block p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-700 font-medium">
+                  {paywallStatus?.generationCredits} story {paywallStatus?.generationCredits === 1 ? 'credit' : 'credits'} available
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Form */}
           <StoryGenerationForm
             childProfiles={childProfiles}
             paywallStatus={paywallStatus || undefined}
           />
         </div>
+
+        <p className="text-center text-sm text-neutral-500 mt-6">
+          <Link href="/dashboard/story-library" className="text-primary-600 hover:text-primary-700 font-medium">
+            ← Back to Story Library
+          </Link>
+        </p>
       </div>
     </div>
   )

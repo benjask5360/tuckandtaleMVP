@@ -87,7 +87,7 @@ export default function TermsPage() {
               </p>
               <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Satisfaction Guarantee</p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Paid subscribers may request a full refund within 30 days of their first paid charge if they have created 3 or fewer stories after the trial period. To request a refund, contact us through our contact form. Refunds are processed within 5-7 business days to your original payment method. After 30 days, or once a 4th story has been created, refunds are no longer available. You may cancel anytime, and your subscription will remain active until the end of your current billing period.
+                Paid subscribers may request a full refund within 30 days of their first paid charge if they have created 3 or fewer stories total (including during the trial period). To request a refund, contact us through our contact form. Refunds are processed within 5-7 business days to your original payment method. After 30 days, or once a 4th story has been created, refunds are no longer available. You may cancel anytime, and your subscription will remain active until the end of your current billing period.
               </p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">5. Acceptable Use</h2>

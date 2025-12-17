@@ -100,13 +100,19 @@ export default function PreGenerationPaywall({
               <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-gray-700">Up to {PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} personalized stories per month</span>
+              <span className="text-gray-700">Up to <strong>{PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} personalized stories</strong> per month</span>
             </div>
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
                 <Check className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-gray-700">Beautiful custom illustrations</span>
+              <span className="text-gray-700">Beautiful personalized illustrations</span>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
+                <Check className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-gray-700">Growth stories & life lessons</span>
             </div>
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
@@ -116,7 +122,7 @@ export default function PreGenerationPaywall({
             </div>
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-                <Shield className="w-4 h-4 text-green-600" />
+                <Check className="w-4 h-4 text-green-600" />
               </div>
               <span className="text-gray-700">30-day satisfaction guarantee</span>
             </div>
