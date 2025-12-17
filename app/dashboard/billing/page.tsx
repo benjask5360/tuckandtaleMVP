@@ -142,13 +142,15 @@ function BillingPageContent() {
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     subscriptionStatus === 'active'
                       ? 'bg-green-100 text-green-700'
+                      : subscriptionStatus === 'trialing'
+                      ? 'bg-blue-100 text-blue-700'
                       : subscriptionStatus === 'past_due'
                       ? 'bg-yellow-100 text-yellow-700'
                       : subscriptionStatus === 'canceled'
                       ? 'bg-red-100 text-red-700'
                       : 'bg-gray-100 text-gray-700'
                   }`}>
-                    {subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
+                    {subscriptionStatus === 'trialing' ? 'Free Trial' : subscriptionStatus.charAt(0).toUpperCase() + subscriptionStatus.slice(1)}
                   </span>
                 )}
               </div>
@@ -194,12 +196,12 @@ function BillingPageContent() {
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700">
-                        {PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories per month
+                        Up to {PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} stories per month
                       </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700">Full illustrations on every story</span>
+                      <span className="text-gray-700">Personalized illustrations</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
@@ -237,13 +239,15 @@ function BillingPageContent() {
 
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                {hasActiveSubscription ? 'Usage This Month' : 'Story Credits'}
+                {hasActiveSubscription
+                  ? (subscriptionStatus === 'trialing' ? 'Trial Usage' : 'Usage This Month')
+                  : 'Story Credits'}
               </h3>
               {hasActiveSubscription ? (
                 <StoryUsageCounter
                   storiesUsed={storiesUsedThisMonth}
                   storiesLimit={monthlyLimit}
-                  daysUntilReset={daysUntilReset}
+                  daysUntilReset={subscriptionStatus === 'trialing' ? null : daysUntilReset}
                   variant="detailed"
                 />
               ) : (
@@ -270,13 +274,33 @@ function BillingPageContent() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Billing Details</h2>
 
             <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                <Calendar className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              {/* Trial-specific messaging */}
+              {subscriptionStatus === 'trialing' && (
+                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <Sparkles className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-blue-900">You&apos;re on a Free Trial</p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Enjoy full access to Stories Plus during your 7-day trial. You won&apos;t be charged until your trial ends.
+                      Cancel anytime before your trial ends to avoid being charged.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                <Calendar className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-gray-900">Billing Cycle</p>
+                  <p className="font-medium text-gray-900">
+                    {subscriptionStatus === 'trialing' ? 'After Trial' : 'Billing Cycle'}
+                  </p>
                   <p className="text-sm text-gray-600 mt-1">
-                    Your subscription renews automatically at ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}/month.
-                    {daysUntilReset !== null && (
+                    {subscriptionStatus === 'trialing' ? (
+                      <>Your subscription will renew at ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}/month after your trial ends.</>
+                    ) : (
+                      <>Your subscription renews automatically at ${(PRICING_CONFIG.SUBSCRIPTION_PRICE_CENTS / 100).toFixed(2)}/month.</>
+                    )}
+                    {daysUntilReset !== null && subscriptionStatus !== 'trialing' && (
                       <> Your story limit resets in {daysUntilReset} day{daysUntilReset !== 1 ? 's' : ''}.</>
                     )}
                   </p>
@@ -295,7 +319,7 @@ function BillingPageContent() {
                   </>
                 ) : (
                   <>
-                    <span>View Payment Methods & Invoices</span>
+                    <span>{subscriptionStatus === 'trialing' ? 'Manage Subscription' : 'View Payment Methods & Invoices'}</span>
                     <ExternalLink className="w-5 h-5" />
                   </>
                 )}
@@ -333,11 +357,11 @@ function BillingPageContent() {
             Have questions about your subscription or billing?
           </p>
           <a
-            href="mailto:support@tuckandtale.com"
+            href="/contact"
             className="text-primary-600 hover:text-primary-700 font-semibold text-sm inline-flex items-center gap-1"
           >
             Contact Support
-            <ExternalLink className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" />
           </a>
         </div>
       </div>

@@ -35,7 +35,8 @@
       "Bash(vercel logs:*)",
       "Bash(vercel ls:*)",
       "Bash(vercel login)",
-      "Bash(vercel whoami:*)"
+      "Bash(vercel whoami:*)",
+      "Bash(stripe:*)"
     ],
     "deny": [],
     "ask": []

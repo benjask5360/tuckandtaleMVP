@@ -86,8 +86,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
       if (profileError) throw profileError
 
+      // Treat both 'active' and 'trialing' as having an active subscription
       const hasActiveSubscription =
-        profile?.subscription_status === 'active' &&
+        (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') &&
         profile?.subscription_tier_id === PRICING_CONFIG.TIER_STORIES_PLUS
 
       const subscriptionTier = hasActiveSubscription ? 'stories_plus' : 'free'
