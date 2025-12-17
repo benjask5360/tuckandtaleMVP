@@ -30,7 +30,7 @@ export default function TermsPage() {
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 md:p-12">
             <div className="prose prose-lg max-w-none">
-              <p className="text-sm text-gray-500 mb-8">Last Updated: January 2025</p>
+              <p className="text-sm text-gray-500 mb-8">Last Updated: December 2025</p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">1. Acceptance of Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -95,6 +95,7 @@ export default function TermsPage() {
                 <li>Attempt to reverse-engineer the Service or its models</li>
                 <li>Share account access, resell features, or misuse generated content</li>
                 <li>Use the Service to create harmful, unsafe, or adult content</li>
+                <li>Use generated content to train, develop, or improve any artificial intelligence or machine learning system</li>
               </ul>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We reserve the right to remove content or suspend accounts that violate these rules.
@@ -110,7 +111,7 @@ export default function TermsPage() {
                 You retain ownership of the information you provide (e.g., names, descriptions, preferences).
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
-                By using the Service, you grant us a license to use this data solely to operate, personalize, and improve the Service.
+                By using the Service, you grant us a license to use this data to operate, personalize, improve, and promote the Service, including the use of anonymized or aggregated content for marketing purposes.
               </p>
               <p className="text-gray-700 leading-relaxed mb-2 font-semibold">Generated Stories & Illustrations</p>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -156,7 +157,12 @@ export default function TermsPage() {
                 <li>This includes—but is not limited to—loss of data, loss of profits, service interruptions, or content issues.</li>
               </ul>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">10. Termination</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">10. Indemnification</h2>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                You agree to indemnify, defend, and hold harmless Tuck and Tale, NovaPoint AI LLC, and their officers, employees, and agents from any claims, damages, losses, or expenses (including reasonable attorney's fees) arising from your use of the Service, your violation of these Terms, or your infringement of any third-party rights.
+              </p>
+
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">11. Termination</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We may suspend or terminate your account—without refund—if:
               </p>
@@ -169,7 +175,7 @@ export default function TermsPage() {
                 You may also delete your account at any time.
               </p>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">11. Changes to These Terms</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">12. Changes to These Terms</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We may update these Terms periodically. When we do:
               </p>
@@ -179,13 +185,12 @@ export default function TermsPage() {
                 <li>By continuing to use the Service after changes take effect, you agree to the updated Terms.</li>
               </ul>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">12. Governing Law</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">13. Governing Law</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                These Terms are governed by the laws of the United States.
-                If a dispute arises, it will be handled in the state or federal courts located in the United States, unless otherwise required by local law.
+                These Terms are governed by the laws of the Commonwealth of Virginia, without regard to conflict of law principles. Any disputes arising from these Terms or your use of the Service shall be resolved in the state or federal courts located in Virginia, and you consent to the personal jurisdiction of such courts.
               </p>
 
-              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">13. Contact Information</h2>
+              <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">14. Contact Information</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 If you have any questions about these Terms, please use our contact form to get in touch.
               </p>

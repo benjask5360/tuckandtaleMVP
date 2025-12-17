@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8 md:p-12">
             <div className="prose prose-lg max-w-none">
-              <p className="text-sm text-gray-500 mb-8">Last Updated: January 2025</p>
+              <p className="text-sm text-gray-500 mb-8">Last Updated: December 2025</p>
 
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">1. Introduction</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
@@ -103,6 +103,7 @@ export default function PrivacyPage() {
                 <li><span className="font-semibold">Legal Requirements:</span> If required to comply with laws, court orders, or government requests.</li>
                 <li><span className="font-semibold">Protection & Safety:</span> To protect the rights, property, or safety of Tuck and Tale, our users, or the public.</li>
                 <li><span className="font-semibold">Business Transitions:</span> In the event of a merger, acquisition, or sale, your information may be transferred to the new entity—but your privacy protections will remain.</li>
+                <li><span className="font-semibold">AI Service Providers:</span> To generate personalized stories, we share profile information (such as your child's name, age, and interests) with trusted AI providers. We select providers with policies that prohibit using customer data for model training, and we configure our accounts to opt out of data retention where available.</li>
               </ul>
               <p className="text-gray-700 leading-relaxed mb-4">
                 We do not allow third parties to use your data for their own marketing purposes.
@@ -166,6 +167,9 @@ export default function PrivacyPage() {
               <h2 className="font-display font-bold text-2xl text-gray-900 mt-8 mb-4">10. Contact Us</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 If you have any questions about this Privacy Policy or our privacy practices, please use our contact form to get in touch.
+              </p>
+              <p className="text-gray-700 leading-relaxed mb-4">
+                This Privacy Policy is governed by the laws of the Commonwealth of Virginia.
               </p>
               <div className="mt-6">
                 <Link
