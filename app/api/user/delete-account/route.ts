@@ -96,8 +96,8 @@ export async function DELETE() {
           apiVersion: '2025-10-29.clover',
         });
 
-        // Cancel active subscription
-        if (profile.stripe_subscription_id && profile.subscription_status === 'active') {
+        // Cancel active or trialing subscription
+        if (profile.stripe_subscription_id && (profile.subscription_status === 'active' || profile.subscription_status === 'trialing')) {
           try {
             await stripe.subscriptions.cancel(profile.stripe_subscription_id);
             console.log(`Canceled Stripe subscription: ${profile.stripe_subscription_id}`);
@@ -311,7 +311,7 @@ export async function DELETE() {
           deletion_type: 'user_requested',
           deleted_by: null, // Self-service deletion
           stripe_customer_id: profile.stripe_customer_id,
-          had_active_subscription: profile.subscription_status === 'active',
+          had_active_subscription: profile.subscription_status === 'active' || profile.subscription_status === 'trialing',
           metadata: {
             num_characters: numCharacters || 0,
             num_stories: numStories || 0,
@@ -353,7 +353,7 @@ export async function DELETE() {
           deletion_type: 'failed',
           deleted_by: null,
           stripe_customer_id: profile.stripe_customer_id,
-          had_active_subscription: profile.subscription_status === 'active',
+          had_active_subscription: profile.subscription_status === 'active' || profile.subscription_status === 'trialing',
           metadata: {
             failure_reason: `Auth deletion failed: ${deleteAuthError}`,
             partial_completion: true,
