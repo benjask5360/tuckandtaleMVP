@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Check, Sparkles, Shield, Clock, ArrowRight } from 'lucide-react'
+import { Check, Sparkles, Shield, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { DISPLAY_PRICES, PRICING_CONFIG } from '@/lib/config/pricing-config'
+import { DISPLAY_PRICES } from '@/lib/config/pricing-config'
 
-export default function OnboardingPricing() {
+function OnboardingPricingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [processingCheckout, setProcessingCheckout] = useState(false)
@@ -207,5 +207,23 @@ export default function OnboardingPricing() {
         </div>
       </main>
     </div>
+  )
+}
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+    </div>
+  )
+}
+
+// Main export with Suspense boundary
+export default function OnboardingPricing() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <OnboardingPricingContent />
+    </Suspense>
   )
 }
