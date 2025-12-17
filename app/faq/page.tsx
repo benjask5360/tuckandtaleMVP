@@ -23,7 +23,7 @@ export default function FAQPage() {
     },
     {
       question: 'How many stories can I create?',
-      answer: 'Your first illustrated story is completely free! After that, you can choose between our monthly subscription or purchase stories individually. Visit our pricing page to see which option works best for your family.'
+      answer: 'You can create up to 30 stories per month. Start with a 7-day free trial to experience the full product.'
     },
     {
       question: 'Can I include more than one child in a story?',
@@ -43,7 +43,7 @@ export default function FAQPage() {
     },
     {
       question: 'Is there a free trial?',
-      answer: 'Yes! Start with a 7-day free trial. Cancel anytime. It\'s the perfect way to experience the magic of personalized storytelling. Visit our pricing page to explore subscription and individual purchase options.'
+      answer: 'Yes! Get 7 days free with access to up to 30 stories. Cancel anytime before your trial ends and you won\'t be charged.'
     },
     {
       question: 'Can I cancel my subscription?',
