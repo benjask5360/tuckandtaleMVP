@@ -75,11 +75,6 @@ function SignupForm() {
       return
     }
 
-    // Fire Meta Pixel Lead event - user created account
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('track', 'Lead')
-    }
-
     // Notify admin of new signup (non-blocking)
     fetch('/api/notify-admin-signup', {
       method: 'POST',
