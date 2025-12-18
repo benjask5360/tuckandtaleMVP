@@ -161,7 +161,7 @@ export default function StoryPaywall({ storyId, storyTitle }: StoryPaywallProps)
             <ul className="space-y-1 mb-4 text-sm text-gray-600">
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />
-                <strong>{PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} personalized stories</strong>/month
+                <span>Up to <strong>{PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT} personalized stories</strong> per month</span>
               </li>
               <li className="flex items-center gap-2">
                 <Check className="w-4 h-4 text-green-600" />

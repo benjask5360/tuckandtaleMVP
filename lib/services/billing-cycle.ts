@@ -54,33 +54,34 @@ export class BillingCycleService {
    */
   static calculateBillingCycle(subscriptionStartsAt: Date, useExactTimestamp: boolean = false): BillingCycle {
     const now = new Date()
-    const anchorDay = subscriptionStartsAt.getDate()
+    // Use UTC day from subscription to avoid timezone issues
+    const anchorDay = subscriptionStartsAt.getUTCDate()
 
-    // Find the most recent occurrence of the anchor day
-    let cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+    // Find the most recent occurrence of the anchor day (in UTC)
+    let cycleStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), anchorDay))
 
     // If anchor day hasn't happened this month yet, go back one month
     if (cycleStart > now) {
-      cycleStart.setMonth(cycleStart.getMonth() - 1)
+      cycleStart.setUTCMonth(cycleStart.getUTCMonth() - 1)
     }
 
     // Handle edge case: anchor day doesn't exist in month (e.g., 31st in February)
     // JavaScript automatically rolls over to next month, so we need to check
-    if (cycleStart.getDate() !== anchorDay) {
+    if (cycleStart.getUTCDate() !== anchorDay) {
       // Roll back to last day of the intended month
       // First, go to the first of next month, then subtract a day
-      const intendedMonth = cycleStart.getMonth()
-      cycleStart = new Date(cycleStart.getFullYear(), intendedMonth + 1, 0)
+      const intendedMonth = cycleStart.getUTCMonth()
+      cycleStart = new Date(Date.UTC(cycleStart.getUTCFullYear(), intendedMonth + 1, 0))
     }
 
-    // Set time to start of day
-    cycleStart.setHours(0, 0, 0, 0)
+    // Set time to start of day (UTC)
+    cycleStart.setUTCHours(0, 0, 0, 0)
 
     // For the FIRST billing cycle (same month/year as subscription start),
     // use the exact subscription timestamp so pre-subscription stories don't count
     if (useExactTimestamp) {
       const subStartMidnight = new Date(subscriptionStartsAt)
-      subStartMidnight.setHours(0, 0, 0, 0)
+      subStartMidnight.setUTCHours(0, 0, 0, 0)
 
       // Check if we're still in the first billing cycle
       // (cycleStart matches the subscription start date)
@@ -90,18 +91,18 @@ export class BillingCycleService {
       }
     }
 
-    // Calculate cycle end (one month after the anchor day at midnight)
-    const cycleEnd = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+    // Calculate cycle end (one month after the anchor day at midnight UTC)
+    const cycleEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), anchorDay))
     if (cycleEnd <= now) {
-      cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+      cycleEnd.setUTCMonth(cycleEnd.getUTCMonth() + 1)
     }
 
     // Handle end-of-month edge case for cycle end
-    if (cycleEnd.getDate() !== anchorDay) {
+    if (cycleEnd.getUTCDate() !== anchorDay) {
       // Roll to last day of the month
-      const intendedMonth = cycleEnd.getMonth()
-      cycleEnd.setDate(0)
-      cycleEnd.setMonth(intendedMonth)
+      const intendedMonth = cycleEnd.getUTCMonth()
+      cycleEnd.setUTCDate(0)
+      cycleEnd.setUTCMonth(intendedMonth)
     }
 
     // Calculate days remaining
@@ -127,6 +128,10 @@ export class BillingCycleService {
 
     const supabase = await createClient()
 
+    // Debug logging
+    console.log('[BILLING DEBUG] Cycle start:', cycle.cycleStart.toISOString())
+    console.log('[BILLING DEBUG] Cycle end:', cycle.cycleEnd.toISOString())
+
     const { count, error } = await supabase
       .from('content')
       .select('*', { count: 'exact', head: true })
@@ -141,6 +146,8 @@ export class BillingCycleService {
       console.error('Error counting stories in cycle:', error)
       return 0
     }
+
+    console.log('[BILLING DEBUG] Stories found in cycle:', count)
 
     return count || 0
   }

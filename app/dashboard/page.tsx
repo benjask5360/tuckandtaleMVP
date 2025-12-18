@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 import StoryUsageCounter from '@/components/subscription/StoryUsageCounter'
 import MetaPixelStartTrial from '@/components/MetaPixelSubscribe'
+import { BillingCycleService } from '@/lib/services/billing-cycle'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -51,39 +52,18 @@ export default async function DashboardPage() {
   // Get first name from full_name
   const firstName = userProfile?.full_name?.split(' ')[0] || 'there'
 
-  // Calculate billing cycle usage for subscribers
+  // Calculate billing cycle usage for subscribers using shared service
   let storiesUsedThisMonth = 0
   let storiesRemaining = 0
   let daysUntilReset: number | null = null
 
-  if (hasActiveSubscription && userProfile?.subscription_starts_at) {
-    // Calculate billing cycle
-    const now = new Date()
-    const subscriptionStart = new Date(userProfile.subscription_starts_at)
-    const anchorDay = subscriptionStart.getDate()
+  if (hasActiveSubscription) {
+    const cycleUsage = await BillingCycleService.hasStoriesRemaining(user.id)
+    const cycleInfo = await BillingCycleService.getCurrentBillingCycle(user.id)
 
-    const cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
-    if (cycleStart > now) {
-      cycleStart.setMonth(cycleStart.getMonth() - 1)
-    }
-
-    const cycleEnd = new Date(cycleStart)
-    cycleEnd.setMonth(cycleEnd.getMonth() + 1)
-
-    // Count stories created in current billing cycle
-    const { count } = await supabase
-      .from('content')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('content_type', 'story')
-      .gte('created_at', cycleStart.toISOString())
-      .lt('created_at', cycleEnd.toISOString())
-
-    storiesUsedThisMonth = count || 0
-    storiesRemaining = Math.max(0, PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT - storiesUsedThisMonth)
-
-    const msPerDay = 24 * 60 * 60 * 1000
-    daysUntilReset = Math.ceil((cycleEnd.getTime() - now.getTime()) / msPerDay)
+    storiesUsedThisMonth = cycleUsage.used
+    storiesRemaining = cycleUsage.remaining
+    daysUntilReset = cycleInfo?.daysRemaining ?? null
   }
 
   // Fetch all characters with avatar images
