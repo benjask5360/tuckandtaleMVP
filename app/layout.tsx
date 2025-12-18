@@ -26,17 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <noscript>
-          <img
-            height="1"
-            width="1"
-            style={{ display: 'none' }}
-            src="https://www.facebook.com/tr?id=4311108522501340&ev=PageView&noscript=1"
-            alt=""
-          />
-        </noscript>
-      </head>
+      <head></head>
       <body className={`${inter.className} ${playfair.variable}`}>
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
