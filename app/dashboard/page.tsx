@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { PRICING_CONFIG } from '@/lib/config/pricing-config'
 import StoryUsageCounter from '@/components/subscription/StoryUsageCounter'
-import MetaPixelSubscribe from '@/components/MetaPixelSubscribe'
+import MetaPixelStartTrial from '@/components/MetaPixelSubscribe'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -129,9 +129,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Meta Pixel Subscribe event tracker */}
+      {/* Meta Pixel StartTrial event tracker */}
       <Suspense fallback={null}>
-        <MetaPixelSubscribe />
+        <MetaPixelStartTrial />
       </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 md:py-6">

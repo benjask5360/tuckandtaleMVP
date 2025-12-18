@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Check, Sparkles, Shield, Clock, ArrowRight, Loader2 } from 'lucide-react'
@@ -21,6 +21,17 @@ function OnboardingPricingContent() {
   const [characters, setCharacters] = useState<Character[]>([])
   const [loadingCharacters, setLoadingCharacters] = useState(true)
   const canceled = searchParams.get('canceled')
+  const completeRegistrationFired = useRef(false)
+
+  // Fire CompleteRegistration pixel when user lands on pricing page (finished onboarding)
+  useEffect(() => {
+    if (!completeRegistrationFired.current) {
+      completeRegistrationFired.current = true
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'CompleteRegistration')
+      }
+    }
+  }, [])
 
   // Check if user is authenticated and fetch characters
   useEffect(() => {
@@ -128,25 +139,25 @@ function OnboardingPricingContent() {
 
               {/* Character Avatars */}
               {!loadingCharacters && characters.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-3 mt-5">
+                <div className="flex flex-wrap justify-center gap-6 mt-6">
                   {characters.map((char) => (
-                    <div key={char.id} className="flex flex-col items-center w-16">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border-2 border-primary-200 bg-white shadow-sm">
+                    <div key={char.id} className="flex flex-col items-center w-28">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-primary-200 bg-white shadow-md">
                         {char.avatar_url ? (
                           <Image
                             src={char.avatar_url}
                             alt={char.name}
-                            width={64}
-                            height={64}
+                            width={112}
+                            height={112}
                             className="w-full h-full object-contain"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-xl bg-gradient-to-br from-primary-100 to-sky-100">
+                          <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-primary-100 to-sky-100">
                             {char.name.charAt(0).toUpperCase()}
                           </div>
                         )}
                       </div>
-                      <span className="text-xs text-gray-600 mt-1 font-medium truncate w-full text-center">{char.name}</span>
+                      <span className="text-sm text-gray-600 mt-2 font-medium truncate w-full text-center">{char.name}</span>
                     </div>
                   ))}
                 </div>

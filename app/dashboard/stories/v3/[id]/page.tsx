@@ -57,14 +57,16 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
   // Track if Purchase pixel has been fired to prevent duplicates
   const purchasePixelFired = useRef(false)
 
-  // Fire Meta Pixel Purchase event when story is unlocked via payment
+  // DISABLED: Single story Purchase pixel - keeping code dormant for potential future use
+  // Purchase events now tracked via Stripe webhook for subscription conversions
   useEffect(() => {
     const justUnlocked = searchParams.get('unlocked') === 'true'
     if (justUnlocked && !purchasePixelFired.current) {
       purchasePixelFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
-      }
+      // Disabled: Single story purchase tracking
+      // if (typeof window !== 'undefined' && window.fbq) {
+      //   window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
+      // }
     }
   }, [searchParams])
 

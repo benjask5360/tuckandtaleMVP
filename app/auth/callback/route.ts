@@ -46,7 +46,8 @@ export async function GET(request: NextRequest) {
             })
           }).catch(err => console.error('Failed to notify admin:', err))
 
-          return NextResponse.redirect(`${origin}/onboarding/character`)
+          // Add newuser param to trigger Lead pixel on character page
+          return NextResponse.redirect(`${origin}/onboarding/character?newuser=true`)
         }
       }
 

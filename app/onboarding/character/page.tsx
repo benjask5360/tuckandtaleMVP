@@ -2,22 +2,33 @@
 
 import { getCharacterTypeById } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState, useRef, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import TermsConsentModal from '@/components/auth/TermsConsentModal'
 import ParentNameCollector from '@/components/onboarding/ParentNameCollector'
 import { getStoredUTMs, clearStoredUTMs } from '@/lib/utils/utm'
 
-export default function CharacterOnboarding() {
+function CharacterOnboardingContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const childType = getCharacterTypeById('child')
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [showNameCollector, setShowNameCollector] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const leadPixelFired = useRef(false)
+
+  // Fire Lead pixel for new Google OAuth users
+  useEffect(() => {
+    const isNewUser = searchParams.get('newuser') === 'true'
+    if (isNewUser && !leadPixelFired.current) {
+      leadPixelFired.current = true
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead')
+      }
+    }
+  }, [searchParams])
 
   // Check if user needs to provide name or accept terms
   useEffect(() => {
@@ -75,11 +86,6 @@ export default function CharacterOnboarding() {
     return (
       <ParentNameCollector
         onComplete={() => {
-          // Fire Meta Pixel CompleteRegistration event
-          if (typeof window !== 'undefined' && window.fbq) {
-            window.fbq('track', 'CompleteRegistration')
-          }
-
           // Save UTM params to user profile (non-blocking)
           try {
             const utms = getStoredUTMs()
@@ -156,28 +162,8 @@ export default function CharacterOnboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 pt-8 sm:pt-10">
       <div className="w-full max-w-3xl">
-        {/* Logo */}
-        <Link href="/" className="flex items-center justify-center gap-2 mb-6 md:mb-8 min-h-[44px] hover:opacity-80 transition-opacity">
-          <div className="w-[60px] h-[60px] md:w-[70px] md:h-[70px] relative flex-shrink-0">
-            <Image
-              src="/images/logo.png"
-              alt="Tuck and Tale Logo"
-              width={70}
-              height={70}
-              className="object-contain"
-              priority
-            />
-          </div>
-          <div className="flex items-start gap-0.5">
-            <span className="gradient-text whitespace-nowrap font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.5rem, 5vw, 2rem)' }}>
-              Tuck and Tale
-            </span>
-            <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.75vw, 1.5rem)' }}>™</span>
-          </div>
-        </Link>
-
         <div className="card p-6 md:p-8 lg:p-10">
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-3">
@@ -207,5 +193,13 @@ export default function CharacterOnboarding() {
         />
       )}
     </div>
+  )
+}
+
+export default function CharacterOnboarding() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+      <CharacterOnboardingContent />
+    </Suspense>
   )
 }

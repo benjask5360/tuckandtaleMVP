@@ -49,13 +49,15 @@ function CreateStoryContent() {
   // Track if Purchase pixel has been fired to prevent duplicates
   const purchasePixelFired = useRef(false)
 
-  // Fire Meta Pixel Purchase event when credit is purchased
+  // DISABLED: Single story Purchase pixel - keeping code dormant for potential future use
+  // Purchase events now tracked via Stripe webhook for subscription conversions
   useEffect(() => {
     if (justPurchasedCredit && !purchasePixelFired.current) {
       purchasePixelFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
-      }
+      // Disabled: Single story purchase tracking
+      // if (typeof window !== 'undefined' && window.fbq) {
+      //   window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
+      // }
     }
   }, [justPurchasedCredit])
 

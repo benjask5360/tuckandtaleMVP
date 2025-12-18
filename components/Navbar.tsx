@@ -17,6 +17,9 @@ export default function Navbar() {
   const pathname = usePathname()
   const { hasActiveSubscription, subscriptionTier, storiesRemaining, monthlyLimit } = useSubscription()
 
+  // Hide hamburger menu on onboarding pages for a cleaner focused experience
+  const hideHamburgerMenu = pathname?.startsWith('/onboarding')
+
   // Hide Get Started button on waitlist page
   const hideGetStarted = pathname === '/waitlist'
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -147,27 +150,50 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-soft">
       <div className="container-narrow section-padding pr-4 md:pr-6">
         <div className="flex items-center justify-between gap-4 h-20">
-          <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
-            <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
-              <Image
-                src="/images/logo.png"
-                alt="Tuck and Tale Logo"
-                width={60}
-                height={60}
-                className="object-contain"
-                priority
-              />
+          {hideHamburgerMenu ? (
+            // Non-clickable logo on onboarding pages
+            <div className="flex items-center gap-2 min-h-[44px]">
+              <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Tuck and Tale Logo"
+                  width={60}
+                  height={60}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex items-start gap-0.5">
+                <span className="gradient-text whitespace-nowrap font-display font-extrabold text-xl md:text-2xl lg:text-3xl">
+                  Tuck and Tale
+                </span>
+                <span className="gradient-text font-display font-extrabold text-base md:text-lg lg:text-xl">™</span>
+              </div>
             </div>
-            <div className="flex items-start gap-0.5">
-              <span className="gradient-text whitespace-nowrap font-display font-extrabold text-xl md:text-2xl lg:text-3xl">
-                Tuck and Tale
-              </span>
-              <span className="gradient-text font-display font-extrabold text-base md:text-lg lg:text-xl">™</span>
-            </div>
-          </Link>
+          ) : (
+            // Clickable logo on other pages
+            <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
+              <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
+                <Image
+                  src="/images/logo.png"
+                  alt="Tuck and Tale Logo"
+                  width={60}
+                  height={60}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex items-start gap-0.5">
+                <span className="gradient-text whitespace-nowrap font-display font-extrabold text-xl md:text-2xl lg:text-3xl">
+                  Tuck and Tale
+                </span>
+                <span className="gradient-text font-display font-extrabold text-base md:text-lg lg:text-xl">™</span>
+              </div>
+            </Link>
+          )}
 
           {/* Auth Actions */}
-          {isAuthenticated ? (
+          {isAuthenticated && !hideHamburgerMenu ? (
             <div className="relative">
               <button
                 ref={menuButtonRef}
@@ -263,7 +289,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          ) : !hideGetStarted ? (
+          ) : !isAuthenticated && !hideGetStarted ? (
             <Link href="/auth/login">
               <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl whitespace-nowrap">
                 Get Started

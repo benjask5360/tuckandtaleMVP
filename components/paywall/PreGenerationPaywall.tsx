@@ -1,9 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Sparkles, Check, ArrowLeft, Shield, Clock } from 'lucide-react'
 import { PRICING_CONFIG, DISPLAY_PRICES } from '@/lib/config/pricing-config'
+import { createClient } from '@/lib/supabase/client'
+
+interface Character {
+  id: string
+  name: string
+  avatar_url?: string
+}
 
 interface PreGenerationPaywallProps {
   storyNumber?: number
@@ -19,6 +27,51 @@ export default function PreGenerationPaywall({
   generationCredits: _generationCredits,
 }: PreGenerationPaywallProps) {
   const [processingCheckout, setProcessingCheckout] = useState(false)
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [loadingCharacters, setLoadingCharacters] = useState(true)
+
+  // Fetch characters on mount
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data } = await supabase
+          .from('character_profiles')
+          .select(`
+            id,
+            name,
+            avatar_cache:avatar_cache_id (
+              image_url
+            )
+          `)
+          .eq('user_id', user.id)
+          .eq('character_type', 'child')
+          .is('deleted_at', null)
+          .order('is_primary', { ascending: false })
+          .limit(5)
+
+        if (data) {
+          const transformedCharacters = data.map(char => ({
+            id: char.id,
+            name: char.name,
+            avatar_url: Array.isArray(char.avatar_cache)
+              ? char.avatar_cache[0]?.image_url
+              : (char.avatar_cache as any)?.image_url
+          }))
+          setCharacters(transformedCharacters)
+        }
+      } catch (error) {
+        console.error('Error fetching characters:', error)
+      } finally {
+        setLoadingCharacters(false)
+      }
+    }
+
+    fetchCharacters()
+  }, [])
 
   const handleStartTrial = async () => {
     try {
@@ -71,6 +124,32 @@ export default function PreGenerationPaywall({
             <p className="text-gray-600">
               Create personalized stories for your child
             </p>
+
+            {/* Character Avatars */}
+            {!loadingCharacters && characters.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-6 mt-6">
+                {characters.map((char) => (
+                  <div key={char.id} className="flex flex-col items-center w-28">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-primary-200 bg-white shadow-md">
+                      {char.avatar_url ? (
+                        <Image
+                          src={char.avatar_url}
+                          alt={char.name}
+                          width={112}
+                          height={112}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-primary-100 to-sky-100">
+                          {char.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-600 mt-2 font-medium truncate w-full text-center">{char.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Pricing */}
@@ -154,6 +233,29 @@ export default function PreGenerationPaywall({
               <Clock className="w-4 h-4" />
               <span>Cancel anytime</span>
             </div>
+          </div>
+
+          {/* Single story purchase option */}
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-500 mb-2">
+              Just want one story?
+            </p>
+            <button
+              onClick={async () => {
+                const response = await fetch('/api/stripe/create-story-checkout', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({}),
+                })
+                if (response.ok) {
+                  const { url } = await response.json()
+                  if (url) window.location.href = url
+                }
+              }}
+              className="text-primary-600 hover:text-primary-700 font-medium text-sm underline underline-offset-2"
+            >
+              Buy a single story for $4.99
+            </button>
           </div>
         </div>
       </div>

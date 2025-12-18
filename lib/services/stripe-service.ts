@@ -206,6 +206,12 @@ export class StripeService {
           break
         }
 
+        case 'invoice.paid': {
+          const invoice = event.data.object as Stripe.Invoice
+          await this.handleInvoicePaid(invoice, supabase)
+          break
+        }
+
         default:
           console.log(`Unhandled webhook event type: ${event.type}`)
       }
@@ -402,10 +408,53 @@ export class StripeService {
       throw new Error('Database update failed')
     }
 
+    // Auto-unlock any existing paywalled stories for this user
+    await this.unlockAllPaywalledStories(userId, supabase)
+
     console.log(`[WEBHOOK SUCCESS] Subscription activated for user ${userId}`, {
       tier: tierId,
       subscriptionId: subscription.id,
     })
+  }
+
+  /**
+   * Unlock all paywalled stories for a user when they subscribe
+   * This ensures users don't lose access to stories they previously generated
+   */
+  private static async unlockAllPaywalledStories(
+    userId: string,
+    supabase: any
+  ) {
+    const { data: stories, error: fetchError } = await supabase
+      .from('content')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('requires_paywall', true)
+      .eq('is_unlocked', false)
+
+    if (fetchError) {
+      console.error('[WEBHOOK WARNING] Failed to fetch paywalled stories:', fetchError)
+      return
+    }
+
+    if (!stories || stories.length === 0) {
+      console.log('[WEBHOOK] No paywalled stories to unlock for user', userId)
+      return
+    }
+
+    const { error: updateError } = await supabase
+      .from('content')
+      .update({ is_unlocked: true })
+      .eq('user_id', userId)
+      .eq('requires_paywall', true)
+      .eq('is_unlocked', false)
+
+    if (updateError) {
+      console.error('[WEBHOOK WARNING] Failed to unlock paywalled stories:', updateError)
+      return
+    }
+
+    console.log(`[WEBHOOK SUCCESS] Unlocked ${stories.length} paywalled stories for user ${userId}`)
   }
 
   /**
@@ -536,6 +585,72 @@ export class StripeService {
       .eq('id', userId)
 
     console.log(`[WEBHOOK] Payment failed for user ${userId} - marked as past_due`)
+  }
+
+  /**
+   * Handle successful invoice payment (first paid charge after trial)
+   * This is where the $14.99 Purchase event should be tracked for Meta Pixel
+   *
+   * NOTE: For proper Meta Pixel Purchase tracking, you should implement
+   * the Meta Conversions API to send server-side events. The browser pixel
+   * cannot be fired from a webhook. For now, we log the event for manual tracking.
+   */
+  private static async handleInvoicePaid(
+    invoice: Stripe.Invoice,
+    supabase: any
+  ) {
+    // Only track subscription invoices, not one-time payments
+    const subscriptionId = (invoice as any).subscription
+    if (!subscriptionId || typeof subscriptionId !== 'string') {
+      console.log('[WEBHOOK] Invoice paid but not a subscription - skipping Purchase tracking')
+      return
+    }
+
+    // Check if this is the first paid invoice (billing_reason: 'subscription_cycle' after trial)
+    // billing_reason values: 'subscription_create', 'subscription_cycle', 'subscription_update', 'manual'
+    const billingReason = invoice.billing_reason
+    const amountPaid = invoice.amount_paid
+
+    // Skip $0 invoices (trial period invoices)
+    if (amountPaid === 0) {
+      console.log('[WEBHOOK] Invoice paid but $0 amount (trial) - skipping Purchase tracking')
+      return
+    }
+
+    // Get user from subscription
+    const subscription = await getStripe().subscriptions.retrieve(subscriptionId)
+    const userId = subscription.metadata?.user_id
+
+    if (!userId) {
+      console.log('[WEBHOOK] Invoice paid but no user_id in subscription metadata')
+      return
+    }
+
+    // Log the purchase event for Meta Pixel tracking
+    // TODO: Implement Meta Conversions API to fire Purchase event server-side
+    console.log(`[WEBHOOK] 💰 PURCHASE EVENT - User ${userId} paid $${(amountPaid / 100).toFixed(2)}`, {
+      userId,
+      amountPaid: amountPaid / 100,
+      currency: invoice.currency,
+      billingReason,
+      subscriptionId,
+      invoiceId: invoice.id,
+      // This data would be sent to Meta Conversions API:
+      metaPixelEvent: {
+        event_name: 'Purchase',
+        value: amountPaid / 100,
+        currency: invoice.currency?.toUpperCase() || 'USD',
+      }
+    })
+
+    // Mark user as having made first payment (useful for analytics)
+    await supabase
+      .from('user_profiles')
+      .update({
+        first_payment_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .is('first_payment_at', null) // Only update if not already set
   }
 
   /**
