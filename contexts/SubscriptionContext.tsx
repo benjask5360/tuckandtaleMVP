@@ -216,6 +216,7 @@ export function useSubscription() {
 
 /**
  * Calculate billing cycle boundaries from subscription start date
+ * Uses UTC to avoid timezone issues with dates from the database
  */
 function calculateBillingCycle(subscriptionStartsAt: Date): {
   start: Date
@@ -223,29 +224,44 @@ function calculateBillingCycle(subscriptionStartsAt: Date): {
   daysRemaining: number
 } {
   const now = new Date()
-  const anchorDay = subscriptionStartsAt.getDate()
+  // Use UTC day from subscription to avoid timezone issues
+  const anchorDay = subscriptionStartsAt.getUTCDate()
 
-  // Find most recent occurrence of anchor day
-  let cycleStart = new Date(now.getFullYear(), now.getMonth(), anchorDay)
+  // Find most recent occurrence of anchor day (in UTC)
+  let cycleStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), anchorDay))
 
   // If anchor day hasn't happened this month, go back one month
   if (cycleStart > now) {
-    cycleStart.setMonth(cycleStart.getMonth() - 1)
+    cycleStart.setUTCMonth(cycleStart.getUTCMonth() - 1)
   }
 
   // Handle months with fewer days (e.g., 31st in February)
-  if (cycleStart.getDate() !== anchorDay) {
+  if (cycleStart.getUTCDate() !== anchorDay) {
     // Roll to last day of intended month
-    cycleStart = new Date(cycleStart.getFullYear(), cycleStart.getMonth() + 1, 0)
+    const intendedMonth = cycleStart.getUTCMonth()
+    cycleStart = new Date(Date.UTC(cycleStart.getUTCFullYear(), intendedMonth + 1, 0))
   }
 
-  // Cycle end is one month after start
-  const cycleEnd = new Date(cycleStart)
-  cycleEnd.setMonth(cycleEnd.getMonth() + 1)
+  // Set time to start of day (UTC)
+  cycleStart.setUTCHours(0, 0, 0, 0)
+
+  // For the first billing cycle, use exact subscription timestamp
+  const subStartMidnight = new Date(subscriptionStartsAt)
+  subStartMidnight.setUTCHours(0, 0, 0, 0)
+  if (cycleStart.getTime() === subStartMidnight.getTime()) {
+    cycleStart = new Date(subscriptionStartsAt)
+  }
+
+  // Cycle end is one month after anchor day (in UTC)
+  let cycleEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), anchorDay))
+  if (cycleEnd <= now) {
+    cycleEnd.setUTCMonth(cycleEnd.getUTCMonth() + 1)
+  }
 
   // Handle end-of-month edge cases
-  if (cycleEnd.getDate() !== anchorDay && anchorDay <= 28) {
-    cycleEnd.setDate(anchorDay)
+  if (cycleEnd.getUTCDate() !== anchorDay) {
+    const intendedMonth = cycleEnd.getUTCMonth()
+    cycleEnd = new Date(Date.UTC(cycleEnd.getUTCFullYear(), intendedMonth + 1, 0))
   }
 
   // Calculate days remaining

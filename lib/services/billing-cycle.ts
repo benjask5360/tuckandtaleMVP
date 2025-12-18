@@ -128,10 +128,6 @@ export class BillingCycleService {
 
     const supabase = await createClient()
 
-    // Debug logging
-    console.log('[BILLING DEBUG] Cycle start:', cycle.cycleStart.toISOString())
-    console.log('[BILLING DEBUG] Cycle end:', cycle.cycleEnd.toISOString())
-
     const { count, error } = await supabase
       .from('content')
       .select('*', { count: 'exact', head: true })
@@ -146,8 +142,6 @@ export class BillingCycleService {
       console.error('Error counting stories in cycle:', error)
       return 0
     }
-
-    console.log('[BILLING DEBUG] Stories found in cycle:', count)
 
     return count || 0
   }
