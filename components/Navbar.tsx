@@ -290,7 +290,7 @@ export default function Navbar() {
               )}
             </div>
           ) : !isAuthenticated && !hideGetStarted ? (
-            <Link href="/auth/login">
+            <Link href="/auth/login" className="hidden md:block">
               <button className="btn-primary px-5 py-2.5 text-sm md:text-base min-h-[44px] rounded-xl md:rounded-2xl whitespace-nowrap">
                 Get Started
               </button>
