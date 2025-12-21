@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function FounderParentsPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-white py-12 md:py-20">
         <div className="absolute inset-0 bg-gradient-primary opacity-100"></div>
@@ -26,7 +26,7 @@ export default function FounderParentsPage() {
       </section>
 
       {/* Introduction Section */}
-      <section className="section-padding py-16">
+      <section className="section-padding py-16 bg-gray-50">
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12 mb-12">
@@ -123,7 +123,7 @@ export default function FounderParentsPage() {
       </section>
 
       {/* How to Join Section */}
-      <section className="section-padding py-16">
+      <section className="section-padding py-16 bg-gray-50">
         <div className="container-narrow">
           <div className="max-w-4xl mx-auto">
             <div className="bg-white rounded-2xl shadow-sm p-8 md:p-12">
@@ -150,7 +150,7 @@ export default function FounderParentsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding py-16">
+      <section className="section-padding py-16 bg-white">
         <div className="container-narrow">
           <Link href="/auth/login" className="block">
             <div className="bg-gradient-primary rounded-3xl p-8 md:p-12 text-center text-white cursor-pointer hover:opacity-95 transition-opacity">

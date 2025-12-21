@@ -73,7 +73,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-white py-12 md:py-20">
         <div className="absolute inset-0 bg-gradient-primary opacity-100"></div>
@@ -110,7 +110,7 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards Section */}
-      <section className="section-padding py-8 md:py-16">
+      <section className="section-padding py-8 md:py-16 bg-gray-50">
         <div className="container-narrow px-4 md:px-6">
           <div className="max-w-md mx-auto">
             {/* Subscription Card - Primary */}
