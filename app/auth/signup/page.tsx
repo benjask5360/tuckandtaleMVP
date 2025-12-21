@@ -210,10 +210,6 @@ function SignupForm() {
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
 
-              <p className="text-center text-xs text-gray-500">
-                You'll receive updates and offers from Tuck and Tale. Unsubscribe anytime.
-              </p>
-
               <p className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
                 <Link href="/auth/login" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
