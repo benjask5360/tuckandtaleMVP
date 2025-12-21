@@ -167,7 +167,7 @@ export async function POST(request: Request) {
 
         // Build prompt
         const promptBuilder = new V3StoryPromptBuilder();
-        prompt = await promptBuilder.buildPrompt(generationRequest);
+        prompt = promptBuilder.buildPrompt(generationRequest);
 
         // Get AI config
         const aiConfig = await getAIConfigForMode(generationRequest.mode);
