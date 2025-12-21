@@ -149,7 +149,7 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-soft">
       <div className="container-narrow section-padding pr-4 md:pr-6">
-        <div className="flex items-center justify-between gap-4 h-20">
+        <div className="flex items-center justify-center md:justify-between gap-4 h-20">
           {hideHamburgerMenu ? (
             // Non-clickable logo on onboarding pages
             <div className="flex items-center gap-2 min-h-[44px]">
