@@ -71,6 +71,8 @@ export interface V3CharacterInfo {
   role?: 'hero' | 'sidekick' | 'friend' | 'family' | 'pet';
   relationship?: string; // e.g., "Emma's brother"
   background?: string; // e.g., "Asian", "Black or African American" - from rich_description
+  gender?: string; // "male", "female" - for constructing natural descriptions
+  species?: string; // For pets: "corgi", "tabby cat" - breed or species
 }
 
 /**

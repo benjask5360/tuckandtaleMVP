@@ -1,11 +1,9 @@
 /**
  * V3 Story Prompt Builder
  *
- * Generates prompts for StoryEngine V3 with simplified output format.
- * Key differences from V2:
- * - No illustration prompts in the response (text-only Phase 1)
- * - Variable paragraph count based on length (not fixed 8)
- * - Simpler JSON output format
+ * Generates prompts for StoryEngine V3.
+ * - Fun mode: Single clean prompt block, no appearance data
+ * - Growth mode: Structured approach for behavior teaching
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -19,25 +17,89 @@ export class V3StoryPromptBuilder {
    * Build the complete story prompt for V3 engine
    */
   public async buildPrompt(request: V3GenerationRequest): Promise<string> {
-    const systemInstructions = this.getSystemInstructions(request.mode);
-    const characterDescriptions = await this.buildCharacterContext(request.characters);
-    const storyParameters = this.buildStoryParameters(request);
-    const formatInstructions = this.buildResponseFormatInstructions(request);
-
-    // Assemble the complete prompt
-    let prompt = systemInstructions;
-    prompt += '\n\n' + characterDescriptions;
-    prompt += '\n\n' + storyParameters;
-
-    if (request.customInstructions) {
-      prompt += '\n\n' + this.buildCustomInstructions(request.customInstructions);
+    // Fun mode gets a single clean prompt block
+    if (request.mode === 'fun') {
+      return this.buildFunModePrompt(request);
     }
 
-    prompt += '\n\n' + formatInstructions;
+    // Growth mode uses the structured approach
+    return this.buildGrowthModePrompt(request);
+  }
 
-    // Log the full prompt for debugging
+  /**
+   * Get paragraph count for Fun mode
+   */
+  private getFunParagraphCount(lengthName: string): number {
+    const lengthLower = lengthName.toLowerCase();
+    if (lengthLower === 'short') return 5;
+    if (lengthLower === 'long') return 10;
+    return 7; // medium
+  }
+
+  /**
+   * Get paragraph count range for Growth mode
+   */
+  private getGrowthParagraphRange(lengthName: string): { min: number; max: number } {
+    const lengthLower = lengthName.toLowerCase();
+    if (lengthLower === 'short') return { min: 6, max: 7 };
+    if (lengthLower === 'long') return { min: 10, max: 12 };
+    return { min: 8, max: 9 }; // medium
+  }
+
+  /**
+   * Build the Fun mode prompt - single clean block, no appearance data
+   */
+  private buildFunModePrompt(request: V3GenerationRequest): string {
+    const hero = request.characters.find(c => c.role === 'hero') || request.characters[0];
+    const supporting = request.characters.filter(c => c !== hero);
+    const paragraphCount = this.getFunParagraphCount(request.length.name);
+
+    // Determine hero type description
+    const heroType = this.getHeroTypeDescription(hero);
+
+    // Build supporting characters line
+    let supportingLine = '';
+    if (supporting.length > 0) {
+      const supportingDescriptions = supporting.map(c => {
+        const desc = this.getSupportingCharacterDescription(c, hero);
+        return `- ${c.name}, ${desc}`;
+      });
+      supportingLine = `\nAlso in this story:\n${supportingDescriptions.join('\n')}\n`;
+    }
+
+    // Build the single clean prompt
+    let prompt = `Write a bedtime story starring ${hero.name}, a ${hero.age}-year-old ${heroType}.
+${supportingLine}
+Genre: ${request.genre.displayName}
+Tone: ${request.tone.displayName}${request.tone.description ? ` - ${request.tone.description}` : ''}
+Length: ${paragraphCount} paragraphs, each substantial enough to illustrate (roughly 80-100 words per paragraph)
+
+What makes it memorable:
+- One vivid scene they'll remember tomorrow
+- Specific sensory details - not just "magical," but what does it smell like, sound like?
+- ${hero.name} figures something out or makes a choice on their own
+- Humor or warmth that feels earned
+- A calm landing
+
+Don't describe ${hero.name}'s appearance - that's handled separately. New characters you create are fair game.`;
+
+    // Add custom instructions if present
+    if (request.customInstructions) {
+      prompt += `\n\nAdditional guidance: ${request.customInstructions}`;
+    }
+
+    prompt += `
+
+Output as JSON:
+{
+  "title": "...",
+  "paragraphs": ["...", "..."],
+  "moral": "..." // only if it emerges naturally
+}`;
+
+    // Log for debugging
     console.log('\n' + '='.repeat(80));
-    console.log('V3 STORY GENERATION PROMPT');
+    console.log('V3 FUN MODE PROMPT');
     console.log('='.repeat(80));
     console.log(prompt);
     console.log('='.repeat(80) + '\n');
@@ -46,58 +108,112 @@ export class V3StoryPromptBuilder {
   }
 
   /**
-   * Get paragraph count range based on length
+   * Get a simple type description for the hero (no appearance details)
+   * Uses gender to produce natural phrasing: "boy", "girl", "child"
    */
-  private getParagraphRange(lengthName: string): { min: number; max: number } {
-    const lengthLower = lengthName.toLowerCase();
-    if (lengthLower === 'short') {
-      return { min: 6, max: 7 };
-    } else if (lengthLower === 'long') {
-      return { min: 10, max: 12 };
+  private getHeroTypeDescription(hero: V3CharacterInfo): string {
+    switch (hero.characterType) {
+      case 'child':
+        if (hero.gender === 'male') return 'boy';
+        if (hero.gender === 'female') return 'girl';
+        return 'child';
+      case 'pet':
+        return hero.species || 'pet';
+      case 'magical_creature':
+        return 'magical creature';
+      case 'storybook_character':
+        return 'character';
+      default:
+        return 'child';
     }
-    // Default to medium
-    return { min: 8, max: 9 };
   }
 
   /**
-   * Get system instructions based on mode (Fun or Growth)
+   * Get a natural description for supporting characters
+   * Examples: "her corgi", "her little brother", "Grandma Rose" (no desc needed)
    */
-  private getSystemInstructions(mode: 'fun' | 'growth'): string {
-    if (mode === 'growth') {
-      return this.getGrowthModeInstructions();
+  private getSupportingCharacterDescription(char: V3CharacterInfo, hero: V3CharacterInfo): string {
+    // Determine possessive pronoun based on hero's gender
+    const possessive = hero.gender === 'male' ? 'his' :
+                       hero.gender === 'female' ? 'her' : 'their';
+
+    // Pets: use species for natural description
+    if (char.characterType === 'pet') {
+      if (char.species) {
+        return `${possessive} ${char.species}`;
+      }
+      return `${possessive} pet`;
     }
-    return this.getFunModeInstructions();
+
+    // Children: check if sibling relationship exists
+    if (char.characterType === 'child') {
+      // If relationship contains "brother" or "sister", use it naturally
+      if (char.relationship) {
+        // Convert "Emma's brother" → "her brother" or "her little brother"
+        if (char.relationship.includes('brother')) {
+          const modifier = this.getAgeModifier(char.age, hero.age);
+          return modifier ? `${possessive} ${modifier} brother` : `${possessive} brother`;
+        }
+        if (char.relationship.includes('sister')) {
+          const modifier = this.getAgeModifier(char.age, hero.age);
+          return modifier ? `${possessive} ${modifier} sister` : `${possessive} sister`;
+        }
+      }
+      // Default for child without sibling relationship
+      if (char.gender === 'male') return `${possessive} friend`;
+      if (char.gender === 'female') return `${possessive} friend`;
+      return `${possessive} friend`;
+    }
+
+    // Magical creatures and storybook characters
+    if (char.characterType === 'magical_creature') {
+      return 'a magical creature';
+    }
+    if (char.characterType === 'storybook_character') {
+      return 'a storybook friend';
+    }
+
+    // Fallback
+    return `${possessive} companion`;
   }
 
   /**
-   * System instructions for Fun mode
+   * Get age modifier for sibling descriptions: "little" or "big"
    */
-  private getFunModeInstructions(): string {
-    return `# ROLE: Creative Children's Story Writer
+  private getAgeModifier(siblingAge?: number, heroAge?: number): string | null {
+    if (!siblingAge || !heroAge) return null;
+    if (siblingAge < heroAge) return 'little';
+    if (siblingAge > heroAge) return 'big';
+    return null; // Same age, no modifier
+  }
 
-Write imaginative bedtime stories that feel FRESH and SPECIFIC.
+  /**
+   * Build the Growth mode prompt - structured approach
+   */
+  private async buildGrowthModePrompt(request: V3GenerationRequest): Promise<string> {
+    const systemInstructions = this.getGrowthModeInstructions();
+    const characterDescriptions = await this.buildCharacterContext(request.characters);
+    const storyParameters = this.buildGrowthStoryParameters(request);
+    const formatInstructions = this.buildGrowthModeFormatInstructions(request);
 
-**Be specific, not generic:**
-- Instead of "sparkled," write: "glowed orange like a sunset" or "shimmered like soap bubbles"
-- Instead of "magical forest," create: "a library where books whisper secrets" or "a backyard where shadows come alive at dusk"
-- Ground fantasy in real sensory details: smells, sounds, textures
+    let prompt = systemInstructions;
+    prompt += '\n\n' + characterDescriptions;
+    prompt += '\n\n' + storyParameters;
 
-**Avoid overused patterns:**
-- No made-up food names (Giggleberries, Laughlemons, Snugglefluff)
-- No generic quests (find magical item → meet wizard → return home)
-- No "everything sparkles/glows" — be precise about WHAT and HOW
+    if (request.customInstructions) {
+      prompt += '\n\n## ADDITIONAL GUIDANCE\n\n' + request.customInstructions;
+    }
 
-**Keep it engaging and bedtime-ready:**
-- Lively pacing with clear scene breaks
-- Moments of humor, friendship, or gentle excitement
-- Calm, satisfying ending (no cliffhangers)
+    prompt += '\n\n' + formatInstructions;
 
-**Character descriptions:**
-- Do NOT describe character appearances (handled separately)
-- Simply refer to them by name
-- You MAY describe new characters you create in the story
+    // Log for debugging
+    console.log('\n' + '='.repeat(80));
+    console.log('V3 GROWTH MODE PROMPT');
+    console.log('='.repeat(80));
+    console.log(prompt);
+    console.log('='.repeat(80) + '\n');
 
-Make it memorable. Make it specific. Make it theirs.`;
+    return prompt;
   }
 
   /**
@@ -133,7 +249,7 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
   }
 
   /**
-   * Build character context section
+   * Build character context section (Growth mode only - includes appearance)
    */
   private async buildCharacterContext(characters: V3CharacterInfo[]): Promise<string> {
     let characterText = '## CHARACTERS\n\n';
@@ -150,7 +266,6 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
       characterText += '\n**Supporting Characters:**\n';
       for (const char of supporting) {
         const desc = await this.getCharacterAppearance(char);
-        // Only include relationship context (e.g., "Emma's brother"), not generic roles
         const label = char.relationship ? ` (${char.relationship})` : '';
         characterText += `- **${char.name}${label}**: ${desc}\n`;
       }
@@ -160,15 +275,13 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
   }
 
   /**
-   * Get character appearance description
+   * Get character appearance description (Growth mode only)
    */
   private async getCharacterAppearance(character: V3CharacterInfo): Promise<string> {
-    // If we already have appearance description, use it
     if (character.appearanceDescription) {
       return character.appearanceDescription;
     }
 
-    // Fetch from database
     try {
       const supabase = await createClient();
       const { data: profile, error } = await supabase
@@ -185,7 +298,6 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
         return profile.appearance_description;
       }
 
-      // Build from attributes
       const profileType = profile.character_type as ProfileType;
       const selections = profile.attributes as CharacterSelections;
       const enhanced = await mapSelectionsToEnhanced(profileType, selections);
@@ -199,36 +311,34 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
   }
 
   /**
-   * Build story parameters section
+   * Build story parameters for Growth mode
    */
-  private buildStoryParameters(request: V3GenerationRequest): string {
+  private buildGrowthStoryParameters(request: V3GenerationRequest): string {
     let params = '## STORY REQUIREMENTS\n\n';
 
-    // Genre
     params += `**Genre:** ${request.genre.displayName}\n`;
     if (request.genre.description) {
       params += `(${request.genre.description})\n`;
     }
 
-    // Tone/Style
-    params += `\n**Tone/Style:** ${request.tone.displayName}\n`;
+    params += `\n**Tone:** ${request.tone.displayName}`;
     if (request.tone.description) {
-      params += `(${request.tone.description})\n`;
+      params += `\n(${request.tone.description})\n`;
+    } else {
+      params += `\n`;
     }
 
-    // Length with variable paragraph count
     const lengthMeta = request.length.metadata;
     const wordMin = lengthMeta?.wordsMin || lengthMeta?.word_count_min || 400;
     const wordMax = lengthMeta?.wordsMax || lengthMeta?.word_count_max || 600;
-    const paragraphRange = this.getParagraphRange(request.length.name);
+    const paragraphRange = this.getGrowthParagraphRange(request.length.name);
 
     params += `\n**Length:** ${request.length.displayName}\n`;
     params += `- Target: ${wordMin}-${wordMax} words total\n`;
     params += `- Structure: ${paragraphRange.min}-${paragraphRange.max} paragraphs\n`;
     params += `- Paragraph length: ${Math.round(wordMin / paragraphRange.min)}-${Math.round(wordMax / paragraphRange.max)} words per paragraph\n`;
 
-    // Growth topic (if Growth mode)
-    if (request.mode === 'growth' && request.growthTopic) {
+    if (request.growthTopic) {
       params += `\n**BEHAVIOR TO TEACH:** ${request.growthTopic.displayName}\n`;
       if (request.growthTopic.description) {
         params += `${request.growthTopic.description}\n`;
@@ -236,42 +346,22 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
       params += `\nShow this behavior in action 2-3 times. Use realistic situations the child actually faces.\n`;
     }
 
-    // Moral lesson (if provided)
-    if (request.moralLesson) {
-      params += `\n**Moral Lesson:** ${request.moralLesson.displayName}\n`;
-      if (request.moralLesson.description) {
-        params += `(${request.moralLesson.description})\n`;
-      }
-    }
-
-    // Age appropriateness
     const heroAge = request.characters.find(c => c.role === 'hero')?.age;
-    params += `\n**Age Appropriateness:** `;
     if (heroAge) {
-      params += `Suitable for a ${heroAge}-year-old child. `;
-      params += `Use age-appropriate vocabulary, themes, and concepts.\n`;
-    } else {
-      params += `Create a family-friendly story suitable for young children.\n`;
+      params += `\n**For a ${heroAge}-year-old** - use age-appropriate vocabulary and themes.\n`;
     }
 
     return params;
   }
 
   /**
-   * Build custom instructions section
+   * Structured format instructions for Growth mode
    */
-  private buildCustomInstructions(instructions: string): string {
-    return `## ADDITIONAL GUIDANCE\n\n${instructions}`;
-  }
-
-  /**
-   * Build response format instructions (simplified for V3 - no illustration prompts)
-   */
-  private buildResponseFormatInstructions(request: V3GenerationRequest): string {
+  private buildGrowthModeFormatInstructions(request: V3GenerationRequest): string {
     const lengthMeta = request.length.metadata;
     const wordMin = lengthMeta?.wordsMin || lengthMeta?.word_count_min || 400;
     const wordMax = lengthMeta?.wordsMax || lengthMeta?.word_count_max || 600;
-    const paragraphRange = this.getParagraphRange(request.length.name);
+    const paragraphRange = this.getGrowthParagraphRange(request.length.name);
     const wordsPerParagraph = `${Math.round(wordMin / paragraphRange.min)}-${Math.round(wordMax / paragraphRange.max)}`;
 
     let instructions = '## OUTPUT FORMAT\n\n';
@@ -286,8 +376,7 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
     instructions += '    "Second paragraph as the adventure begins...",\n';
     instructions += '    "... more paragraphs developing the story ...",\n';
     instructions += '    "Final paragraph with a satisfying conclusion..."\n';
-    instructions += '  ],\n';
-    instructions += '  "moral": "A brief statement of the lesson or moral (optional for fun mode)"\n';
+    instructions += '  ]\n';
     instructions += '}\n';
     instructions += '```\n\n';
 
@@ -299,34 +388,17 @@ The behavior IS the lesson. Show it in action 2-3 times. Make it repeatable.`;
     instructions += '- Create clear paragraph breaks - each paragraph is a distinct scene or moment\n\n';
 
     instructions += '**STORY STRUCTURE:**\n';
-    if (request.mode === 'growth') {
-      instructions += '- Paragraphs 1-2: Child in realistic setting, challenge appears quickly\n';
-      instructions += '- Paragraphs 3-5: Show the new behavior 2-3 times with increasing success\n';
-      instructions += '- Final paragraphs: Natural resolution (no explaining, no "Emma learned that...")\n\n';
-    } else {
-      instructions += '- Opening: Introduce character and unique situation\n';
-      instructions += '- Middle: Story developments with specific details\n';
-      instructions += '- Ending: Satisfying, calming conclusion\n\n';
-    }
+    instructions += '- Paragraphs 1-2: Child in realistic setting, challenge appears quickly\n';
+    instructions += '- Paragraphs 3-5: Show the new behavior 2-3 times with increasing success\n';
+    instructions += '- Final paragraphs: Natural resolution (no explaining, no "Emma learned that...")\n\n';
 
     instructions += '**TITLE REQUIREMENTS:**\n';
     instructions += '- Create a strong, engaging, kid-friendly title\n';
     instructions += '- The title should capture the essence of the story\n';
-    instructions += '- AVOID the cliché pattern "[Name] and the [Noun]" (e.g., "Emma and the Magic Garden")\n';
-    instructions += '- Instead, try creative alternatives: action phrases, questions, playful wordplay, or evocative imagery\n';
-    instructions += '- Examples of GOOD titles: "The Night the Stars Came Down", "How Lily Learned to Roar", "Moonbeam Wishes"\n\n';
+    instructions += '- AVOID the cliché pattern "[Name] and the [Noun]" (e.g., "Emma and the Magic Garden")\n\n';
 
-    if (request.mode === 'growth') {
-      instructions += '**IMPORTANT: Do NOT include a "moral" field.**\n';
-      instructions += 'The behavior demonstration is the lesson.\n';
-    } else if (request.moralLesson) {
-      instructions += '**MORAL (optional):**\n';
-      instructions += '- Include 1-2 sentence moral based on the lesson requested\n';
-      instructions += '- Make it natural, not preachy\n';
-    } else {
-      instructions += '**MORAL (optional):**\n';
-      instructions += '- You may include a brief moral if one naturally emerges\n';
-    }
+    instructions += '**IMPORTANT: Do NOT include a "moral" field.**\n';
+    instructions += 'The behavior demonstration is the lesson.\n';
 
     return instructions;
   }

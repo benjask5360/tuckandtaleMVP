@@ -313,6 +313,8 @@ export class V3StoryGenerationService {
         appearanceDescription: heroProfile.appearance_description || '',
         age: heroProfile.attributes?.age,
         background: heroProfile.attributes?.background,
+        gender: heroProfile.attributes?.gender,
+        species: heroProfile.attributes?.breed || heroProfile.attributes?.species,
         role: 'hero',
       });
     }
@@ -328,6 +330,8 @@ export class V3StoryGenerationService {
           appearanceDescription: profile.appearance_description || '',
           age: profile.attributes?.age,
           background: profile.attributes?.background,
+          gender: profile.attributes?.gender,
+          species: profile.attributes?.breed || profile.attributes?.species,
           role: this.inferRole(profile.character_type),
         });
       }
