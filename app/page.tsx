@@ -42,6 +42,11 @@ export default function HomePage() {
                   priority
                 />
               </div>
+
+              {/* Mobile CTA - appears after image */}
+              <div className="md:hidden mt-8 flex justify-center">
+                <AuthAwareCTA />
+              </div>
             </div>
 
             {/* Desktop Hero Image */}
