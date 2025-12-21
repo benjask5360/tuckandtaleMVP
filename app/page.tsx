@@ -62,7 +62,7 @@ export default function HomePage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-12 md:py-16 bg-gradient-bg-primary">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -214,7 +214,7 @@ export default function HomePage() {
       </section>
 
       {/* What Parents Are Saying Section */}
-      <section className="py-12 md:py-16 bg-gradient-bg-primary">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">

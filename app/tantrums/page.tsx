@@ -72,7 +72,7 @@ export default function TantrumsPage() {
       </section>
 
       {/* How It Helps With Tantrums Section */}
-      <section className="py-12 md:py-16 bg-gradient-bg-primary">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -160,7 +160,7 @@ export default function TantrumsPage() {
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -169,7 +169,7 @@ export default function TantrumsPage() {
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -178,7 +178,7 @@ export default function TantrumsPage() {
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gradient-bg-primary">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
@@ -191,7 +191,7 @@ export default function TantrumsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-bg-primary relative overflow-hidden">
+      <section className="py-24 bg-gray-50 relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh-primary opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">
