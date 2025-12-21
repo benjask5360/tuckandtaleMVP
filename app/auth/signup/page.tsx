@@ -92,7 +92,7 @@ function SignupForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-bg-warm flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
           {/* Logo */}
           <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-90 transition-all hover:scale-[1.02] mb-10">
@@ -241,7 +241,7 @@ function SignupForm() {
 
 export default function SignupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-bg-warm flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>}>
       <SignupForm />
     </Suspense>
   )

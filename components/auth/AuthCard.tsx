@@ -10,7 +10,7 @@ interface AuthCardProps {
 
 export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gray-50 py-12 md:py-16">
+    <section className="relative min-h-screen flex items-center justify-center bg-white py-12 md:py-16">
       <div className="w-full max-w-lg px-4 sm:px-6 relative z-10">
         {/* Logo/Brand */}
         <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity mb-6 md:mb-8 min-h-[44px]">
