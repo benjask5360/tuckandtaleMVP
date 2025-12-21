@@ -112,7 +112,7 @@ function OnboardingPricingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
         <div className="max-w-lg w-full">
@@ -267,7 +267,7 @@ function OnboardingPricingContent() {
 // Loading fallback component
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
     </div>
   )

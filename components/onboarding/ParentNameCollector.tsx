@@ -48,7 +48,7 @@ export default function ParentNameCollector({ onComplete }: ParentNameCollectorP
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-md">
         <div className="card p-6 md:p-8">
           <div className="text-center mb-6 md:mb-8">
