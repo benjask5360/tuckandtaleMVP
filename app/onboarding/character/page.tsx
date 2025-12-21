@@ -73,7 +73,7 @@ function CharacterOnboardingContent() {
   // Show loading state while checking profile
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
         <div className="card p-6 md:p-8 max-w-md">
           <p className="text-gray-600 font-medium text-center">Loading...</p>
         </div>
@@ -122,7 +122,7 @@ function CharacterOnboardingContent() {
 
   if (!childType) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
         <div className="card p-6 md:p-8 max-w-md">
           <p className="text-red-600 font-medium text-center">Configuration error: Child character type not found</p>
         </div>
@@ -162,7 +162,7 @@ function CharacterOnboardingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6 pt-8 sm:pt-10">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 pt-8 sm:pt-10">
       <div className="w-full max-w-3xl">
         <div className="card p-6 md:p-8 lg:p-10">
           <div className="text-center mb-6 md:mb-8">
@@ -198,7 +198,7 @@ function CharacterOnboardingContent() {
 
 export default function CharacterOnboarding() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>}>
       <CharacterOnboardingContent />
     </Suspense>
   )
