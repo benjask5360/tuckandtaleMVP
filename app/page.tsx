@@ -22,7 +22,7 @@ export default function HomePage() {
                 Personalized bedtime stories that teach calm, kindness, and big emotions.
               </p>
 
-              <div className="flex flex-col gap-4 mb-6">
+              <div className="hidden md:flex flex-col gap-4 mb-6">
                 <AuthAwareCTA />
               </div>
 
