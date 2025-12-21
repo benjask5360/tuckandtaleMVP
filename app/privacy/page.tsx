@@ -68,7 +68,7 @@ export default function PrivacyPage() {
                 <li>Create personalized stories for your child</li>
                 <li>Operate, maintain, and improve our service</li>
                 <li>Manage your subscription and process payments</li>
-                <li>Send service updates, product announcements, and optional marketing (only with your consent)</li>
+                <li>Send service updates, product announcements, and marketing communications (you can unsubscribe anytime)</li>
                 <li>Provide customer support</li>
                 <li>Monitor for misuse or technical issues</li>
                 <li>Improve our storytelling models and platform features</li>
