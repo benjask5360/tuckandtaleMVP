@@ -132,14 +132,14 @@ Output as JSON:
    */
   private getHumanTypeLabel(gender?: string, age?: number): string {
     const isAdult = age && age >= 18;
+    const normalizedGender = gender?.toLowerCase().trim();
 
-    if (gender === 'male') {
+    if (normalizedGender === 'male') {
       return isAdult ? 'man' : 'boy';
     }
-    if (gender === 'female') {
+    if (normalizedGender === 'female') {
       return isAdult ? 'woman' : 'girl';
     }
-    // Non-binary or unspecified
     return isAdult ? 'person' : 'child';
   }
 

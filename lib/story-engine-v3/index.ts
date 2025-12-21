@@ -9,7 +9,6 @@
 export * from './types';
 
 // Services
-export { V3StoryGenerationService } from './services/V3StoryGenerationService';
 export { V3IllustrationService } from './services/V3IllustrationService';
 
 // Prompt Builders
