@@ -134,7 +134,7 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading settings...</p>
@@ -144,7 +144,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -204,7 +204,7 @@ export default function SettingsPage() {
                   type="email"
                   value={profileData?.email || ''}
                   disabled
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-500 cursor-not-allowed"
                 />
                 {profileData?.email_verified ? (
                   <span className="flex items-center gap-1 text-sm text-green-600 whitespace-nowrap">
@@ -228,7 +228,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Member Since
               </label>
-              <div className="px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-700">
+              <div className="px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700">
                 {profileData?.created_at ? formatDate(profileData.created_at) : 'N/A'}
               </div>
             </div>
@@ -267,7 +267,7 @@ export default function SettingsPage() {
               </div>
               <Link
                 href="/auth/update-password"
-                className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                className="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-white transition-colors font-medium"
               >
                 Change Password
               </Link>
@@ -492,7 +492,7 @@ export default function SettingsPage() {
                     setDeleteConfirmation('');
                   }}
                   disabled={deleting}
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-white transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>

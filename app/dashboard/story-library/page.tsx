@@ -71,7 +71,7 @@ function StoryQuotaDisplay() {
     const getProgressBgColor = (percentage: number) => {
       if (percentage >= 100) return 'bg-red-50';
       if (percentage >= 80) return 'bg-yellow-50';
-      return 'bg-gray-50';
+      return 'bg-white';
     };
 
     return (

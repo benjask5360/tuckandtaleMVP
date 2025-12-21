@@ -297,7 +297,7 @@ export default function OtherCharactersPage() {
                   {/* Click to Edit Button */}
                   <Link
                     href={`/dashboard/other-characters/${character.id}/edit`}
-                    className="w-full px-4 py-3 text-center text-gray-400 font-medium rounded-xl hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-3 text-center text-gray-400 font-medium rounded-xl hover:text-gray-600 hover:bg-white transition-colors"
                   >
                     Click to edit
                   </Link>

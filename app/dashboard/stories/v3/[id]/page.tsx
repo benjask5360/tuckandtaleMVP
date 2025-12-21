@@ -430,7 +430,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading story...</p>
@@ -441,7 +441,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
 
   if (error || !story) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="card p-6 md:p-8 max-w-md text-center">
           <p className="text-red-600 font-medium mb-4">
             {error || 'Story not found'}
@@ -559,7 +559,7 @@ export default function V3StoryViewerPage({ params }: { params: { id: string } }
   const showIllustrationUI = hasIllustrations && (illustrationStatus || triggeringIllustrations || illustrationError)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Edit Mode Warning Banner */}
         {isEditMode && (

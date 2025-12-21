@@ -87,7 +87,7 @@ function BillingPageContent() {
 
   if (loading || subscriptionLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading billing information...</p>
@@ -99,7 +99,7 @@ function BillingPageContent() {
   const subscriptionStatus = billingInfo?.subscriptionStatus
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-white py-8">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -251,7 +251,7 @@ function BillingPageContent() {
                   variant="detailed"
                 />
               ) : (
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-white rounded-xl p-4">
                   <p className="text-gray-700">
                     {generationCredits > 0 ? (
                       <>You have <strong>{generationCredits}</strong> story credit{generationCredits !== 1 ? 's' : ''} available</>
@@ -288,7 +288,7 @@ function BillingPageContent() {
                 </div>
               )}
 
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-start gap-3 p-4 bg-white rounded-lg">
                 <Calendar className="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-medium text-gray-900">
@@ -372,7 +372,7 @@ function BillingPageContent() {
 export default function BillingPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading billing information...</p>

@@ -27,7 +27,7 @@ function CreateOtherCharacterContent() {
 
   if (!otherTypes || otherTypes.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
         <div className="card p-6 md:p-8 max-w-md">
           <p className="text-red-600 font-medium text-center">Configuration error: No character types found</p>
         </div>
@@ -39,7 +39,7 @@ function CreateOtherCharacterContent() {
   const backText = isOnboarding ? 'Back to Add Characters' : 'Back to Other Characters'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
         {/* Header */}
         <div className="mb-4 md:mb-6">

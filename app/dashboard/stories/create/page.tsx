@@ -127,7 +127,7 @@ function CreateStoryContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading...</p>
@@ -138,7 +138,7 @@ function CreateStoryContent() {
 
   if (error === 'no-children') {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 md:py-6">
           <Link
             href="/dashboard/story-library"
@@ -171,7 +171,7 @@ function CreateStoryContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="card p-6 md:p-8 max-w-md text-center">
           <p className="text-red-600 font-medium">Error: {error}</p>
           <button
@@ -198,7 +198,7 @@ function CreateStoryContent() {
   // Show subscription limit reached message
   if (paywallStatus?.reason === 'subscription_limit_reached') {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
+      <div className="min-h-screen bg-white py-12 px-4">
         <div className="max-w-2xl mx-auto">
           <Link
             href="/dashboard"
@@ -245,7 +245,7 @@ function CreateStoryContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-3xl">
         {/* Success message for credit purchase */}
         {justPurchasedCredit && (
@@ -308,7 +308,7 @@ function CreateStoryContent() {
 export default function CreateStoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading...</p>
