@@ -63,9 +63,19 @@ export class V3StoryPromptBuilder {
       supportingLine = `\nAlso in this story:\n${supportingDescriptions.join('\n')}\n`;
     }
 
+    // Build moral lesson line
+    let moralLine = '';
+    if (request.moralLesson) {
+      moralLine = `\nMoral lesson to weave in: ${request.moralLesson.displayName}`;
+      if (request.moralLesson.description) {
+        moralLine += `\n${request.moralLesson.description}`;
+      }
+      moralLine += '\n';
+    }
+
     // Build the single clean prompt
     let prompt = `Write a bedtime story starring ${hero.name}, a ${hero.age}-year-old ${heroType}.
-${supportingLine}
+${supportingLine}${moralLine}
 Genre: ${request.genre.displayName}
 Tone: ${request.tone.displayName}${request.tone.description ? ` - ${request.tone.description}` : ''}
 Length: ${paragraphCount} paragraphs, each substantial enough to illustrate (roughly 80-100 words per paragraph)
