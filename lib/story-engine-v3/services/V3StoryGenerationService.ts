@@ -306,6 +306,10 @@ export class V3StoryGenerationService {
     // Add hero
     const heroProfile = profiles?.find(p => p.id === heroId);
     if (heroProfile) {
+      // Debug: log what we're getting from the database
+      console.log('DEBUG heroProfile.attributes:', JSON.stringify(heroProfile.attributes));
+      console.log('DEBUG gender value:', heroProfile.attributes?.gender);
+
       characters.push({
         id: heroProfile.id,
         name: heroProfile.name,

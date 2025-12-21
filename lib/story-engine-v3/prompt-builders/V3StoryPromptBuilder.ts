@@ -109,14 +109,12 @@ Output as JSON:
 
   /**
    * Get a simple type description for the hero (no appearance details)
-   * Uses gender to produce natural phrasing: "boy", "girl", "child"
+   * Uses gender + age to produce natural phrasing: "boy", "girl", "man", "woman"
    */
   private getHeroTypeDescription(hero: V3CharacterInfo): string {
     switch (hero.characterType) {
       case 'child':
-        if (hero.gender === 'male') return 'boy';
-        if (hero.gender === 'female') return 'girl';
-        return 'child';
+        return this.getHumanTypeLabel(hero.gender, hero.age);
       case 'pet':
         return hero.species || 'pet';
       case 'magical_creature':
@@ -126,6 +124,23 @@ Output as JSON:
       default:
         return 'child';
     }
+  }
+
+  /**
+   * Get natural human type label based on gender and age
+   * boy/girl for children, man/woman for adults
+   */
+  private getHumanTypeLabel(gender?: string, age?: number): string {
+    const isAdult = age && age >= 18;
+
+    if (gender === 'male') {
+      return isAdult ? 'man' : 'boy';
+    }
+    if (gender === 'female') {
+      return isAdult ? 'woman' : 'girl';
+    }
+    // Non-binary or unspecified
+    return isAdult ? 'person' : 'child';
   }
 
   /**
