@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import Link from 'next/link';
-import { BookOpen, User, Calendar, Code, Image as ImageIcon, FileText } from 'lucide-react';
+import { BookOpen, User, Calendar, Code, Image as ImageIcon, FileText, ImageDown } from 'lucide-react';
 import Image from 'next/image';
 import CopyButton from './CopyButton';
 import StoryNavDropdown from './StoryNavDropdown';
@@ -143,16 +143,25 @@ export default async function AdminStoryInspectionPage({
             >
               ← Back to Story Inspector
             </Link>
-            {allStories && allStories.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Jump to:</span>
-                <StoryNavDropdown
-                  stories={allStories}
-                  currentStoryId={params.id}
-                  userProfiles={storyUserProfiles}
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-4">
+              <Link
+                href={`/dashboard/admin/story-export/${params.id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium"
+              >
+                <ImageDown className="w-4 h-4" />
+                Export Frames
+              </Link>
+              {allStories && allStories.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Jump to:</span>
+                  <StoryNavDropdown
+                    stories={allStories}
+                    currentStoryId={params.id}
+                    userProfiles={storyUserProfiles}
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             {story.title || 'Untitled Story'}
