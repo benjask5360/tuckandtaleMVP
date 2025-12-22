@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Download, Eye, EyeOff } from 'lucide-react';
+import { Download, Eye, EyeOff, Edit2, Save, X } from 'lucide-react';
 
 interface Frame {
   type: 'cover' | 'scene';
@@ -14,12 +14,47 @@ interface Frame {
 interface ExportFrameProps {
   frame: Frame;
   frameNumber: number;
+  canEdit?: boolean;
+  storyId?: string;
+  onUpdate?: (type: 'title' | 'sceneText', value: string, sceneIndex?: number) => Promise<void>;
 }
 
-export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
+export default function ExportFrame({ frame, frameNumber, canEdit = false, storyId, onUpdate }: ExportFrameProps) {
   const [showText, setShowText] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const frameRef = useRef<HTMLDivElement>(null);
+
+  const handleEdit = () => {
+    setEditValue(frame.type === 'cover' ? frame.title || '' : frame.text || '');
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!onUpdate || !storyId) return;
+
+    setIsSaving(true);
+    try {
+      if (frame.type === 'cover') {
+        await onUpdate('title', editValue);
+      } else {
+        await onUpdate('sceneText', editValue, frame.index);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to save:', error);
+      alert('Failed to save changes. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditValue('');
+  };
 
   const handleDownload = async () => {
     if (!frame.imageUrl) return;
@@ -47,13 +82,17 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
       // Draw the original image at full resolution
       ctx.drawImage(img, 0, 0);
 
+      // Use edited values if in edit mode, otherwise use frame values
+      const displayTitle = isEditing && frame.type === 'cover' ? editValue : frame.title;
+      const displayText = isEditing && frame.type === 'scene' ? editValue : frame.text;
+
       // Add text overlay if enabled
-      if (showText && (frame.title || frame.text)) {
+      if (showText && (displayTitle || displayText)) {
         // Add semi-transparent background for text readability
         const padding = img.width * 0.05;
         const textAreaHeight = img.height * 0.25;
 
-        if (frame.type === 'scene' && frame.text) {
+        if (frame.type === 'scene' && displayText) {
           ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
           ctx.fillRect(0, img.height - textAreaHeight - padding, img.width, textAreaHeight + padding);
         }
@@ -63,14 +102,14 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
 
-        if (frame.type === 'cover' && frame.title) {
+        if (frame.type === 'cover' && displayTitle) {
           const fontSize = img.width * 0.03;
           ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
           ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
           ctx.shadowBlur = 15;
 
           // Word wrap for title
-          const words = frame.title.split(' ');
+          const words = displayTitle.split(' ');
           const lines: string[] = [];
           let currentLine = words[0];
 
@@ -91,14 +130,14 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
           lines.forEach((line, i) => {
             ctx.fillText(line, img.width / 2, startY + i * lineHeight);
           });
-        } else if (frame.type === 'scene' && frame.text) {
+        } else if (frame.type === 'scene' && displayText) {
           const fontSize = img.width * 0.0175;
           ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
           ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
           ctx.shadowBlur = 10;
 
           // Word wrap for paragraph
-          const words = frame.text.split(' ');
+          const words = displayText.split(' ');
           const lines: string[] = [];
           let currentLine = words[0];
           const maxWidth = img.width * 0.85;
@@ -153,69 +192,140 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowText(!showText)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
-          >
-            {showText ? (
-              <>
-                <EyeOff className="w-4 h-4" />
-                Hide Text
-              </>
-            ) : (
-              <>
-                <Eye className="w-4 h-4" />
-                Show Text
-              </>
-            )}
-          </button>
-          <button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4" />
-            {isDownloading ? 'Downloading...' : 'Download'}
-          </button>
+          {canEdit && !isEditing && (
+            <button
+              onClick={handleEdit}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+            >
+              <Edit2 className="w-4 h-4" />
+              Edit
+            </button>
+          )}
+          {isEditing && (
+            <>
+              <button
+                onClick={handleCancel}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                <X className="w-4 h-4" />
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save className="w-4 h-4" />
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+            </>
+          )}
+          {!isEditing && (
+            <>
+              <button
+                onClick={() => setShowText(!showText)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              >
+                {showText ? (
+                  <>
+                    <EyeOff className="w-4 h-4" />
+                    Hide Text
+                  </>
+                ) : (
+                  <>
+                    <Eye className="w-4 h-4" />
+                    Show Text
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Download className="w-4 h-4" />
+                {isDownloading ? 'Downloading...' : 'Download'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
-      {/* Frame Display - 4:5 Aspect Ratio */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div
-          ref={frameRef}
-          className="relative w-full"
-          style={{ aspectRatio: '4/5' }}
-        >
-          {/* Background Image */}
-          {frame.imageUrl && (
-            <img
-              src={frame.imageUrl}
-              alt={frame.type === 'cover' ? 'Cover' : `Scene ${(frame.index || 0) + 1}`}
-              className="absolute inset-0 w-full h-full object-cover"
-              crossOrigin="anonymous"
-            />
-          )}
-
-          {/* Text Overlay */}
-          {showText && (frame.title || frame.text) && (
-            <div className="absolute inset-0 flex items-end p-8">
-              <div className="w-full">
-                {frame.type === 'cover' && frame.title && (
-                  <h2 className="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] text-center leading-tight">
+      {/* Frame Display */}
+      {frame.type === 'cover' ? (
+        /* Cover Frame - Image + Title Below with White Border */
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden p-6">
+          <div ref={frameRef} className="w-full">
+            {/* Image */}
+            {frame.imageUrl && (
+              <img
+                src={frame.imageUrl}
+                alt="Cover"
+                className="w-full h-auto rounded-2xl"
+                crossOrigin="anonymous"
+              />
+            )}
+            {/* Title Below */}
+            {showText && (
+              <div className="pt-4 pb-6 px-6">
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-full text-4xl font-bold text-gray-800 text-center leading-tight bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    placeholder="Enter title..."
+                  />
+                ) : (
+                  <h2 className="text-4xl font-bold text-gray-800 text-center leading-tight">
                     {frame.title}
                   </h2>
                 )}
-                {frame.type === 'scene' && frame.text && (
-                  <p className="text-base text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed bg-black/30 backdrop-blur-sm p-6 rounded-xl">
-                    {frame.text}
-                  </p>
-                )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        /* Scene Frame - 4:5 with text overlay and White Border */
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden p-8">
+          <div
+            ref={frameRef}
+            className="relative w-full bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] overflow-hidden"
+            style={{ aspectRatio: '4/5' }}
+          >
+            {/* Background Image */}
+            {frame.imageUrl && (
+              <img
+                src={frame.imageUrl}
+                alt={`Scene ${(frame.index || 0) + 1}`}
+                className="absolute inset-0 w-full h-full object-cover rounded-2xl"
+                crossOrigin="anonymous"
+              />
+            )}
+
+            {/* Text Overlay */}
+            {showText && (
+              <div className="absolute inset-0 flex items-end p-8">
+                <div className="w-full">
+                  {isEditing ? (
+                    <textarea
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      rows={4}
+                      className="w-full text-base text-gray-800 leading-relaxed bg-white border border-gray-300 rounded-2xl p-6 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                      placeholder="Enter scene text..."
+                    />
+                  ) : (
+                    <p className="text-base text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed bg-black/30 backdrop-blur-sm p-6 rounded-2xl">
+                      {frame.text}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Frame Info */}
       {frame.text && frame.type === 'scene' && (

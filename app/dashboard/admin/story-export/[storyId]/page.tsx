@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import Link from 'next/link';
 import { Download, ArrowLeft, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
-import ExportFrame from './ExportFrame';
+import ExportFrameWrapper from './ExportFrameWrapper';
 
 // V3 Illustration Status format
 interface V3IllustrationStatus {
@@ -77,7 +77,7 @@ export default async function StoryExportPage({
   }
 
   // Fetch user profile for story creator
-  const { data: userProfile } = await adminSupabase
+  const { data: storyCreator } = await adminSupabase
     .from('user_profiles')
     .select('id, email, full_name')
     .eq('id', story.user_id)
@@ -118,6 +118,9 @@ export default async function StoryExportPage({
   }
 
   const frames: Frame[] = [];
+
+  // Check if current user owns this story
+  const canEdit = story.user_id === user.id;
 
   if (isV3 && v3Status) {
     // Add cover frame
@@ -193,7 +196,7 @@ export default async function StoryExportPage({
           </p>
           <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
             <span>
-              Created by: <span className="font-medium text-gray-700">{userProfile?.full_name || userProfile?.email || 'Unknown'}</span>
+              Created by: <span className="font-medium text-gray-700">{storyCreator?.full_name || storyCreator?.email || 'Unknown'}</span>
             </span>
             <span>•</span>
             <span>
@@ -239,10 +242,12 @@ export default async function StoryExportPage({
           /* Frames Grid */
           <div className="space-y-12">
             {frames.map((frame, index) => (
-              <ExportFrame
+              <ExportFrameWrapper
                 key={index}
                 frame={frame}
                 frameNumber={index + 1}
+                canEdit={canEdit}
+                storyId={params.storyId}
               />
             ))}
           </div>
