@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import StoryCarousel from './StoryCarousel';
 
@@ -22,6 +23,9 @@ interface V3IllustrationStatus {
 }
 
 export default async function FeaturedStoriesCarousel() {
+  // Opt out of caching to ensure fresh data on every request
+  noStore();
+
   // Fetch featured stories for carousel (using admin client for public access)
   const supabase = createAdminClient();
 

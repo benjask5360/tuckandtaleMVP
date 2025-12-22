@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { unstable_noStore as noStore } from 'next/cache'
 import { Check, ArrowRight, Heart } from 'lucide-react'
 import Image from 'next/image'
 import AuthAwareCTA from '@/components/AuthAwareCTA'
@@ -31,6 +32,9 @@ interface V3IllustrationStatus {
 }
 
 export default async function BedtimePage() {
+  // Opt out of caching to ensure fresh data on every request
+  noStore();
+
   // Fetch featured stories for carousel (using admin client for public access)
   const supabase = createAdminClient();
 
@@ -166,7 +170,7 @@ export default async function BedtimePage() {
             <div className="card p-6 text-center group">
               <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
                 <Image
-                  src="/images/How it works/avatar.png"
+                  src="/images/Characters/children.jpg"
                   alt="Create a character profile for your child"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
@@ -184,17 +188,17 @@ export default async function BedtimePage() {
             <div className="card p-6 text-center group">
               <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
                 <Image
-                  src="/images/How it works/growth.png"
+                  src="/images/How it works/genres.png"
                   alt="Choose growth stories that teach emotional regulation"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                  className="object-contain group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick a Growth Story</h3>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Choose Your Adventure</h3>
               <p className="text-gray-600 leading-relaxed">
-                Choose stories about staying in bed, calming down, and falling asleep.
+                Bedtime, fantasy, space, animals — pick what they'll love.
               </p>
             </div>
 
