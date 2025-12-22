@@ -53,19 +53,29 @@ export default async function StoryExportPage({
   const adminSupabase = createAdminClient();
   const { data: story, error: storyError } = await adminSupabase
     .from('content')
-    .select(`
-      *,
-      content_characters(
+    .select('*')
+    .eq('id', params.storyId)
+    .eq('content_type', 'story')
+    .single();
+
+  // Fetch character data separately (optional)
+  let characterAvatarUrl: string | undefined;
+  if (story) {
+    const { data: contentChars } = await adminSupabase
+      .from('content_characters')
+      .select(`
         character_profiles(
           id,
           name,
           avatar_cache
         )
-      )
-    `)
-    .eq('id', params.storyId)
-    .eq('content_type', 'story')
-    .single();
+      `)
+      .eq('content_id', story.id)
+      .limit(1)
+      .single();
+
+    characterAvatarUrl = (contentChars as any)?.character_profiles?.avatar_cache?.image_url;
+  }
 
   if (storyError || !story) {
     return (
@@ -131,9 +141,6 @@ export default async function StoryExportPage({
 
   // Check if current user owns this story
   const canEdit = story.user_id === user.id;
-
-  // Get main character avatar URL
-  const characterAvatarUrl = (story as any).content_characters?.[0]?.character_profiles?.avatar_cache?.image_url;
 
   if (isV3 && v3Status) {
     // Add cover frame
