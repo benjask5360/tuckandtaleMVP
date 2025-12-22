@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import StoryCard from './StoryCard';
+import CarouselStoryCard from './CarouselStoryCard';
 
 interface Story {
   id: string;
@@ -71,7 +71,7 @@ export default function StoryCarousel({ stories }: StoryCarouselProps) {
         >
           {stories.map((story) => (
             <div key={story.id} className="snap-center">
-              <StoryCard
+              <CarouselStoryCard
                 title={story.title}
                 coverImageUrl={story.coverImageUrl}
                 characterAvatarUrl={story.characterAvatarUrl}
