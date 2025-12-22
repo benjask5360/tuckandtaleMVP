@@ -177,7 +177,7 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
           });
 
           // Calculate avatar size and position (bottom-right corner)
-          const avatarSize = img.width * 0.12; // 12% of image width
+          const avatarSize = img.width * 0.36; // 36% of image width
           const margin = img.width * 0.025; // 2.5% margin
           const avatarX = img.width - avatarSize - margin;
           const avatarY = img.height - avatarSize - margin;
@@ -193,7 +193,24 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
           ctx.beginPath();
           ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
           ctx.clip();
-          ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+
+          // Calculate aspect ratio to align from top
+          const avatarAspect = avatarImg.width / avatarImg.height;
+          const targetAspect = 1; // circle is 1:1
+
+          let sx = 0, sy = 0, sWidth = avatarImg.width, sHeight = avatarImg.height;
+
+          if (avatarAspect > targetAspect) {
+            // Avatar is wider - crop sides, keep top
+            sWidth = avatarImg.height; // make it square
+            sx = (avatarImg.width - sWidth) / 2; // center horizontally
+          } else {
+            // Avatar is taller - crop from bottom, keep top
+            sHeight = avatarImg.width; // make it square
+            sy = 0; // start from top
+          }
+
+          ctx.drawImage(avatarImg, sx, sy, sWidth, sHeight, avatarX, avatarY, avatarSize, avatarSize);
           ctx.restore();
 
           // Draw white border around avatar
@@ -332,11 +349,11 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
               )}
               {/* Character Avatar Circle - Bottom Right */}
               {showAvatar && frame.characterAvatarUrl && (
-                <div className="absolute bottom-4 right-4 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                <div className="absolute bottom-4 right-4 w-60 h-60 rounded-full border-8 border-white shadow-lg overflow-hidden bg-white">
                   <img
                     src={frame.characterAvatarUrl}
                     alt="Character"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                     crossOrigin="anonymous"
                   />
                 </div>

@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import Link from 'next/link';
 import { Download, ArrowLeft, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import ExportFrameWrapper from './ExportFrameWrapper';
+import StoryNavDropdown from './StoryNavDropdown';
 
 // V3 Illustration Status format
 interface V3IllustrationStatus {
@@ -58,23 +59,40 @@ export default async function StoryExportPage({
     .eq('content_type', 'story')
     .single();
 
-  // Fetch character data separately (optional)
+  // Get character avatar URL
+  // For V3 stories, character info is in generation_metadata.characters
   let characterAvatarUrl: string | undefined;
   if (story) {
-    const { data: contentChars } = await adminSupabase
-      .from('content_characters')
-      .select(`
-        character_profiles(
-          id,
-          name,
-          avatar_cache
-        )
-      `)
-      .eq('content_id', story.id)
-      .limit(1)
-      .single();
+    const metadata = story.generation_metadata as any;
+    const characters = metadata?.characters;
 
-    characterAvatarUrl = (contentChars as any)?.character_profiles?.avatar_cache?.image_url;
+    if (characters && characters.length > 0) {
+      const firstChar = characters[0];
+
+      // The character ID is directly in the id field
+      const characterId = firstChar.id || firstChar.character_profile_id;
+
+      if (characterId) {
+        const { data: charProfile } = await adminSupabase
+          .from('character_profiles')
+          .select('id, name, avatar_cache_id')
+          .eq('id', characterId)
+          .single();
+
+        // If character has an avatar_cache_id, fetch the avatar
+        if (charProfile?.avatar_cache_id) {
+          const { data: avatarCache } = await adminSupabase
+            .from('avatar_cache')
+            .select('image_url')
+            .eq('id', charProfile.avatar_cache_id)
+            .single();
+
+          if (avatarCache?.image_url) {
+            characterAvatarUrl = avatarCache.image_url;
+          }
+        }
+      }
+    }
   }
 
   if (storyError || !story) {
@@ -105,10 +123,29 @@ export default async function StoryExportPage({
   // Fetch all stories for navigation
   const { data: allStories } = await adminSupabase
     .from('content')
-    .select('id, title, created_at')
+    .select('id, title, created_at, user_id')
     .eq('content_type', 'story')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
+
+  // Fetch user profiles for all stories
+  const storyUserProfiles: Record<string, { full_name: string | null; email: string }> = {};
+  if (allStories) {
+    const userIds = [...new Set(allStories.map(s => s.user_id))];
+    const { data: profiles } = await adminSupabase
+      .from('user_profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+
+    if (profiles) {
+      profiles.forEach(profile => {
+        storyUserProfiles[profile.id] = {
+          full_name: profile.full_name,
+          email: profile.email
+        };
+      });
+    }
+  }
 
   // Find current story index and get prev/next
   const currentIndex = allStories?.findIndex(s => s.id === params.storyId) ?? -1;
@@ -181,35 +218,47 @@ export default async function StoryExportPage({
               Story Export
             </h1>
             {/* Story Navigation */}
-            <div className="flex items-center gap-2">
-              {prevStory ? (
-                <Link
-                  href={`/dashboard/admin/story-export/${prevStory.id}`}
-                  className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
-                </Link>
-              ) : (
-                <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
+            <div className="flex items-center gap-4">
+              {allStories && allStories.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Jump to:</span>
+                  <StoryNavDropdown
+                    stories={allStories}
+                    currentStoryId={params.storyId}
+                    userProfiles={storyUserProfiles}
+                  />
                 </div>
               )}
-              {nextStory ? (
-                <Link
-                  href={`/dashboard/admin/story-export/${nextStory.id}`}
-                  className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                {prevStory ? (
+                  <Link
+                    href={`/dashboard/admin/story-export/${prevStory.id}`}
+                    className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Link>
+                ) : (
+                  <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </div>
+                )}
+                {nextStory ? (
+                  <Link
+                    href={`/dashboard/admin/story-export/${nextStory.id}`}
+                    className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <p className="text-gray-600">
