@@ -9,6 +9,7 @@ interface Frame {
   imageUrl?: string;
   text?: string;
   title?: string;
+  characterAvatarUrl?: string;
 }
 
 interface ExportFrameWrapperProps {

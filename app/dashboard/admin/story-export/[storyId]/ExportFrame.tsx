@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Download, Eye, EyeOff, Edit2, Save, X } from 'lucide-react';
+import { Download, Eye, EyeOff, Edit2, Save, X, User } from 'lucide-react';
 
 interface Frame {
   type: 'cover' | 'scene';
@@ -9,6 +9,7 @@ interface Frame {
   imageUrl?: string;
   text?: string;
   title?: string;
+  characterAvatarUrl?: string;
 }
 
 interface ExportFrameProps {
@@ -21,6 +22,7 @@ interface ExportFrameProps {
 
 export default function ExportFrame({ frame, frameNumber, canEdit = false, storyId, onUpdate }: ExportFrameProps) {
   const [showText, setShowText] = useState(true);
+  const [showAvatar, setShowAvatar] = useState(true);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -162,6 +164,50 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
         }
       }
 
+      // Add character avatar to cover if enabled
+      if (frame.type === 'cover' && showAvatar && frame.characterAvatarUrl) {
+        try {
+          const avatarImg = new Image();
+          avatarImg.crossOrigin = 'anonymous';
+
+          await new Promise((resolve, reject) => {
+            avatarImg.onload = resolve;
+            avatarImg.onerror = reject;
+            avatarImg.src = frame.characterAvatarUrl!;
+          });
+
+          // Calculate avatar size and position (bottom-right corner)
+          const avatarSize = img.width * 0.12; // 12% of image width
+          const margin = img.width * 0.025; // 2.5% margin
+          const avatarX = img.width - avatarSize - margin;
+          const avatarY = img.height - avatarSize - margin;
+
+          // Draw white circle background
+          ctx.fillStyle = 'white';
+          ctx.beginPath();
+          ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, (avatarSize / 2) + 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Clip to circle for avatar
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(avatarImg, avatarX, avatarY, avatarSize, avatarSize);
+          ctx.restore();
+
+          // Draw white border around avatar
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+          ctx.stroke();
+        } catch (error) {
+          console.error('Failed to load avatar:', error);
+          // Continue with download even if avatar fails
+        }
+      }
+
       // Download
       const link = document.createElement('a');
       const filename = frame.type === 'cover'
@@ -238,6 +284,24 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
                   </>
                 )}
               </button>
+              {frame.type === 'cover' && frame.characterAvatarUrl && (
+                <button
+                  onClick={() => setShowAvatar(!showAvatar)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  {showAvatar ? (
+                    <>
+                      <User className="w-4 h-4" />
+                      Hide Avatar
+                    </>
+                  ) : (
+                    <>
+                      <User className="w-4 h-4" />
+                      Show Avatar
+                    </>
+                  )}
+                </button>
+              )}
               <button
                 onClick={handleDownload}
                 disabled={isDownloading}
@@ -256,15 +320,28 @@ export default function ExportFrame({ frame, frameNumber, canEdit = false, story
         /* Cover Frame - Image + Title Below with White Border */
         <div className="bg-white rounded-2xl shadow-md overflow-hidden p-6">
           <div ref={frameRef} className="w-full">
-            {/* Image */}
-            {frame.imageUrl && (
-              <img
-                src={frame.imageUrl}
-                alt="Cover"
-                className="w-full h-auto rounded-2xl"
-                crossOrigin="anonymous"
-              />
-            )}
+            {/* Image Container with Avatar */}
+            <div className="relative">
+              {frame.imageUrl && (
+                <img
+                  src={frame.imageUrl}
+                  alt="Cover"
+                  className="w-full h-auto rounded-2xl"
+                  crossOrigin="anonymous"
+                />
+              )}
+              {/* Character Avatar Circle - Bottom Right */}
+              {showAvatar && frame.characterAvatarUrl && (
+                <div className="absolute bottom-4 right-4 w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                  <img
+                    src={frame.characterAvatarUrl}
+                    alt="Character"
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                </div>
+              )}
+            </div>
             {/* Title Below */}
             {showText && (
               <div className="pt-4 pb-6 px-6">
