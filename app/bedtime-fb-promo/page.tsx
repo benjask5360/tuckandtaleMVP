@@ -84,27 +84,22 @@ export default async function BedtimePage() {
             <div className="animate-fade-in-up text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
                 <span className="gradient-text">
-                  End the Bedtime Battle
+                  One Bedtime Story. Your Child as the Hero.
                 </span>
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Personalized stories that help your child stay in bed — without the fight.
+                $4.99. No subscription. Ready in minutes.
               </p>
 
-              <div className="flex flex-col gap-4 mb-6">
-                <AuthAwareCTA>
+              <div className="flex flex-col gap-4 mb-8">
+                <AuthAwareCTA promo="single-story">
                   <>
-                    Start Your Free Trial
+                    Get Your Story - $4.99
                     <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                   </>
                 </AuthAwareCTA>
               </div>
-
-              <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
-                <Check className="w-5 h-5 text-primary-500 flex-shrink-0" />
-                <span>7-day free trial</span>
-              </p>
 
               {/* Mobile Hero Image */}
               <div className="relative lg:hidden w-full h-[400px] sm:h-[500px]">
@@ -280,11 +275,11 @@ export default async function BedtimePage() {
             Turn Bedtime Battles Into Bonding Time
           </h2>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Create calming personalized stories in minutes — start your 7-day free trial.
+            One personalized story. $4.99. No subscription.
           </p>
-          <AuthAwareCTA>
+          <AuthAwareCTA promo="single-story">
             <>
-              Start Your Free Trial
+              Get Your Story - $4.99
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           </AuthAwareCTA>
@@ -302,7 +297,6 @@ export default async function BedtimePage() {
               <p className="text-center md:text-left text-gray-500">© 2025 Tuck and Tale™. All rights reserved.</p>
               <nav className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row gap-x-8 gap-y-4 text-center md:text-left text-gray-600">
                 <a href="/about" className="hover:text-primary-600 transition-colors">About</a>
-                <a href="/pricing" className="hover:text-primary-600 transition-colors">Pricing</a>
                 <a href="/contact" className="hover:text-primary-600 transition-colors">Contact Us</a>
                 <a href="/faq" className="hover:text-primary-600 transition-colors">FAQ</a>
                 <a href="/founder-parents" className="hover:text-primary-600 transition-colors">Founder Parents</a>

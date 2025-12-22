@@ -43,23 +43,23 @@ function CreateStoryContent() {
   const [childProfiles, setChildProfiles] = useState<CharacterProfile[]>([])
   const [paywallStatus, setPaywallStatus] = useState<PaywallStatus | null>(null)
 
-  // Check if user just purchased a credit
+  // Check if user just purchased a credit (regular flow or promo flow)
   const justPurchasedCredit = searchParams.get('credit') === 'purchased'
+  const justPurchasedFromPromo = searchParams.get('purchased') === 'true'
 
   // Track if Purchase pixel has been fired to prevent duplicates
   const purchasePixelFired = useRef(false)
 
-  // DISABLED: Single story Purchase pixel - keeping code dormant for potential future use
-  // Purchase events now tracked via Stripe webhook for subscription conversions
+  // Fire Purchase pixel for promo flow ($4.99 single story purchase)
+  // Note: Regular credit purchases have pixel tracking disabled, but promo flow should track
   useEffect(() => {
-    if (justPurchasedCredit && !purchasePixelFired.current) {
+    if (justPurchasedFromPromo && !purchasePixelFired.current) {
       purchasePixelFired.current = true
-      // Disabled: Single story purchase tracking
-      // if (typeof window !== 'undefined' && window.fbq) {
-      //   window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
-      // }
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
+      }
     }
-  }, [justPurchasedCredit])
+  }, [justPurchasedFromPromo])
 
   useEffect(() => {
     loadData()

@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
+  const promo = searchParams.get('promo')
 
   if (code) {
     const supabase = await createClient()
@@ -47,7 +48,16 @@ export async function GET(request: NextRequest) {
           }).catch(err => console.error('Failed to notify admin:', err))
 
           // Add newuser param to trigger Lead pixel on character page
-          return NextResponse.redirect(`${origin}/onboarding/character?newuser=true`)
+          // Also preserve promo param if present
+          const characterUrl = promo
+            ? `${origin}/onboarding/character?newuser=true&promo=${promo}`
+            : `${origin}/onboarding/character?newuser=true`
+          return NextResponse.redirect(characterUrl)
+        }
+
+        // Existing user with characters - if they have promo, send to single-story pricing
+        if (promo === 'single-story') {
+          return NextResponse.redirect(`${origin}/onboarding/pricing/single-story`)
         }
       }
 

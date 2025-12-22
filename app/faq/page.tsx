@@ -23,7 +23,7 @@ export default function FAQPage() {
     },
     {
       question: 'How many stories can I create?',
-      answer: 'You can create up to 30 stories per month. Start with a 7-day free trial to experience the full product.'
+      answer: 'You can create up to 30 stories per month. Start with a 7-day free trial to experience the full product. You can also purchase individual stories for $4.99 each — no subscription required.'
     },
     {
       question: 'Can I include more than one child in a story?',
@@ -43,7 +43,7 @@ export default function FAQPage() {
     },
     {
       question: 'Is there a free trial?',
-      answer: 'Yes! Get 7 days free with access to up to 30 stories. Cancel anytime before your trial ends and you won\'t be charged.'
+      answer: 'Yes! Get 7 days free with access to up to 30 stories. Cancel anytime before your trial ends and you won\'t be charged. Prefer to skip the trial? You can buy a single story for $4.99 — no commitment.'
     },
     {
       question: 'Can I cancel my subscription?',
@@ -119,7 +119,7 @@ export default function FAQPage() {
                 Ready to Create Magic?
               </h2>
               <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-                Join thousands of families creating personalized stories that inspire and delight.
+                Join families creating personalized stories that inspire and delight.
               </p>
               <div className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-colors">
                 Start Your Free Trial

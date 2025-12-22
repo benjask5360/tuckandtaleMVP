@@ -8,9 +8,10 @@ import { ArrowRight } from 'lucide-react'
 interface AuthAwareCTAProps {
   className?: string
   children?: React.ReactNode
+  promo?: string // Optional promo code to pass through auth flow (e.g., 'single-story')
 }
 
-export default function AuthAwareCTA({ className = "btn-primary btn-xl group", children }: AuthAwareCTAProps) {
+export default function AuthAwareCTA({ className = "btn-primary btn-xl group", children, promo }: AuthAwareCTAProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
@@ -35,9 +36,16 @@ export default function AuthAwareCTA({ className = "btn-primary btn-xl group", c
 
   const handleClick = () => {
     if (isAuthenticated) {
-      router.push('/dashboard')
+      // If user is already authenticated and has promo, go to single-story pricing
+      if (promo === 'single-story') {
+        router.push('/onboarding/pricing/single-story')
+      } else {
+        router.push('/dashboard')
+      }
     } else {
-      router.push('/auth/login')
+      // Pass promo param through auth flow
+      const loginUrl = promo ? `/auth/login?promo=${promo}` : '/auth/login'
+      router.push(loginUrl)
     }
   }
 

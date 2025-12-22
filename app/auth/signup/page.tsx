@@ -12,6 +12,8 @@ import GoogleButton from '@/components/auth/GoogleButton'
 function SignupForm() {
   const searchParams = useSearchParams()
   const prefillEmail = searchParams.get('email') || ''
+  const promo = searchParams.get('promo')
+  const isSingleStory = promo === 'single-story'
   const [email, setEmail] = useState(prefillEmail)
   const [password, setPassword] = useState('')
   const [acceptedTerms, setAcceptedTerms] = useState(false)
@@ -27,10 +29,15 @@ function SignupForm() {
 
     // Note: Google OAuth users will need to accept terms in the onboarding modal
     // since we can't get their consent before OAuth redirect
+    // Build callback URL with promo param if present
+    const callbackUrl = promo
+      ? `${window.location.origin}/auth/callback?promo=${promo}`
+      : `${window.location.origin}/auth/callback`
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     })
 
@@ -88,7 +95,10 @@ function SignupForm() {
 
     // Welcome email will be sent after name collection in onboarding
     // Redirect to onboarding (auth callback will handle this)
-    router.push('/onboarding/character')
+    const onboardingUrl = promo
+      ? `/onboarding/character?promo=${promo}`
+      : '/onboarding/character'
+    router.push(onboardingUrl)
   }
 
   return (
@@ -212,14 +222,14 @@ function SignupForm() {
 
               <p className="text-center text-sm text-gray-600">
                 Already have an account?{' '}
-                <Link href="/auth/login" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+                <Link href={promo ? `/auth/login?promo=${promo}` : '/auth/login'} className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
                   Login
                 </Link>
               </p>
 
               <p className="text-center text-xs text-gray-500 flex items-center justify-center gap-2">
                 <Check className="w-4 h-4 text-primary-500" />
-                7-day free trial • Cancel anytime, pay nothing
+                {isSingleStory ? 'One personalized story for $4.99' : '7-day free trial • Cancel anytime, pay nothing'}
               </p>
               </form>
             </div>

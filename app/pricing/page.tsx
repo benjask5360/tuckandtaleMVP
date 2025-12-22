@@ -364,6 +364,9 @@ export default function PricingPage() {
                 Start Your Free Trial
                 <ArrowRight className="w-5 h-5" />
               </div>
+              <p className="text-white/90 mt-4 text-base">
+                Or get a single story for $4.99 — no subscription
+              </p>
             </div>
           </Link>
         </div>

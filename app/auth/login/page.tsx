@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AuthCard from '@/components/auth/AuthCard'
 import GoogleButton from '@/components/auth/GoogleButton'
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams()
+  const promo = searchParams.get('promo')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [step, setStep] = useState<'email' | 'password'>('email')
@@ -21,10 +23,15 @@ export default function LoginPage() {
     setError(null)
     setGoogleLoading(true)
 
+    // Build callback URL with promo param if present
+    const callbackUrl = promo
+      ? `${window.location.origin}/auth/callback?promo=${promo}`
+      : `${window.location.origin}/auth/callback`
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callbackUrl,
       },
     })
 
@@ -59,8 +66,11 @@ export default function LoginPage() {
         // User exists, show password field
         setStep('password')
       } else {
-        // User doesn't exist, redirect to signup with email prefilled
-        router.push(`/auth/signup?email=${encodeURIComponent(email)}`)
+        // User doesn't exist, redirect to signup with email prefilled (and promo if present)
+        const signupUrl = promo
+          ? `/auth/signup?email=${encodeURIComponent(email)}&promo=${promo}`
+          : `/auth/signup?email=${encodeURIComponent(email)}`
+        router.push(signupUrl)
         return
       }
     } catch {
@@ -95,11 +105,19 @@ export default function LoginPage() {
         .is('deleted_at', null)
         .limit(1)
 
-      // If no characters, redirect to onboarding
+      // If no characters, redirect to onboarding (with promo if present)
       if (!characters || characters.length === 0) {
-        router.push('/onboarding/character')
+        const onboardingUrl = promo
+          ? `/onboarding/character?promo=${promo}`
+          : '/onboarding/character'
+        router.push(onboardingUrl)
       } else {
-        router.push('/dashboard')
+        // Existing user with characters - if they have promo, send to single-story pricing
+        if (promo === 'single-story') {
+          router.push('/onboarding/pricing/single-story')
+        } else {
+          router.push('/dashboard')
+        }
       }
     }
   }
@@ -154,7 +172,7 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link href="/auth/signup" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+              <Link href={promo ? `/auth/signup?promo=${promo}` : '/auth/signup'} className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
                 Sign up
               </Link>
             </p>
@@ -222,5 +240,19 @@ export default function LoginPage() {
         )}
       </div>
     </AuthCard>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <AuthCard>
+        <div className="flex items-center justify-center py-8">
+          <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AuthCard>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

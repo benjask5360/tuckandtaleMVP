@@ -36,6 +36,7 @@ export default function DynamicCharacterForm({
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo')
+  const promo = searchParams.get('promo')
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth: string) => {
@@ -152,8 +153,12 @@ export default function DynamicCharacterForm({
       if (shouldRedirectAfterAvatar) {
         // For onboarding, add a small delay then redirect
         // The delay ensures the database has time to commit the avatar link
+        // Preserve promo param if present
+        const addMoreUrl = promo
+          ? `/onboarding/add-more?promo=${promo}`
+          : '/onboarding/add-more'
         setTimeout(() => {
-          window.location.href = '/onboarding/add-more'
+          window.location.href = addMoreUrl
         }, 500)
       } else if (redirectAfterCreate) {
         // Custom redirect URL was provided

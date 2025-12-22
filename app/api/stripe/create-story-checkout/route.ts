@@ -2,9 +2,10 @@
  * Create Story Checkout API Route
  * Creates Stripe Checkout sessions for single story purchases ($4.99)
  *
- * Two modes:
+ * Three modes:
  * 1. With storyId: Unlock a specific story (for story #2 paywall)
  * 2. Without storyId: Buy a generation credit (for story #3+ pre-generation paywall)
+ * 3. With fromOnboarding: Buy a generation credit from the single-story promo flow
  */
 
 import { NextResponse } from 'next/server'
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
 
     // Parse request body
     const body = await request.json()
-    const { storyId } = body as { storyId?: string }
+    const { storyId, fromOnboarding } = body as { storyId?: string; fromOnboarding?: boolean }
 
     // Validate storyId if provided
     if (storyId) {
@@ -101,16 +102,25 @@ export async function POST(request: Request) {
       customerId,
     })
 
-    // Determine success/cancel URLs based on whether unlocking specific story or buying credit
+    // Determine success/cancel URLs based on context
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    const successUrl = storyId
-      ? `${baseUrl}/dashboard/stories/v3/${storyId}?unlocked=true`
-      : `${baseUrl}/dashboard/stories/create?credit=purchased`
+    let successUrl: string
+    let cancelUrl: string
 
-    const cancelUrl = storyId
-      ? `${baseUrl}/dashboard/stories/v3/${storyId}`
-      : `${baseUrl}/dashboard/stories/create`
+    if (storyId) {
+      // Unlocking a specific story
+      successUrl = `${baseUrl}/dashboard/stories/v3/${storyId}?unlocked=true`
+      cancelUrl = `${baseUrl}/dashboard/stories/v3/${storyId}`
+    } else if (fromOnboarding) {
+      // Single-story promo flow - redirect to story creation after purchase
+      successUrl = `${baseUrl}/dashboard/stories/create?purchased=true`
+      cancelUrl = `${baseUrl}/onboarding/pricing/single-story?canceled=true`
+    } else {
+      // Regular credit purchase
+      successUrl = `${baseUrl}/dashboard/stories/create?credit=purchased`
+      cancelUrl = `${baseUrl}/dashboard/stories/create`
+    }
 
     // Create Stripe Checkout session in payment mode (one-time)
     const session = await stripe.checkout.sessions.create({
@@ -126,6 +136,7 @@ export async function POST(request: Request) {
         user_id: user.id,
         story_id: storyId || '',
         purchase_type: storyId ? 'single_story' : 'generation_credit',
+        from_onboarding: fromOnboarding ? 'true' : 'false',
       },
       success_url: successUrl,
       cancel_url: cancelUrl,
