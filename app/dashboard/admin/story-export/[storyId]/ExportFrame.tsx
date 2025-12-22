@@ -64,7 +64,7 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
         ctx.textBaseline = 'bottom';
 
         if (frame.type === 'cover' && frame.title) {
-          const fontSize = img.width * 0.06;
+          const fontSize = img.width * 0.03;
           ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
           ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
           ctx.shadowBlur = 15;
@@ -92,7 +92,7 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
             ctx.fillText(line, img.width / 2, startY + i * lineHeight);
           });
         } else if (frame.type === 'scene' && frame.text) {
-          const fontSize = img.width * 0.035;
+          const fontSize = img.width * 0.0175;
           ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
           ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
           ctx.shadowBlur = 10;
@@ -192,7 +192,7 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
             <img
               src={frame.imageUrl}
               alt={frame.type === 'cover' ? 'Cover' : `Scene ${(frame.index || 0) + 1}`}
-              className="absolute inset-0 w-full h-full object-contain"
+              className="absolute inset-0 w-full h-full object-cover"
               crossOrigin="anonymous"
             />
           )}
@@ -202,12 +202,12 @@ export default function ExportFrame({ frame, frameNumber }: ExportFrameProps) {
             <div className="absolute inset-0 flex items-end p-8">
               <div className="w-full">
                 {frame.type === 'cover' && frame.title && (
-                  <h2 className="text-4xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] text-center leading-tight">
+                  <h2 className="text-2xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] text-center leading-tight">
                     {frame.title}
                   </h2>
                 )}
                 {frame.type === 'scene' && frame.text && (
-                  <p className="text-xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed bg-black/30 backdrop-blur-sm p-6 rounded-xl">
+                  <p className="text-base text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] leading-relaxed bg-black/30 backdrop-blur-sm p-6 rounded-xl">
                     {frame.text}
                   </p>
                 )}

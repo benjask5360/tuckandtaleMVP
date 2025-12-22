@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import Link from 'next/link';
-import { Download, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { Download, ArrowLeft, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import ExportFrame from './ExportFrame';
 
 // V3 Illustration Status format
@@ -76,6 +76,26 @@ export default async function StoryExportPage({
     );
   }
 
+  // Fetch user profile for story creator
+  const { data: userProfile } = await adminSupabase
+    .from('user_profiles')
+    .select('id, email, full_name')
+    .eq('id', story.user_id)
+    .single();
+
+  // Fetch all stories for navigation
+  const { data: allStories } = await adminSupabase
+    .from('content')
+    .select('id, title, created_at')
+    .eq('content_type', 'story')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  // Find current story index and get prev/next
+  const currentIndex = allStories?.findIndex(s => s.id === params.storyId) ?? -1;
+  const prevStory = currentIndex > 0 ? allStories?.[currentIndex - 1] : null;
+  const nextStory = currentIndex < (allStories?.length ?? 0) - 1 ? allStories?.[currentIndex + 1] : null;
+
   const metadata = story.generation_metadata as any;
   const isV3 = story.engine_version === 'v3';
   const v3Status = story.v3_illustration_status as V3IllustrationStatus | null;
@@ -132,15 +152,64 @@ export default async function StoryExportPage({
             <ArrowLeft className="w-4 h-4" />
             Back to Admin Dashboard
           </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Story Export
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-4xl font-bold text-gray-900">
+              Story Export
+            </h1>
+            {/* Story Navigation */}
+            <div className="flex items-center gap-2">
+              {prevStory ? (
+                <Link
+                  href={`/dashboard/admin/story-export/${prevStory.id}`}
+                  className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </Link>
+              ) : (
+                <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </div>
+              )}
+              {nextStory ? (
+                <Link
+                  href={`/dashboard/admin/story-export/${nextStory.id}`}
+                  className="inline-flex items-center gap-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <div className="inline-flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-400 rounded-lg text-sm cursor-not-allowed">
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              )}
+            </div>
+          </div>
           <p className="text-gray-600">
             {story.title}
           </p>
-          <p className="text-sm text-gray-500 mt-1">
-            {frames.length} frame{frames.length !== 1 ? 's' : ''} available for export
-          </p>
+          <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+            <span>
+              Created by: <span className="font-medium text-gray-700">{userProfile?.full_name || userProfile?.email || 'Unknown'}</span>
+            </span>
+            <span>•</span>
+            <span>
+              {new Date(story.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </span>
+            <span>•</span>
+            <span>
+              {frames.length} frame{frames.length !== 1 ? 's' : ''} available
+            </span>
+          </div>
         </div>
 
         {/* Instructions */}
