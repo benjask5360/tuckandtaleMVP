@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Download, ArrowLeft, Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import ExportFrameWrapper from './ExportFrameWrapper';
 import StoryNavDropdown from './StoryNavDropdown';
+import FBPromoToggle from './FBPromoToggle';
 
 // V3 Illustration Status format
 interface V3IllustrationStatus {
@@ -295,6 +296,15 @@ export default async function StoryExportPage({
             <li>• The cover frame includes the story title overlay</li>
             <li>• Scene frames include paragraph text overlay</li>
           </ul>
+        </div>
+
+        {/* FB Promo Feature Toggle */}
+        <div className="mb-8">
+          <FBPromoToggle
+            storyId={params.storyId}
+            initialFeatured={story.featured_on_fb_promo || false}
+            initialDisplayOrder={story.fb_promo_display_order || 0}
+          />
         </div>
 
         {/* Check if story has illustrations */}

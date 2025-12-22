@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Check, ArrowRight, Heart } from 'lucide-react'
 import Image from 'next/image'
 import AuthAwareCTA from '@/components/AuthAwareCTA'
+import FeaturedStoriesCarousel from '@/components/FeaturedStoriesCarousel'
 
 export const metadata: Metadata = {
   title: 'End the Bedtime Battle | Tuck and Tale',
@@ -70,8 +71,11 @@ export default function BedtimePage() {
         </div>
       </section>
 
+      {/* Featured Stories Carousel */}
+      <FeaturedStoriesCarousel />
+
       {/* How It Helps With Bedtime Section */}
-      <section className="py-12 md:py-16 bg-gray-50">
+      <section className="py-12 md:py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -150,7 +154,7 @@ export default function BedtimePage() {
       </section>
 
       {/* What Parents Are Saying Section */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -190,7 +194,7 @@ export default function BedtimePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gray-50 relative overflow-hidden">
+      <section className="py-24 bg-white relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh-primary opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">

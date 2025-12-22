@@ -20,18 +20,20 @@ CREATE TABLE IF NOT EXISTS "public"."waitlist_therapistbacked" (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_waitlist_therapistbacked_email ON waitlist_therapistbacked(email);
-CREATE INDEX idx_waitlist_therapistbacked_created_at ON waitlist_therapistbacked(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_waitlist_therapistbacked_email ON waitlist_therapistbacked(email);
+CREATE INDEX IF NOT EXISTS idx_waitlist_therapistbacked_created_at ON waitlist_therapistbacked(created_at DESC);
 
 -- RLS Policies
 ALTER TABLE waitlist_therapistbacked ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone to insert (for public waitlist form)
+DROP POLICY IF EXISTS "Anyone can join waitlist" ON waitlist_therapistbacked;
 CREATE POLICY "Anyone can join waitlist"
   ON waitlist_therapistbacked FOR INSERT
   WITH CHECK (true);
 
 -- Only allow reading own email (prevent enumeration)
+DROP POLICY IF EXISTS "Users cannot read waitlist" ON waitlist_therapistbacked;
 CREATE POLICY "Users cannot read waitlist"
   ON waitlist_therapistbacked FOR SELECT
   USING (false);

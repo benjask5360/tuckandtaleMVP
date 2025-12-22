@@ -1,9 +1,76 @@
+import type { Metadata } from 'next'
 import { Check, ArrowRight, Heart } from 'lucide-react'
 import Image from 'next/image'
 import AuthAwareCTA from '@/components/AuthAwareCTA'
-import FeaturedStoriesCarousel from '@/components/FeaturedStoriesCarousel'
+import { createAdminClient } from '@/lib/supabase/admin'
+import StoryCarousel from './StoryCarousel'
 
-export default function HomePage() {
+export const metadata: Metadata = {
+  title: 'End the Bedtime Battle | Tuck and Tale',
+  description: 'Personalized stories that help your child stay in bed — without the fight. Your child as the hero. Ready in minutes. 7-day free trial available.',
+}
+
+// V3 Illustration Status format
+interface V3IllustrationStatus {
+  overall: 'pending' | 'generating' | 'complete' | 'partial' | 'failed';
+  cover: {
+    status: string;
+    prompt?: string;
+    tempUrl?: string;
+    imageUrl?: string;
+    error?: string;
+  };
+  scenes: Array<{
+    paragraphIndex: number;
+    status: string;
+    prompt?: string;
+    tempUrl?: string;
+    imageUrl?: string;
+    error?: string;
+  }>;
+}
+
+export default async function BedtimePage() {
+  // Fetch featured stories for carousel (using admin client for public access)
+  const supabase = createAdminClient();
+
+  const { data: featuredStories } = await supabase
+    .from('content')
+    .select('id, title, v3_illustration_status, generation_metadata')
+    .eq('content_type', 'story')
+    .eq('featured_on_fb_promo', true)
+    .is('deleted_at', null)
+    .order('fb_promo_display_order', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // Transform stories for carousel
+  const carouselStories = (featuredStories || [])
+    .map((story) => {
+      const v3Status = story.v3_illustration_status as V3IllustrationStatus | null;
+      const coverImageUrl = v3Status?.cover?.imageUrl || v3Status?.cover?.tempUrl;
+
+      if (!coverImageUrl) return null;
+
+      // Get character avatar URL
+      const metadata = story.generation_metadata as any;
+      const characters = metadata?.characters;
+      let characterAvatarUrl: string | undefined;
+
+      if (characters && characters.length > 0) {
+        const firstChar = characters[0];
+        // Note: We would need to fetch from avatar_cache, but for now we'll skip it
+        // to avoid additional queries in the landing page
+      }
+
+      return {
+        id: story.id,
+        title: story.title || 'Untitled Story',
+        coverImageUrl,
+        characterAvatarUrl,
+      };
+    })
+    .filter((story): story is NonNullable<typeof story> => story !== null);
   return (
     <>
       {/* Hero Section - Mobile-optimized */}
@@ -12,19 +79,22 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="animate-fade-in-up text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-6 leading-tight tracking-tight text-gray-900">
-                Personalized Stories Where<br />
                 <span className="gradient-text">
-                  YOUR Child
-                </span>{' '}
-                is the Hero
+                  End the Bedtime Battle
+                </span>
               </h1>
 
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Personalized bedtime stories that teach calm, kindness, and big emotions.
+                Personalized stories that help your child stay in bed — without the fight.
               </p>
 
               <div className="flex flex-col gap-4 mb-6">
-                <AuthAwareCTA />
+                <AuthAwareCTA>
+                  <>
+                    Start Your Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </>
+                </AuthAwareCTA>
               </div>
 
               <p className="text-sm md:text-base text-gray-500 mb-8 flex items-center justify-center lg:justify-start gap-2">
@@ -62,18 +132,32 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Stories Carousel */}
-      <FeaturedStoriesCarousel />
+      {/* Stories Families are Reading Tonight Section */}
+      {carouselStories.length > 0 && (
+        <section className="py-12 md:py-16 bg-gray-50">
+          <div className="container-narrow section-padding">
+            <div className="text-center mb-12 animate-fade-in">
+              <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
+                Stories Families are Reading Tonight
+              </h2>
+              <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Each one personalized with a child's name, look, and interests.
+              </p>
+            </div>
+            <StoryCarousel stories={carouselStories} />
+          </div>
+        </section>
+      )}
 
-      {/* How It Works Section */}
+      {/* How It Helps With Bedtime Section */}
       <section className="py-12 md:py-16 bg-white">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              How It Works
+              How It Helps With Bedtime
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              A magical story made just for your child — in three simple steps.
+              From battle to peaceful in three simple steps.
             </p>
           </div>
 
@@ -96,21 +180,21 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Step 2 - Pick an Adventure */}
+            {/* Step 2 - Pick a Growth Story */}
             <div className="card p-6 text-center group">
               <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
                 <Image
-                  src="/images/How it works/create.png"
-                  alt="Choose from various story adventures"
+                  src="/images/How it works/growth.png"
+                  alt="Choose growth stories that teach emotional regulation"
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="text-4xl font-bold text-primary-500 mb-3">2</div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick a Story</h3>
+              <h3 className="text-2xl font-bold mb-3 text-gray-900">Pick a Growth Story</h3>
               <p className="text-gray-600 leading-relaxed">
-                Choose from magical adventures or stories that help with big feelings.
+                Choose stories about staying in bed, calming down, and falling asleep.
               </p>
             </div>
 
@@ -128,14 +212,14 @@ export default function HomePage() {
               <div className="text-4xl font-bold text-primary-500 mb-3">3</div>
               <h3 className="text-2xl font-bold mb-3 text-gray-900">Watch Their Story Come to Life</h3>
               <p className="text-gray-600 leading-relaxed">
-                In seconds, a beautifully illustrated tale appears — starring your child and their friends.
+                In seconds, a beautifully illustrated tale appears — with your child learning to manage tough moments.
               </p>
             </div>
           </div>
 
           <div className="text-center animate-fade-in">
             <p className="text-xl md:text-2xl font-semibold text-gray-800 mb-2">
-              Every bedtime becomes a moment they&apos;ll remember.
+              Every bedtime becomes a chance to teach calm.
             </p>
             <p className="text-lg md:text-xl text-gray-600">
               Personalized, magical, and made for the way your child sees the world.
@@ -144,81 +228,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Meet the Magic Behind Every Story Section */}
-      <section className="py-12 md:py-16 bg-gray-50">
-        <div className="container-narrow section-padding">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
-              Meet the Magic Behind Every Story
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              At Tuck and Tale, every adventure begins with the people (and pets!) your child loves most.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Card 1 - Children */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/children.jpg"
-                  alt="Children characters in personalized stories"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Your Child, Their Way</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Stories shaped around your little one — their look, age, and personality.
-              </p>
-            </div>
-
-            {/* Card 2 - Magical Characters */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/characters.jpg"
-                  alt="Magical characters including dragons, mermaids, and elves"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">A World Full of Wonder</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Magical friends who spark imagination and bring each tale to life.
-              </p>
-            </div>
-
-            {/* Card 3 - Pets */}
-            <div className="card-interactive p-6 group">
-              <div className="relative w-full h-64 mb-5 rounded-2xl overflow-hidden bg-white">
-                <Image
-                  src="/images/Characters/pets.jpg"
-                  alt="Beloved pets including dogs and cats joining the story"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 33vw"
-                  className="object-contain group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="text-2xl font-bold mb-3 text-gray-900">Furry Friends Welcome</h3>
-              <p className="text-gray-600 leading-relaxed">
-                Corgis, pugs, goldens, cats — their favorite buddies can join the fun too.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center animate-fade-in">
-            <p className="text-xl md:text-2xl font-semibold text-gray-800">
-              Personalized. Magical. Made just for your family.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* What Parents Are Saying Section */}
-      <section className="py-12 md:py-16 bg-white">
+      <section className="py-12 md:py-16 bg-gray-50">
         <div className="container-narrow section-padding">
           <div className="text-center mb-12 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4 text-gray-900">
@@ -227,30 +238,30 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                "My child lit up the moment they saw themselves in the story."
+                "She finally stays in bed. No more getting up 10 times a night."
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                "It looks like a Pixar book starring my kid."
+                "He asks for 'his story' now. Bedtime went from 45 minutes to 10."
               </p>
             </div>
 
-            <div className="flex items-start gap-4 p-6 rounded-2xl bg-white">
+            <div className="flex items-start gap-4 p-6 rounded-2xl bg-gray-50">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white fill-white" />
               </div>
               <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
-                "Bedtime became fun again."
+                "I used to dread 8pm. Now it's actually... nice?"
               </p>
             </div>
           </div>
@@ -258,14 +269,14 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gray-50 relative overflow-hidden">
+      <section className="py-24 bg-white relative overflow-hidden">
         <div className="absolute inset-0 gradient-mesh-primary opacity-30"></div>
         <div className="container-narrow section-padding text-center relative z-10">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 text-gray-900">
-            Ready to create your first story?
+            Turn Bedtime Battles Into Bonding Time
           </h2>
           <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-            Craft captivating stories today — start your 7-day free trial.
+            Create calming personalized stories in minutes — start your 7-day free trial.
           </p>
           <AuthAwareCTA>
             <>
