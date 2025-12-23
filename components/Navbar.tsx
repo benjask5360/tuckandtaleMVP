@@ -172,7 +172,7 @@ export default function Navbar() {
             </div>
           ) : (
             // Clickable logo on other pages
-            <Link href={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
+            <Link href={isAuthenticated ? "/dashboard" : "/auth/login"} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
               <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
                 <Image
                   src="/images/logo.png"
