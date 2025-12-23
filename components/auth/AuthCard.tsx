@@ -6,14 +6,15 @@ interface AuthCardProps {
   children: ReactNode
   title?: string
   subtitle?: string
+  backLink?: string
 }
 
-export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
+export default function AuthCard({ children, title, subtitle, backLink = '/' }: AuthCardProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center bg-white py-12 md:py-16">
       <div className="w-full max-w-lg px-4 sm:px-6 relative z-10">
-        {/* Logo/Brand */}
-        <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-80 transition-opacity mb-6 md:mb-8 min-h-[44px]">
+        {/* Logo/Brand - Non-clickable on auth pages */}
+        <div className="flex items-center justify-center gap-2 sm:gap-2.5 mb-6 md:mb-8 min-h-[44px]">
           <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
             <Image
               src="/images/logo.png"
@@ -30,7 +31,7 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
             </span>
             <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
           </div>
-        </Link>
+        </div>
 
         {/* Title and Subtitle outside white box */}
         {(title || subtitle) && (
@@ -56,7 +57,7 @@ export default function AuthCard({ children, title, subtitle }: AuthCardProps) {
         {/* Back to Home Link */}
         <div className="text-center mt-6">
           <Link
-            href="/"
+            href={backLink}
             className="text-sm md:text-base text-primary-600 hover:text-primary-700 font-semibold inline-flex items-center gap-1 transition-colors min-h-[44px]"
           >
             ← Back to Home

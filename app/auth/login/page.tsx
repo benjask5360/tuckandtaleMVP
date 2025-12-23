@@ -122,8 +122,11 @@ function LoginForm() {
     }
   }
 
+  // Determine back link based on promo
+  const backLink = promo === 'single-story' ? '/bedtime-fb-promo' : '/'
+
   return (
-    <AuthCard>
+    <AuthCard backLink={backLink}>
       <div className="space-y-6">
         {error && (
           <div className="bg-red-50 border-2 border-red-200 text-red-700 px-5 py-4 rounded-2xl text-sm font-medium">

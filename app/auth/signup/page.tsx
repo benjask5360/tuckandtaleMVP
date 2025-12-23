@@ -114,8 +114,8 @@ function SignupForm() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
-          {/* Logo */}
-          <Link href="/" className="flex items-center justify-center gap-2 sm:gap-2.5 hover:opacity-90 transition-all hover:scale-[1.02] mb-10">
+          {/* Logo - Non-clickable on auth pages */}
+          <div className="flex items-center justify-center gap-2 sm:gap-2.5 mb-10">
             <div className="w-[60px] h-[60px] sm:w-[75px] sm:h-[75px] relative flex-shrink-0">
               <Image
                 src="/images/logo.png"
@@ -132,7 +132,7 @@ function SignupForm() {
               </span>
               <span className="gradient-text font-display" style={{ fontWeight: 800, fontSize: 'clamp(1.125rem, 3.5vw, 1.875rem)' }}>™</span>
             </div>
-          </Link>
+          </div>
 
           <div className="card p-6 md:p-10">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-gray-900 mb-6 md:mb-8 text-center">Create Your Account</h2>
@@ -247,7 +247,7 @@ function SignupForm() {
             {/* Back to Home Link */}
             <div className="text-center mt-6">
               <Link
-                href="/"
+                href={isSingleStory ? '/bedtime-fb-promo' : '/'}
                 className="text-sm text-primary-600 hover:text-primary-700 font-semibold inline-flex items-center gap-1 transition-colors"
               >
                 ← Back to Home
