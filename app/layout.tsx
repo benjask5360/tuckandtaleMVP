@@ -5,6 +5,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import ScrollToTop from '@/components/ScrollToTop'
 import UTMCapture from '@/components/UTMCapture'
+import MetaPageView from '@/components/MetaPageView'
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -39,9 +40,9 @@ export default function RootLayout({
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '4311108522501340');
-            fbq('track', 'PageView');
           `}
         </Script>
+        <MetaPageView />
         <noscript>
           <img height="1" width="1" style={{display:'none'}} src="https://www.facebook.com/tr?id=4311108522501340&ev=PageView&noscript=1"/>
         </noscript>
