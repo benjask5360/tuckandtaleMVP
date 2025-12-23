@@ -25,6 +25,9 @@ export default function Navbar() {
 
   // Check if on a single-story promo funnel page
   const isSingleStoryPromo = pathname === '/bedtime-fb-promo'
+
+  // Landing pages where logo should link to /auth/login when unauthenticated
+  const isLandingPage = pathname === '/' || pathname === '/bedtime' || pathname === '/tantrums'
   const dropdownRef = useRef<HTMLDivElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const menuItemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([])
@@ -175,7 +178,7 @@ export default function Navbar() {
             </div>
           ) : (
             // Clickable logo on other pages
-            <Link href={isAuthenticated ? "/dashboard" : (isSingleStoryPromo ? "/auth/login?promo=single-story" : "/auth/login")} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
+            <Link href={isAuthenticated ? "/dashboard" : (isSingleStoryPromo ? "/auth/login?promo=single-story" : (isLandingPage ? "/auth/login" : "/"))} className="flex items-center gap-2 active:opacity-70 transition-opacity min-h-[44px]">
               <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] relative flex-shrink-0">
                 <Image
                   src="/images/logo.png"
