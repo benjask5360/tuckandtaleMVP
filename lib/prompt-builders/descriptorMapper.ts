@@ -204,7 +204,7 @@ export async function mapSelectionsToEnhanced(
           enhanced.body = descriptor.simple_term;
           break;
         case 'glasses':
-          enhanced.glasses = descriptor.simple_term;
+          enhanced.glasses = descriptor.rich_description;
           break;
         case 'pet_color':
           enhanced.petColor = descriptor.simple_term;
