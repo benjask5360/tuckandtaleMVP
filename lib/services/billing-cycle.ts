@@ -150,6 +150,23 @@ export class BillingCycleService {
    * Check if user has stories remaining in their current billing cycle
    */
   static async hasStoriesRemaining(userId: string): Promise<StoriesRemainingResult> {
+    // Check if user is admin - admins have unlimited stories
+    const supabase = await createClient()
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('user_type')
+      .eq('id', userId)
+      .single()
+
+    if (profile?.user_type === 'admin') {
+      return {
+        hasRemaining: true,
+        used: 0,
+        limit: 999999,
+        remaining: 999999,
+      }
+    }
+
     const used = await this.getStoriesInCurrentCycle(userId)
     const limit = PRICING_CONFIG.SUBSCRIPTION_MONTHLY_LIMIT
     const remaining = Math.max(0, limit - used)

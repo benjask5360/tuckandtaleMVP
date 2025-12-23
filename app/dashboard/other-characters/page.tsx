@@ -23,6 +23,7 @@ export default function OtherCharactersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userTier, setUserTier] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -94,6 +95,7 @@ export default function OtherCharactersPage() {
       const { data } = await supabase
         .from('user_profiles')
         .select(`
+          user_type,
           subscription_tier_id,
           subscription_tiers (
             id,
@@ -107,6 +109,7 @@ export default function OtherCharactersPage() {
         .single()
 
       setUserTier(data?.subscription_tiers)
+      setIsAdmin(data?.user_type === 'admin')
     } catch (err) {
       console.error('Error loading user tier:', err)
     }
@@ -146,7 +149,7 @@ export default function OtherCharactersPage() {
   }
 
   const maxCharacters = userTier?.other_character_profiles !== undefined ? userTier.other_character_profiles : 0
-  const canAddMore = maxCharacters === null || characters.length < maxCharacters
+  const canAddMore = isAdmin || maxCharacters === null || characters.length < maxCharacters
 
   if (loading) {
     return (

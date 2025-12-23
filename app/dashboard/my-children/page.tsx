@@ -22,6 +22,7 @@ export default function MyChildrenPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userTier, setUserTier] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -93,6 +94,7 @@ export default function MyChildrenPage() {
       const { data } = await supabase
         .from('user_profiles')
         .select(`
+          user_type,
           subscription_tier_id,
           subscription_tiers (
             id,
@@ -104,6 +106,7 @@ export default function MyChildrenPage() {
         .single()
 
       setUserTier(data?.subscription_tiers)
+      setIsAdmin(data?.user_type === 'admin')
     } catch (err) {
       console.error('Error loading user tier:', err)
     }
@@ -138,7 +141,7 @@ export default function MyChildrenPage() {
   }
 
   const maxChildren = userTier?.child_profiles !== undefined ? userTier.child_profiles : 1
-  const canAddMore = maxChildren === null || children.length < maxChildren
+  const canAddMore = isAdmin || maxChildren === null || children.length < maxChildren
 
   if (loading) {
     return (

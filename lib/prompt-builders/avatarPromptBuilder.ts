@@ -40,93 +40,115 @@ export async function generateAvatarPrompt(
   switch (profileType) {
     case 'child':
     case 'storybook_character':
-      // Build base prompt
-      let baseChar = 'child';
+      // Get numeric age
+      const numericAge = selections.age !== undefined && selections.age !== null ? selections.age : undefined;
+
+      // Determine gender term (boy/girl/child or man/woman/adult)
+      let genderTerm = 'child';
       if (enhanced.gender) {
-        baseChar = enhanced.gender; // e.g., "young boy"
-      } else if (enhanced.age) {
-        baseChar = `${enhanced.age} child`;
+        if (enhanced.gender.includes('girl')) {
+          genderTerm = numericAge !== undefined && numericAge >= 18 ? 'woman' : 'girl';
+        } else if (enhanced.gender.includes('boy')) {
+          genderTerm = numericAge !== undefined && numericAge >= 18 ? 'man' : 'boy';
+        } else if (enhanced.gender.includes('woman') || enhanced.gender.includes('female')) {
+          genderTerm = 'woman';
+        } else if (enhanced.gender.includes('man') || enhanced.gender.includes('male')) {
+          genderTerm = 'man';
+        }
+      } else if (numericAge !== undefined && numericAge >= 18) {
+        genderTerm = 'adult';
       }
 
-      // Add numeric age if available - use hyphenated format
-      let ageDescriptor = baseChar;
-      let numericAge: number | undefined;
-      if (selections.age !== undefined && selections.age !== null) {
-        numericAge = selections.age;
-        const ageNum = selections.age;
-        if (selections.age === 0) {
-          // For infants, use "infant baby boy/girl"
-          ageDescriptor = `infant ${baseChar}`;
-        } else if (selections.age === 1) {
-          ageDescriptor = `one-year-old ${baseChar}`;
+      // Determine kid or adult for clothing description
+      const kidOrAdult = numericAge !== undefined && numericAge >= 18 ? 'adult' : 'kid';
+
+      // Build ethnicity/features phrase
+      const ethnicityPhrase = enhanced.background ? `with ${enhanced.background} features` : '';
+
+      // Build age phrase
+      let agePhrase = '';
+      if (numericAge !== undefined) {
+        if (numericAge === 0) {
+          agePhrase = 'infant';
+        } else if (numericAge === 1) {
+          agePhrase = '1-year-old';
         } else {
-          ageDescriptor = baseChar;
+          agePhrase = `${numericAge}-year-old`;
         }
       }
 
-      // Add age-related features for elderly/mature characters
-      let ageFeatures = '';
-      if (numericAge !== undefined && numericAge >= 60) {
-        if (numericAge >= 70) {
-          ageFeatures = ' with gentle wrinkles and warm features';
-        } else if (numericAge >= 60) {
-          ageFeatures = ' with subtle laugh lines and mature features';
-        }
-      }
+      // Build the main prompt with new structure
+      const mainDescriptor = agePhrase ? `${agePhrase} ${genderTerm}` : genderTerm;
+      prompt = `Disney Pixar style standing avatar of a friendly ${mainDescriptor} ${ethnicityPhrase}, dressed like a typical American ${kidOrAdult} in modern casual clothes.`;
 
-      // Determine pronoun based on gender descriptor
+      // Determine pronouns based on gender
       let pronoun = 'They have';
-      let pronounSubject = 'Their';
-      if (enhanced.gender) {
-        // Check for female descriptors (more comprehensive check)
-        if (enhanced.gender.includes('girl') || enhanced.gender.includes('woman') || enhanced.gender.includes('female')) {
-          pronoun = 'She has';
-          pronounSubject = 'Her';
-        } else if (enhanced.gender.includes('boy') || enhanced.gender.includes('man') || enhanced.gender.includes('male')) {
-          pronoun = 'He has';
-          pronounSubject = 'His';
-        }
+      let pronounPossessive = 'Their';
+      if (genderTerm === 'girl' || genderTerm === 'woman') {
+        pronoun = 'She has';
+        pronounPossessive = 'Her';
+      } else if (genderTerm === 'boy' || genderTerm === 'man') {
+        pronoun = 'He has';
+        pronounPossessive = 'His';
       }
 
-      const backgroundPrefix = enhanced.background ? `${enhanced.background} ` : '';
-      prompt = `Disney Pixar style standing avatar of a friendly ${backgroundPrefix}${ageDescriptor}${ageFeatures}, wearing a simple, age-appropriate outfit like a soft shirt and comfortable pants. ${pronoun} the following characteristics:`;
+      // Build characteristics sentence
+      const charParts: string[] = [];
 
-      // Build characteristics list with bullet points for clarity
-      const characteristics: string[] = [];
-
-      // Special handling for bald - skip hair color and type
+      // Hair description
       if (enhanced.hairLength === 'bald') {
-        characteristics.push('A bald head');
+        charParts.push('a bald head');
       } else {
-        // Build hair description with type, length, and color
         const hairParts: string[] = [];
         if (enhanced.hairType) hairParts.push(enhanced.hairType);
         if (enhanced.hairLength) hairParts.push(enhanced.hairLength);
         if (enhanced.hair) hairParts.push(enhanced.hair);
-
         if (hairParts.length > 0) {
-          characteristics.push(`${hairParts.join(' ')} hair`);
+          charParts.push(`${hairParts.join(' ')} hair`);
         }
       }
 
       // Eye color
-      if (enhanced.eyes) characteristics.push(`${enhanced.eyes} eyes`);
-      if (enhanced.skin) characteristics.push(`${enhanced.skin} skin tone`);
-      if (enhanced.body) characteristics.push(enhanced.body);  // Descriptor already includes "build"
+      if (enhanced.eyes) charParts.push(`${enhanced.eyes} eyes`);
+
+      // Skin tone
+      if (enhanced.skin) charParts.push(`a ${enhanced.skin} skin tone`);
+
+      // Build type
+      if (enhanced.body) charParts.push(`a ${enhanced.body} build`);
+
+      // Glasses
       if (enhanced.glasses && enhanced.glasses.trim()) {
-        characteristics.push(enhanced.glasses);  // "wearing glasses"
+        charParts.push(enhanced.glasses);
       }
 
-      if (characteristics.length > 0) {
-        prompt += '\n' + characteristics.map(c => `- ${c}`).join('\n');
+      // Age-related features for elderly
+      if (numericAge !== undefined && numericAge >= 70) {
+        charParts.push('gentle wrinkles and warm features');
+      } else if (numericAge !== undefined && numericAge >= 60) {
+        charParts.push('subtle laugh lines and mature features');
       }
 
-      // Add explicit age appearance reinforcement for better age distinction
+      // Build the characteristics sentence with proper grammar
+      if (charParts.length > 0) {
+        let charSentence = ` ${pronoun} `;
+        if (charParts.length === 1) {
+          charSentence += charParts[0];
+        } else if (charParts.length === 2) {
+          charSentence += `${charParts[0]} and ${charParts[1]}`;
+        } else {
+          const lastPart = charParts.pop();
+          charSentence += `${charParts.join(', ')}, and ${lastPart}`;
+        }
+        prompt += charSentence + '.';
+      }
+
+      // Add age reinforcement
       if (numericAge !== undefined) {
-        prompt += `\n${pronounSubject} physical appearance should clearly be that of a ${numericAge} year old.`;
+        prompt += ` ${pronounPossessive} physical appearance should clearly be that of a ${numericAge} year old.`;
       }
 
-      prompt += '\nWhite background, high quality.';
+      prompt += ' White background, high quality.';
       break;
 
     case 'pet':
