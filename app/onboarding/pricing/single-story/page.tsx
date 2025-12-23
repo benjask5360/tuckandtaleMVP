@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { Check, Sparkles, Shield, ArrowRight, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { DISPLAY_PRICES } from '@/lib/config/pricing-config'
+import { trackMetaEvent } from '@/lib/meta-pixel'
 
 interface Character {
   id: string
@@ -27,9 +28,7 @@ function SingleStoryPricingContent() {
   useEffect(() => {
     if (!completeRegistrationFired.current) {
       completeRegistrationFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'CompleteRegistration')
-      }
+      trackMetaEvent('CompleteRegistration')
     }
   }, [])
 

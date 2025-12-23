@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { trackMetaEvent } from '@/lib/meta-pixel'
 
 /**
  * Client component to fire Meta Pixel StartTrial event
@@ -16,9 +17,7 @@ export default function MetaPixelStartTrial() {
     const subscriptionSuccess = searchParams.get('subscription') === 'success'
     if (subscriptionSuccess && !startTrialPixelFired.current) {
       startTrialPixelFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'StartTrial', { currency: 'USD', value: 0 })
-      }
+      trackMetaEvent('StartTrial', { currency: 'USD', value: 0 })
     }
   }, [searchParams])
 

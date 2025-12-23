@@ -8,6 +8,7 @@ import { ArrowLeft, Sparkles, Loader2 } from 'lucide-react'
 import StoryGenerationForm from '@/components/forms/StoryGenerationForm'
 import PreGenerationPaywall from '@/components/paywall/PreGenerationPaywall'
 import StoryUsageCounter from '@/components/subscription/StoryUsageCounter'
+import { trackMetaEvent } from '@/lib/meta-pixel'
 
 interface CharacterProfile {
   id: string
@@ -55,9 +56,7 @@ function CreateStoryContent() {
   useEffect(() => {
     if (justPurchasedFromPromo && !purchasePixelFired.current) {
       purchasePixelFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Purchase', { currency: 'USD', value: 4.99 })
-      }
+      trackMetaEvent('Purchase', { currency: 'USD', value: 4.99 })
     }
   }, [justPurchasedFromPromo])
 

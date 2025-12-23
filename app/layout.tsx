@@ -38,7 +38,15 @@ export default function RootLayout({
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
             fbq('init', '4311108522501340');
-            fbq('track', 'PageView');
+
+            // Check for test_event_code in URL for Meta Events Manager Test Events
+            var urlParams = new URLSearchParams(window.location.search);
+            var testCode = urlParams.get('test_event_code');
+            if (testCode) {
+              fbq('track', 'PageView', {}, {eventID: 'pageview-' + Date.now(), test_event_code: testCode});
+            } else {
+              fbq('track', 'PageView');
+            }
           `}
         </Script>
         <noscript>
