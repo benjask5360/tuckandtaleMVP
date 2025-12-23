@@ -26,9 +26,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head></head>
-      <body className={`${inter.className} ${playfair.variable}`}>
-        <Script id="meta-pixel" strategy="afterInteractive">
+      <head>
+        <Script id="meta-pixel" strategy="beforeInteractive">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -42,6 +41,13 @@ export default function RootLayout({
             fbq('track', 'PageView');
           `}
         </Script>
+        <noscript>
+          <img height="1" width="1" style={{display: 'none'}}
+            src="https://www.facebook.com/tr?id=4311108522501340&ev=PageView&noscript=1"
+          />
+        </noscript>
+      </head>
+      <body className={`${inter.className} ${playfair.variable}`}>
         <Script
           src="https://t.contentsquare.net/uxa/0a33da7791c50.js"
           strategy="afterInteractive"
