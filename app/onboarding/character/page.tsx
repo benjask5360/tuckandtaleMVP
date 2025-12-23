@@ -3,7 +3,7 @@
 import { getCharacterTypeById } from '@/lib/character-types'
 import DynamicCharacterForm from '@/components/forms/DynamicCharacterForm'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState, useRef, Suspense } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import TermsConsentModal from '@/components/auth/TermsConsentModal'
 import ParentNameCollector from '@/components/onboarding/ParentNameCollector'
@@ -17,18 +17,6 @@ function CharacterOnboardingContent() {
   const [showNameCollector, setShowNameCollector] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const leadPixelFired = useRef(false)
-
-  // Fire Lead pixel for new Google OAuth users
-  useEffect(() => {
-    const isNewUser = searchParams.get('newuser') === 'true'
-    if (isNewUser && !leadPixelFired.current) {
-      leadPixelFired.current = true
-      if (typeof window !== 'undefined' && window.fbq) {
-        window.fbq('track', 'Lead')
-      }
-    }
-  }, [searchParams])
 
   // Check if user needs to provide name or accept terms
   useEffect(() => {

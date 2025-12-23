@@ -27,6 +27,11 @@ function SignupForm() {
     setError(null)
     setGoogleLoading(true)
 
+    // Fire Lead pixel on signup intent
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead')
+    }
+
     // Note: Google OAuth users will need to accept terms in the onboarding modal
     // since we can't get their consent before OAuth redirect
     // Build callback URL with promo param if present
@@ -63,6 +68,11 @@ function SignupForm() {
     }
 
     setLoading(true)
+
+    // Fire Lead pixel on signup intent
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead')
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
