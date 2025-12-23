@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 import TermsConsentModal from '@/components/auth/TermsConsentModal'
 import ParentNameCollector from '@/components/onboarding/ParentNameCollector'
 import { getStoredUTMs, clearStoredUTMs } from '@/lib/utils/utm'
-import { trackMetaEvent } from '@/lib/meta-pixel'
 
 function CharacterOnboardingContent() {
   const router = useRouter()
@@ -25,7 +24,9 @@ function CharacterOnboardingContent() {
     const isNewUser = searchParams.get('newuser') === 'true'
     if (isNewUser && !leadPixelFired.current) {
       leadPixelFired.current = true
-      trackMetaEvent('Lead')
+      if (typeof window !== 'undefined' && window.fbq) {
+        window.fbq('track', 'Lead')
+      }
     }
   }, [searchParams])
 
