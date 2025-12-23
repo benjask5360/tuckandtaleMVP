@@ -27,21 +27,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <Script id="meta-pixel" strategy="beforeInteractive">
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '4311108522501340');
-
-            // Guard against double PageView firing during Next.js hydration
-            if (!window._fbPageViewFired) {
-              window._fbPageViewFired = true;
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', '4311108522501340');
               var urlParams = new URLSearchParams(window.location.search);
               var testCode = urlParams.get('test_event_code');
               if (testCode) {
@@ -49,11 +46,14 @@ export default function RootLayout({
               } else {
                 fbq('track', 'PageView');
               }
-            }
-          `}
-        </Script>
+            `,
+          }}
+        />
         <noscript>
-          <img height="1" width="1" style={{display: 'none'}}
+          <img
+            height="1"
+            width="1"
+            style={{ display: 'none' }}
             src="https://www.facebook.com/tr?id=4311108522501340&ev=PageView&noscript=1"
           />
         </noscript>
