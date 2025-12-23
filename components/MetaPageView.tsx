@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export default function MetaPageView() {
+  const fired = useRef(false)
+
   useEffect(() => {
-    if (window.fbq) {
+    if (!fired.current && window.fbq) {
       window.fbq('track', 'PageView')
+      fired.current = true
     }
   }, [])
 
