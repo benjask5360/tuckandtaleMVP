@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       timeStyle: 'short'
     });
 
-    await resend.emails.send({
+    const { data, error: sendError } = await resend.emails.send({
       from: 'Tuck & Tale <notifications@send.tuckandtale.com>',
       to: [ADMIN_EMAIL],
       subject: `🎉 New User Signup: ${name}`,
@@ -65,7 +65,13 @@ export async function POST(request: Request) {
       `
     });
 
-    return NextResponse.json({ success: true });
+    if (sendError) {
+      console.error('Resend error:', sendError);
+      return NextResponse.json({ success: false, error: sendError.message }, { status: 500 });
+    }
+
+    console.log('Admin notification sent:', data);
+    return NextResponse.json({ success: true, id: data?.id });
   } catch (error: any) {
     console.error('Failed to send admin notification:', error);
     // Don't fail the signup if notification fails

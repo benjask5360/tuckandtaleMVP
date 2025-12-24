@@ -42,7 +42,9 @@
       "Bash(git restore:*)",
       "Bash(del .gitindex.lock)",
       "Bash(npm run dev:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(node scripts/check-user.js:*)",
+      "Bash(node scripts/test-notify.js:*)"
     ],
     "deny": [],
     "ask": []
