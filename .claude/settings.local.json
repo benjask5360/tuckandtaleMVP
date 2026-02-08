@@ -45,9 +45,22 @@
       "Bash(psql:*)",
       "Bash(node scripts/check-user.js:*)",
       "Bash(node scripts/test-notify.js:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "WebFetch(domain:api.tuckandtale.com)",
+      "WebFetch(domain:iolimejvugpcpnmruqww.supabase.co)",
+      "Bash(node scripts/fix-image-urls.js:*)",
+      "Bash(git -C c:/projects/tuckandtaleMVP status)",
+      "Bash(git -C c:/projects/tuckandtaleMVP log --oneline -5)",
+      "Bash(npm uninstall:*)",
+      "Bash(git -C c:/projects/tuckandtaleMVP diff package-lock.json)",
+      "Bash(git -C c:/projects/tuckandtaleMVP diff .claude/settings.local.json)",
+      "Bash(git -C c:/projects/tuckandtaleMVP add .claude/settings.local.json package-lock.json scripts/fix-image-urls.js)",
+      "Bash(git -C c:/projects/tuckandtaleMVP commit -m \"$\\(cat <<''EOF''\nAdd fix-image-urls script and update local settings\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "c:\\projects\\tuckandtaleMVP\\app\\magic"
+    ]
   }
 }
